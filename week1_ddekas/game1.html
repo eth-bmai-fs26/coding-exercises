@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimum Lander</title>
+  <style>
+    :root {
+      --bg0: #05070c;
+      --bg1: #0b1020;
+      --grid: rgba(255,255,255,0.06);
+      --text: #e7e9ef;
+      --muted: rgba(231,233,239,0.75);
+      --ok: #34d399;
+      --bad: #fb7185;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 60% 20%, var(--bg1), var(--bg0));
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .wrap {
+      width: 920px;
+      max-width: calc(100% - 24px);
+      margin: 14px auto;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.20);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+
+    .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+    .topbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .controls label { font-size: 13px; color: var(--muted); }
+
+    input[type="number"] {
+      width: 140px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      outline: none;
+    }
+
+    /* Hide up/down arrows (spinners) on number inputs */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    button {
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(125,211,252,0.10);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover { border-color: rgba(125,211,252,0.50); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .hud {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+
+    canvas {
+      width: 100%;
+      height: 480px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      display: block;
+    }
+
+    .msg {
+      margin-top: 6px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    .msg.success { color: var(--ok); }
+    .msg.fail { color: var(--bad); }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row">
+      <div class="topbar">
+        <div class="controls">
+          <label for="guessX">Guess the Minimum:</label>
+          <input id="guessX" type="number" step="0.1" />
+          <button id="landBtn">Land</button>
+          <button id="newBtn">New surface</button>
+        </div>
+        <div class="hud">
+          <span class="pill">Error: <span id="errLbl">—</span></span>
+        </div>
+      </div>
+
+      <canvas id="c" width="920" height="480"></canvas>
+      <div id="msg" class="msg"></div>
+
+      <div class="help">
+        Read the curve and enter the X you think is the local minimum. <br />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+
+    const guessInput = document.getElementById("guessX");
+    const landBtn = document.getElementById("landBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    const errLbl = document.getElementById("errLbl");
+    const msg = document.getElementById("msg");
+
+    const xMin = -10, xMax = 10;
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function randomSurface() {
+      const h = (Math.random() * 12) - 6;
+      const a = 0.012 + Math.random() * 0.020;
+      const k = 0.18 + Math.random() * 0.10;
+      return { a, h, k };
+    }
+
+    function X(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
+
+    function Y(y01) {
+      const padTop = 24, padBottom = 34;
+      const h = canvas.height - padTop - padBottom;
+      return padTop + (1 - y01) * h;
+    }
+
+    function surfaceY(s, x) { return s.a * (x - s.h) * (x - s.h) + s.k; }
+
+    function findVisibleScale(s) {
+      const n = 200;
+      let ymin = Infinity, ymax = -Infinity;
+      for (let i = 0; i <= n; i++) {
+        const x = xMin + (xMax - xMin) * (i / n);
+        const y = surfaceY(s, x);
+        ymin = Math.min(ymin, y);
+        ymax = Math.max(ymax, y);
+      }
+      const pad = 0.10 * (ymax - ymin);
+      return { lo: ymin - pad, hi: ymax + pad };
+    }
+
+    function normalizeY(y, scale) { return (y - scale.lo) / (scale.hi - scale.lo); }
+
+    const lander = {
+      x: 0, y: 0.95, vx: 0, vy: 0, targetX: 0,
+      mode: "idle"
+    };
+
+    let surface = randomSurface();
+    let scale = findVisibleScale(surface);
+
+    function setMessage(text, kind) {
+      msg.textContent = text || "";
+      msg.classList.remove("success", "fail");
+      if (kind) msg.classList.add(kind);
+    }
+
+    function resetGame() {
+      surface = randomSurface();
+      scale = findVisibleScale(surface);
+
+      errLbl.textContent = "—";
+      setMessage("", null);
+
+      lander.x = 0;
+      lander.y = 0.92;
+      lander.vx = 0;
+      lander.vy = 0;
+      lander.targetX = 0;
+      lander.mode = "idle";
+
+      guessInput.value = "";
+      landBtn.disabled = false;
+
+      draw();
+    }
+
+    function drawStars() {
+      const seed = Math.floor((surface.a * 1e6 + surface.h * 1e3 + surface.k * 1e4) % 100000);
+      function rand(i) {
+        let x = (seed + i * 2654435761) >>> 0;
+        x ^= x << 13; x >>>= 0;
+        x ^= x >> 17; x >>>= 0;
+        x ^= x << 5;  x >>>= 0;
+        return (x % 1000) / 1000;
+      }
+      for (let i = 0; i < 140; i++) {
+        const rx = rand(i * 3 + 1);
+        const ry = rand(i * 3 + 2);
+        const r  = rand(i * 3 + 3);
+        const x = rx * canvas.width;
+        const y = ry * canvas.height * 0.65;
+        const a = 0.15 + 0.6 * r;
+        ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+        ctx.fillRect(x, y, 1.2, 1.2);
+      }
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim();
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const stepX = canvas.width / 10;
+      const stepY = canvas.height / 8;
+      for (let i = 1; i < 10; i++) { ctx.moveTo(i * stepX, 0); ctx.lineTo(i * stepX, canvas.height); }
+      for (let j = 1; j < 8; j++) { ctx.moveTo(0, j * stepY); ctx.lineTo(canvas.width, j * stepY); }
+      ctx.stroke();
+    }
+
+    function drawSurface() {
+      ctx.beginPath();
+      const n = 400;
+      for (let i = 0; i <= n; i++) {
+        const x = xMin + (xMax - xMin) * (i / n);
+        const y01 = normalizeY(surfaceY(surface, x), scale);
+        const cx = X(x), cy = Y(y01);
+        if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+      }
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.lineTo(0, canvas.height);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, canvas.height * 0.4, 0, canvas.height);
+      grad.addColorStop(0, "rgba(183,188,200,0.20)");
+      grad.addColorStop(1, "rgba(183,188,200,0.06)");
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const x = xMin + (xMax - xMin) * (i / n);
+        const y01 = normalizeY(surfaceY(surface, x), scale);
+        const cx = X(x), cy = Y(y01);
+        if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+      }
+      ctx.strokeStyle = "rgba(231,233,239,0.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function drawLander() {
+      const lx = X(lander.x);
+      const ly = Y(lander.y);
+
+      if (lander.mode !== "idle" && lander.mode !== "done") {
+        ctx.beginPath();
+        ctx.moveTo(lx - 6, ly + 10);
+        ctx.lineTo(lx, ly + 22 + 8 * Math.random());
+        ctx.lineTo(lx + 6, ly + 10);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(251,191,36,0.45)";
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(231,233,239,0.9)";
+      ctx.beginPath();
+      ctx.roundRect(lx - 10, ly - 10, 20, 18, 5);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(125,211,252,0.6)";
+      ctx.beginPath();
+      ctx.arc(lx, ly - 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(231,233,239,0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(lx - 8, ly + 8);
+      ctx.lineTo(lx - 16, ly + 16);
+      ctx.moveTo(lx + 8, ly + 8);
+      ctx.lineTo(lx + 16, ly + 16);
+      ctx.stroke();
+    }
+
+    function drawAxesLabels() {
+      ctx.fillStyle = "rgba(231,233,239,0.65)";
+      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+      ctx.fillText(`x: ${xMin}`, 10, canvas.height - 10);
+      const r = `x: ${xMax}`;
+      const w = ctx.measureText(r).width;
+      ctx.fillText(r, canvas.width - w - 10, canvas.height - 10);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const vignette = ctx.createRadialGradient(
+        canvas.width * 0.55, canvas.height * 0.20, 50,
+        canvas.width * 0.55, canvas.height * 0.20, canvas.width * 0.9
+      );
+      vignette.addColorStop(0, "rgba(125,211,252,0.10)");
+      vignette.addColorStop(1, "rgba(0,0,0,0.0)");
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawStars();
+      drawGrid();
+      drawSurface();
+      drawAxesLabels();
+      drawLander();
+    }
+
+    const TOP_Y = 0.985;
+    const LIFT_RATE = 2.4;
+    const DROP_RATE = 2.2;
+    const DX_EPS = 0.08;
+    const DY_EPS = 0.01;
+
+    const WIN_EPS = 0.01;
+
+    function step() {
+      const dt = 1 / 60;
+
+      if (lander.mode === "lifting") {
+        lander.y = clamp(lander.y + LIFT_RATE * dt, 0, 1);
+        if (lander.y >= TOP_Y - DY_EPS) {
+          lander.y = TOP_Y;
+          lander.mode = "moving";
+          lander.vx = 0;
+        }
+      } else if (lander.mode === "moving") {
+        const dx = lander.targetX - lander.x;
+
+        const ax = clamp(dx * 10, -48, 48);
+        lander.vx = clamp(lander.vx + ax * dt, -40, 40);
+        lander.x = clamp(lander.x + lander.vx * dt, xMin, xMax);
+
+        if (Math.abs(dx) < DX_EPS) {
+          lander.mode = "dropping";
+          lander.vx = 0;
+        }
+      } else if (lander.mode === "dropping") {
+        lander.y = clamp(lander.y - DROP_RATE * dt, 0, 1);
+
+        const groundY = normalizeY(surfaceY(surface, lander.x), scale);
+        if (lander.y <= groundY + 0.004) {
+          lander.y = groundY + 0.004;
+          lander.mode = "done";
+          landBtn.disabled = false;
+
+          const trueX = surface.h;
+          const err = Math.abs(lander.targetX - trueX);
+          errLbl.textContent = `${err.toFixed(3)}`;
+
+          if (err <= WIN_EPS) setMessage("You found the minimum!", "success");
+          else setMessage("Not quite \u2014 try again.", "fail");
+        }
+      }
+
+      draw();
+      requestAnimationFrame(step);
+    }
+
+    landBtn.addEventListener("click", () => {
+      const gx = Number(guessInput.value);
+      if (!Number.isFinite(gx)) return;
+
+      const gxc = clamp(gx, xMin, xMax);
+      guessInput.value = gxc;
+
+      lander.targetX = gxc;
+
+      errLbl.textContent = "—";
+      setMessage("", null);
+      landBtn.disabled = true;
+
+      lander.mode = "lifting";
+      lander.vx = 0;
+      lander.vy = 0;
+    });
+
+    newBtn.addEventListener("click", () => resetGame());
+
+    resetGame();
+    requestAnimationFrame(step);
+  </script>
+</body>
+</html>
