@@ -1,0 +1,2567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housing Price Discovery Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .game-area {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .game-area.phase3-mode {
+            grid-template-columns: 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .game-area.phase3-mode .chart-section {
+            display: none;
+        }
+        
+        .game-area.phase3-mode .control-panel {
+            background: transparent;
+            padding: 0;
+            border: none;
+        }
+        
+        .chart-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .phase-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .phase-title h2 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .phase-title p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .select-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+        
+        .score-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .score-display h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .score-display .score {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        
+        .feedback {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            border: 3px solid #c3e6cb;
+        }
+        
+        .feedback.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 3px solid #bee5eb;
+        }
+        
+        .feedback.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 3px solid #ffeeba;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .guess-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 0;
+            height: 110px;
+        }
+        
+        .guess-buttons .btn {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0;
+        }
+        
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            margin: 15px 0;
+        }
+        
+        .info-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .info-box .formula {
+            font-size: 1.5em;
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .w-display {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .w-display .label {
+            font-size: 1em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .w-display .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #50fa7b;
+        }
+        
+        .attempts-display {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            margin: 15px 0;
+        }
+        
+        .iteration-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        
+        #iterationTableContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .phase3-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+            align-items: start;
+        }
+
+        
+        .phase3-left,
+        
+        .phase3-left {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+
+        .phase3-right {
+            display: grid;
+            grid-template-rows: 1fr auto auto;
+            gap: 15px;
+            align-content: stretch;
+            align-self: stretch;
+            height: 100%;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .phase3-chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            min-height: 400px;
+            height: 100%;
+        }
+        
+        .slider-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            width: 100%;
+        }
+        
+        .slider-container label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+            text-align: center;
+        }
+        
+        .slider-container input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .slider-value {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
+        
+        .submit-w-btn {
+            margin-top: 15px;
+        }
+
+        .phase3-left .score-display,
+        .phase3-left .stats-grid,
+        .phase3-left .house-info,
+        .phase3-left .w-display,
+        .phase3-left .attempts-display {
+            margin: 0;
+        }
+        
+        .phase3-left .score-display {
+            padding: 15px;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .phase3-left .score-display h3 {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+        
+        .phase3-left .score-display .score {
+            font-size: 2.5em;
+        }
+        
+        .phase3-left .house-info {
+            padding: 15px;
+        }
+        
+        .phase3-left .w-display {
+            padding: 15px;
+        }
+        
+        .phase3-left .w-display .value {
+            font-size: 2.5em;
+        }
+        
+        .phase3-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .phase3-results {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .iteration-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .iteration-table td {
+            background: white;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        .iteration-table tr:last-child td {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .house-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .house-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .house-info .data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .house-info .data-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .house-info .data-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .house-info .data-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.hidden {
+            display: none;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-content h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-content h3 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .modal-content ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        .modal-content li {
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .modal-content .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .phase4-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .phase4-explanation {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .phase4-visualization {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+            min-width: 0;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .phase4-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .phase4-chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+            min-width: 0;
+        }
+        
+        .phase4-chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .phase4-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .phase4-buttons {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Housing Price Discovery Game</h1>
+            <p id="headerSubtitle">Discover the hidden pattern in house prices!</p>
+        </div>
+        
+        <div class="game-area">
+            <!-- Chart Section (Left) -->
+            <div class="chart-section">
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+                <div id="chartInfo" class="feedback info">
+                    <strong>🎬 Press "Start Simulation" to reveal houses one by one</strong><br>
+                    Watch carefully and try to identify the pattern!
+                </div>
+            </div>
+            
+            <!-- Control Panel (Right) -->
+            <div class="control-panel">
+                <!-- Phase 1: Pattern Discovery -->
+                <div id="phase1">
+                    <div class="phase-title">
+                        <h2>Phase 1: Find the Pattern</h2>
+                        <p>What relationship exists between area and price?</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Houses Shown</div>
+                            <div class="stat-value" id="housesShown">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total Houses</div>
+                            <div class="stat-value">9</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="startSimulation()" id="startBtn">
+                        🎬 Start Simulation
+                    </button>
+                    
+                    <div id="patternSelection" class="hidden">
+                        <p style="margin-top: 20px; font-size: 1.1em; font-weight: bold; text-align: center;">
+                            What pattern do you see?
+                        </p>
+                        <select class="select-box" id="patternSelect">
+                            <option value="">-- Select Pattern Type --</option>
+                            <option value="linear">Linear (Straight line)</option>
+                            <option value="quadratic">Quadratic (Curved)</option>
+                            <option value="exponential">Exponential (Steep curve)</option>
+                            <option value="random">Random (No pattern)</option>
+                        </select>
+                        <button class="btn btn-success" onclick="checkPattern()">
+                            ✓ Submit Answer
+                        </button>
+                    </div>
+                    
+                    <div id="patternFeedback"></div>
+                </div>
+                
+                <!-- Phase 2: Learn Linear Model -->
+                <div id="phase2" class="hidden">
+                    <div class="phase-title">
+                        <h2>Phase 2: The Linear Model</h2>
+                        <p>Understanding the relationship</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>📐 You discovered a LINEAR pattern!</h4>
+                        <p style="margin: 10px 0;">When the relationship is linear, we can model it with a simple equation:</p>
+                        <div class="formula">Price = W × Area + b</div>
+                        <p style="margin-top: 10px;">
+                            <strong>W</strong> = slope (price per square meter)<br>
+                            <strong>b</strong> = intercept (base price)
+                        </p>
+                    </div>
+                    
+                    <div class="feedback info">
+                        <strong>🎯 Your Challenge:</strong><br>
+                        For simplicity, let's assume b = 10.<br>
+                        Can you find the correct value of W?
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="startPhase3()">
+                        Next: Find W! →
+                    </button>
+                </div>
+                
+                <!-- Phase 3: Find W Game -->
+                <div id="phase3" class="hidden">
+                    <div class="phase-title">
+                        <h2>Phase 3: Find the Value of W</h2>
+                        <p>Test on different houses to learn the pattern!</p>
+                    </div>
+                    
+                    <div class="phase3-content">
+                        <!-- Left Column: Stats and House Info -->
+                        <div class="phase3-left">
+                            <div class="score-display">
+                                <h3>Your Score</h3>
+                                <div class="score" id="gameScore">100</div>
+                            </div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-box">
+                                    <div class="stat-label">House</div>
+                                    <div class="stat-value"><span id="currentHouseNum">1</span>/5</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Completed</div>
+                                    <div class="stat-value" id="housesCompleted">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="house-info">
+                                <h3>🏠 Training House</h3>
+                                <div class="data">
+                                    <div class="data-item">
+                                        <div class="data-label">Area (X)</div>
+                                        <div class="data-value" id="testArea">--</div>
+                                    </div>
+                                    <div class="data-item">
+                                        <div class="data-label">Price (Y)</div>
+                                        <div class="data-value" id="testPrice">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="iterationTableContainer"></div>
+                        </div>
+                        
+                        <!-- Right Column: Controls and Results -->
+                        <div class="phase3-right">
+                            <div class="phase3-chart-container">
+                                <canvas id="phase3Chart"></canvas>
+                            </div>
+                            
+                            <div class="slider-container">
+                                <label for="wSlider">Adjust W Value:</label>
+                                <input type="range" id="wSlider" min="10" max="70" value="50" step="0.5" oninput="updateWDisplay()">
+                                <div class="slider-value" id="sliderValue">50.0</div>
+                                <button class="btn btn-success submit-w-btn" id="submitWBtn" onclick="submitWValue()">
+                                    Check Answer ✓
+                                </button>
+                            </div>
+                            
+                            <div class="phase3-results">
+                                <div id="nextHouseBtn" class="hidden">
+                                    <button class="btn btn-success" onclick="nextTestHouse()">
+                                        Next House →
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phase 4a: Fixed-Step Algorithm -->
+                <div id="phase4a" class="hidden">
+                    <div class="phase-title">
+                        <h2>Phase 4a: Simple Fixed-Step Algorithm</h2>
+                        <p>First attempt at automation - adjust by a fixed amount</p>
+                    </div>
+                    
+                    <div class="phase4-content">
+                        <div class="phase4-explanation">
+                            <div class="info-box">
+                                <h4>🧮 Simple Fixed-Step Rule</h4>
+                                <p style="margin: 10px 0;">Let's start with a simple approach:</p>
+                                <div class="formula" style="font-size: 1.2em;">
+                                    If Ŷ < Y: W<sub>new</sub> = W<sub>old</sub> + α<br>
+                                    If Ŷ > Y: W<sub>new</sub> = W<sub>old</sub> - α
+                                </div>
+                                <p style="margin-top: 10px;">
+                                    <strong>Logic:</strong> If prediction is too low, increase W by α.<br>
+                                    If prediction is too high, decrease W by α.
+                                </p>
+                            </div>
+                            
+                            <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+                                <h4>🤔 What's the Problem?</h4>
+                                <p style="margin: 10px 0;">This rule always adjusts by the same amount (α), regardless of how far off we are.</p>
+                                <p><strong>Think:</strong> What might happen when we get close to the target?</p>
+                                <button class="btn" onclick="revealFixedStepAnswer()" id="revealAnswerBtn" style="margin-top: 10px; width: 100%;">💡 Reveal Answer</button>
+                                <div id="fixedStepAnswer" class="hidden" style="margin-top: 15px; padding: 15px; background: #f0f8ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+                                    <p><strong>Answer:</strong> When we get close to the target, the fixed step size causes <strong>oscillation</strong>! The algorithm keeps overshooting because it always moves by α, even when the error is tiny. It bounces back and forth around the target instead of settling precisely.</p>
+                                    <p style="margin-top: 10px;">This is why we need <strong>proportional updates</strong> (Robbins-Monro) that adjust by <strong>α × error</strong> - smaller errors lead to smaller adjustments!</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="phase4-visualization">
+                            <div class="phase4-stats">
+                                <div class="stat-box">
+                                    <div class="stat-label">Current W</div>
+                                    <div class="stat-value" id="fixed-currentW">25.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Target W</div>
+                                    <div class="stat-value">40.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Iterations</div>
+                                    <div class="stat-value" id="fixed-iterations">0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Step Size (α)</div>
+                                    <div class="stat-value" id="fixed-alpha">1.0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="phase4-chart-container">
+                                <canvas id="phase4aChart"></canvas>
+                            </div>
+                            
+                            <div class="phase4-controls">
+                                <div class="control-group">
+                                    <label for="fixedStepSize">Fixed Step Size (α): <span id="fixedStepValue">1.0</span></label>
+                                    <input type="range" id="fixedStepSize" min="0.1" max="5.0" value="1.0" step="0.1">
+                                    <div style="font-size: 0.9em; margin-top: 5px; color: #666;">
+                                        💡 Try different values to see the behavior!
+                                    </div>
+                                </div>
+                                
+                                <div class="phase4-buttons">
+                                    <button class="btn btn-success" id="fixedStartBtn" onclick="startFixedStep()">
+                                        ▶ Start Algorithm
+                                    </button>
+                                    <button class="btn" id="fixedPauseBtn" onclick="pauseFixedStep()" disabled>
+                                        ⏸ Pause
+                                    </button>
+                                    <button class="btn" onclick="resetFixedStep()">
+                                        🔄 Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="fixedObservation" class="feedback info hidden">
+                                <strong>👀 Observation:</strong><br>
+                                <span id="fixedObservationText"></span>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; text-align: center;">
+                                <div id="phase4aPrompt" style="color: #666; margin-bottom: 10px;">
+                                    ▶️ <strong>Run the algorithm</strong> to see the oscillation problem, then proceed to Robbins-Monro!
+                                </div>
+                                <button class="btn btn-success" id="phase4aNextBtn" onclick="completePhase4a()" disabled style="width: 100%; font-size: 1.1em; padding: 15px;">
+                                    ✨ Try Robbins-Monro (Proportional Updates) →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phase 4b: Robbins-Monro Algorithm -->
+                <div id="phase4b" class="hidden">
+                    <div class="phase-title">
+                        <h2>Phase 4b: Robbins-Monro Algorithm</h2>
+                        <p>The smart solution - proportional adjustments!</p>
+                    </div>
+                    
+                    <div class="phase4-content">
+                        <div class="phase4-explanation">
+                            <div class="info-box" style="background: #e8f5e9; border-color: #4caf50;">
+                                <h4>🚀 The Problem with Fixed Steps</h4>
+                                <p style="margin: 10px 0;">You saw that fixed steps cause <strong>oscillation</strong> - the algorithm bounces around the target and struggles to settle.</p>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h4>🤖 Robbins-Monro Solution</h4>
+                                <p style="margin: 10px 0;">Instead of fixed steps, adjust by an amount <strong>proportional to the error:</strong></p>
+                                <div class="formula">W<sub>new</sub> = W<sub>old</sub> - α × (Ŷ - Y)</div>
+                                <p style="margin-top: 10px;">
+                                    <strong>Key Difference:</strong> When far from target → big adjustment.<br>
+                                    When close to target → small adjustment.
+                                </p>
+                                <p style="margin-top: 10px; font-style: italic; color: #666;">
+                                    This is called <strong>proportional correction</strong> and it eliminates oscillation!
+                                </p>
+                            </div>
+                            
+                            <div id="predictionChallenge" class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+                                <h4>🤔 Quick Check #1</h4>
+                                <p style="margin: 10px 0;">Compared to the fixed-step algorithm, Robbins-Monro will:</p>
+                                <select id="predictionAnswer" class="select-box" style="margin: 10px 0;">
+                                    <option value="">-- Make a prediction --</option>
+                                    <option value="converge">Converge faster and smoother</option>
+                                    <option value="oscillate">Still oscillate like before</option>
+                                    <option value="slower">Take longer to converge</option>
+                                    <option value="same">Perform about the same</option>
+                                </select>
+                                <button class="btn btn-success" onclick="checkPrediction()" style="margin-top: 10px;">
+                                    Submit Answer
+                                </button>
+                                <div id="predictionFeedback" style="margin-top: 10px;"></div>
+                            </div>
+                            
+                            <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+                                <h4>🤔 Quick Check #2</h4>
+                                <p style="margin: 10px 0;">Why does α (learning rate) need to be small in this problem?</p>
+                                <p style="margin: 10px 0; font-size: 0.95em; color: #666;">Hint: Think about the update formula W<sub>new</sub> = W<sub>old</sub> - α × (Ŷ - Y) where Ŷ = W × Area + 10</p>
+                                <button class="btn" onclick="revealAlphaAnswer()" id="revealAlphaBtn" style="margin-top: 10px; width: 100%;">
+                                    💡 Reveal Answer
+                                </button>
+                                <div id="alphaAnswer" class="hidden" style="margin-top: 15px; padding: 15px; background: #f0f8ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+                                    <p><strong>Answer:</strong> The error (Ŷ - Y) naturally includes the house area when you expand it!</p>
+                                    <p style="margin-top: 10px;"><strong>Let's expand the formula:</strong></p>
+                                    <div style="background: #fff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                        <p style="margin: 5px 0;">1️⃣ Ŷ = W × Area + 10 (our prediction)</p>
+                                        <p style="margin: 5px 0;">2️⃣ Y = 40 × Area + 10 (actual price, true W = 40)</p>
+                                        <p style="margin: 5px 0;">3️⃣ Error = Ŷ - Y = (W × Area + 10) - (40 × Area + 10)</p>
+                                        <p style="margin: 5px 0;">4️⃣ Error = W × Area - 40 × Area = <strong>(W - 40) × Area</strong></p>
+                                    </div>
+                                    <p><strong>Example:</strong> If W = 50 and we see a house with Area = 40 m²:</p>
+                                    <ul style="margin: 10px 0 10px 20px;">
+                                        <li>Error = (50 - 40) × 40 = <strong>400</strong> (not just 10!)</li>
+                                        <li>With α = 0.1: Update = α × Error = 0.1 × 400 = <strong>40</strong></li>
+                                        <li>W changes by 40, way too much!</li>
+                                    </ul>
+                                    <p style="margin-top: 10px;"><strong>Key insight:</strong> Bigger houses naturally create bigger errors in the formula (Ŷ - Y), which means bigger updates. To keep updates reasonable, α must be small enough that α × Area < 1, so α < 1/40 ≈ <strong>0.025</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="phase4-visualization">
+                            <div class="phase4-stats">
+                                <div class="stat-box">
+                                    <div class="stat-label">Current W</div>
+                                    <div class="stat-value" id="rm-currentW">25.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Target W</div>
+                                    <div class="stat-value">40.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Iterations</div>
+                                    <div class="stat-value" id="rm-iterations">0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Error</div>
+                                    <div class="stat-value" id="rm-error">15.0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="phase4-chart-container">
+                                <canvas id="phase4Chart"></canvas>
+                            </div>
+                            
+                            <div class="phase4-controls">
+                                <div class="control-group">
+                                    <label for="learningRate">Learning Rate (α): <span id="learningRateValue">0.01</span></label>
+                                    <input type="range" id="learningRate" min="0.001" max="0.5" value="0.01" step="0.001">
+                                    <div id="learningRateHint" style="font-size: 0.9em; margin-top: 5px; color: #666;">
+                                        💡 Try different values! Small (0.001-0.01), Medium (0.01-0.1), Large (0.1-1.0)
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <label for="animationSpeed">Animation Speed: <span id="speedValue">Medium</span></label>
+                                    <input type="range" id="animationSpeed" min="1" max="3" value="2" step="1">
+                                </div>
+                                
+                                <div class="phase4-buttons">
+                                    <button class="btn btn-success" id="rmStartBtn" onclick="startRobbinsMonro()">
+                                        ▶ Start Algorithm
+                                    </button>
+                                    <button class="btn" id="rmPauseBtn" onclick="pauseRobbinsMonro()" disabled>
+                                        ⏸ Pause
+                                    </button>
+                                    <button class="btn" onclick="resetRobbinsMonro()">
+                                        🔄 Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="rmConvergenceMessage" class="feedback success hidden">
+                                <strong>🎯 Converged!</strong><br>
+                                The algorithm found W = 40 in <span id="rmFinalIterations">0</span> iterations!<br>
+                                <span id="comparisonMessage" style="margin-top: 10px; display: block;"></span>
+                            </div>
+                            
+                            <button class="btn btn-success" id="phase4NextBtn" onclick="completePhase4()" style="display: none;">
+                                See How It Handles Noisy Data →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phase 5: Noisy Data -->
+                <div id="phase5" class="hidden">
+                    <div class="phase-title">
+                        <h2>Phase 5: Robbins-Monro with Noisy Data</h2>
+                        <p>Real-world robustness - handling uncertainty!</p>
+                    </div>
+                    
+                    <div class="phase4-content">
+                        <div class="phase4-explanation">
+                            <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+                                <h4>🌊 The Real-World Challenge</h4>
+                                <p style="margin: 10px 0;">In reality, data is <strong>noisy</strong>! House prices aren't perfectly predictable - there's randomness from:</p>
+                                <ul style="margin: 10px 0 10px 20px;">
+                                    <li>Market fluctuations</li>
+                                    <li>Measurement errors</li>
+                                    <li>Hidden variables (location, condition, etc.)</li>
+                                </ul>
+                                <p style="margin-top: 10px;">Can Robbins-Monro still converge with noisy observations?</p>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h4>🎲 What's Different?</h4>
+                                <p style="margin: 10px 0;">Each time we observe a house price, we add <strong>random noise</strong>:</p>
+                                <div class="formula">Y = 40 × Area + 10 + Noise</div>
+                                <p style="margin-top: 10px;">
+                                    <strong>Noise:</strong> Random value between -50 and +50<br>
+                                    <strong>Challenge:</strong> The algorithm sees different prices for the same house!
+                                </p>
+                                <p style="margin-top: 10px; font-style: italic; color: #666;">
+                                    Watch how the algorithm still finds W = 40 despite the noise!
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="phase4-visualization">
+                            <div class="phase4-stats">
+                                <div class="stat-box">
+                                    <div class="stat-label">Current W</div>
+                                    <div class="stat-value" id="noisy-currentW">25.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Target W</div>
+                                    <div class="stat-value">40.0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Iterations</div>
+                                    <div class="stat-value" id="noisy-iterations">0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Error</div>
+                                    <div class="stat-value" id="noisy-error">15.0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="phase4-chart-container">
+                                <canvas id="phase5Chart"></canvas>
+                            </div>
+                            
+                            <div class="phase4-controls">
+                                <div class="control-group">
+                                    <label for="noisyLearningRate">Learning Rate (α): <span id="noisyLearningRateValue">0.01</span></label>
+                                    <input type="range" id="noisyLearningRate" min="0.001" max="0.5" value="0.01" step="0.001">
+                                    <div id="noisyLearningRateHint" style="font-size: 0.9em; margin-top: 5px; color: #666;">
+                                        💡 With noise, smaller α often works better!
+                                    </div>
+                                </div>
+                                
+                                <div class="phase4-buttons">
+                                    <button class="btn btn-success" id="noisyStartBtn" onclick="startNoisyRobbinsMonro()">
+                                        ▶ Start Algorithm
+                                    </button>
+                                    <button class="btn" id="noisyPauseBtn" onclick="pauseNoisyRobbinsMonro()" disabled>
+                                        ⏸ Pause
+                                    </button>
+                                    <button class="btn" onclick="resetNoisyRobbinsMonro()">
+                                        🔄 Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="noisyConvergenceMessage" class="feedback success hidden">
+                                <strong>🎯 Converged despite noise!</strong><br>
+                                The algorithm found W ≈ 40 in <span id="noisyFinalIterations">0</span> iterations!<br>
+                                <p style="margin-top: 10px;">Even with random noise in every observation, Robbins-Monro successfully converges to the true parameter. This is the power of <strong>stochastic approximation</strong>!</p>
+                            </div>
+                            
+                            <button class="btn btn-success" id="phase5NextBtn" onclick="completePhase5()" style="display: none;">
+                                Complete Game 🎉
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Phase 3 Intro Modal -->
+    <div id="phase3IntroModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>🎮 Phase 3: Find W Challenge</h2>
+            
+            <h3>How to Play:</h3>
+            <p>You'll work with 5 different houses, one at a time. For each house:</p>
+            <ul>
+                <li><strong>Adjust the W slider</strong> to find the correct value</li>
+                <li><strong>Click "Check Answer ✓"</strong> to test your prediction</li>
+                <li><strong>Use the feedback</strong> (Low, High, Too low, Too high) to refine your guess</li>
+                <li><strong>Find W = 40</strong> to complete the house and move to the next one</li>
+            </ul>
+            
+            <h3>Scoring:</h3>
+            <p><strong>You start with 100 points.</strong> Each attempt costs 2 points, so try to find W = 40 efficiently!</p>
+            
+            <h3>Visual Feedback:</h3>
+            <ul>
+                <li><strong>Chart:</strong> Shows completed houses and your current prediction line</li>
+                <li><strong>Table:</strong> Tracks all your attempts with predictions and feedback</li>
+            </ul>
+            
+            <button class="btn btn-success" onclick="closePhase3IntroModal()">
+                Start Playing! 🚀
+            </button>
+        </div>
+    </div>
+    
+    <!-- Completion Modal -->
+    <div id="completionModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>🎉 Congratulations!</h2>
+            
+            <p style="text-align: center; font-size: 1.3em; color: #667eea; font-weight: bold;">
+                Final Score: <span id="finalScore">100</span> points
+            </p>
+            
+            <h3>🧠 What You Discovered:</h3>
+            <p>You found that <strong>W = 40</strong> works perfectly for all houses, regardless of their size. This single parameter consistently predicts prices across different scenarios.</p>
+            
+            <h3>🔗 Connection to Robbins-Monro:</h3>
+            <p>What you just experienced is the core principle behind the <strong>Robbins-Monro algorithm</strong>:</p>
+            <ul>
+                <li><strong>Iterative Learning:</strong> You made repeated attempts, each time getting closer to the true value</li>
+                <li><strong>Feedback-Driven:</strong> Each "Low" or "High" signal guided your next adjustment</li>
+                <li><strong>Convergence:</strong> Through trial and error, you converged to the optimal parameter (W = 40)</li>
+                <li><strong>Stochastic Approximation:</strong> Even with noisy house prices, the same W emerged as the best fit</li>
+            </ul>
+            
+            <div class="highlight">
+                🎯 The Robbins-Monro algorithm automates this exact process: it uses feedback from predictions to iteratively adjust parameters until finding the optimal value.
+            </div>
+            
+            <p style="margin-top: 25px;">In machine learning, instead of manually adjusting W, the algorithm does it automatically using mathematical rules to minimize prediction error!</p>
+            
+            <button class="btn btn-success" onclick="goToNextPhase()">
+                Continue to Next Phase →
+            </button>
+        </div>
+    </div>
+    
+    <!-- Final Completion Modal -->
+    <div id="finalCompletionModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <h2>🎉 Congratulations! You've Completed the Game!</h2>
+            
+            <h3>✅ What You've Learned:</h3>
+            <ul style="margin: 15px 0;">
+                <li><strong>Phase 1:</strong> Discovered the linear pattern in house prices</li>
+                <li><strong>Phase 2:</strong> Understood the Price = W × Area + b model</li>
+                <li><strong>Phase 3:</strong> Manually found W = 40 through trial and error</li>
+                <li><strong>Phase 4a:</strong> Saw why fixed-step algorithms oscillate</li>
+                <li><strong>Phase 4b:</strong> Learned how Robbins-Monro uses proportional updates</li>
+                <li><strong>Phase 5:</strong> Witnessed robustness to noisy, real-world data</li>
+            </ul>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center;">
+                <h3 style="margin-top: 0;">🚀 Now It's Your Turn!</h3>
+                <p style="margin: 10px 0; font-size: 1.1em;">Open your <strong>Jupyter Notebook</strong> and implement the Robbins-Monro algorithm yourself!</p>
+                <p style="margin: 10px 0;">Apply what you've learned to solve real problems with code.</p>
+            </div>
+            
+            <h3>📓 Next Steps:</h3>
+            <ol style="margin: 15px 0;">
+                <li>Open your Jupyter Notebook environment</li>
+                <li>Implement the Robbins-Monro update rule: <code style="background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">W_new = W_old - α × (Ŷ - Y)</code></li>
+                <li>Test it on the housing price dataset</li>
+                <li>Experiment with different learning rates</li>
+                <li>Try adding noise to see its robustness!</li>
+            </ol>
+            
+            <p style="text-align: center; margin-top: 30px; font-size: 1.2em; font-weight: bold; color: #667eea;">
+                Good luck with your implementation! 💪
+            </p>
+            
+            <button class="btn btn-success" onclick="closeFinalModal()" style="width: 100%; font-size: 1.1em; margin-top: 20px;">
+                Let's Code! 🎯
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // True parameters
+        const TRUE_W = 40;
+        const TRUE_B = 10;
+        
+        // Game state
+        let gameState = {
+            phase: 1,
+            houses: [],
+            revealIndex: 0,
+            currentW: 50,
+            score: 100,
+            attempts: 0,
+            simulationInterval: null,
+            testHouseIndex: 0,
+            testHouses: [],
+            iterationHistory: [],
+            housesCompleted: 0,
+            completedHousesData: [] // Store completed houses for plotting
+        };
+        
+        let phase3Chart = null;
+        
+        // Generate dataset
+        function generateHouses() {
+            const areas = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+            return areas.map(area => ({
+                area: area,
+                price: TRUE_W * area + TRUE_B + (Math.random() - 0.5) * 20
+            }));
+        }
+        
+        // Generate 5 test houses for Phase 3
+        function generateTestHouses() {
+            const testAreas = [20, 35, 15, 40, 25];
+            return testAreas.map(area => ({
+                area: area,
+                price: TRUE_W * area + TRUE_B + (Math.random() - 0.5) * 15,
+                targetW: TRUE_W
+            }));
+        }
+        
+        // Initialize chart
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Houses',
+                            data: [],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 3,
+                            pointRadius: 10,
+                            pointHoverRadius: 12
+                        },
+                        {
+                            label: 'Your Model',
+                            data: [],
+                            type: 'line',
+                            borderColor: 'rgba(255, 152, 0, 1)',
+                            borderWidth: 4,
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'True Model',
+                            data: [],
+                            type: 'line',
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 4,
+                            borderDash: [10, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Area (square meters)',
+                                font: { size: 16, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 60
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price ($)',
+                                font: { size: 16, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 2500
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update chart
+        function updateChart() {
+            // Show revealed houses
+            const revealedHouses = gameState.houses.slice(0, gameState.revealIndex);
+            chart.data.datasets[0].data = revealedHouses.map(h => ({ x: h.area, y: h.price }));
+            
+            // Show user's model line in Phase 3
+            if (gameState.phase === 3) {
+                chart.data.datasets[1].data = [
+                    { x: 0, y: TRUE_B },
+                    { x: 60, y: gameState.currentW * 60 + TRUE_B }
+                ];
+            } else {
+                chart.data.datasets[1].data = [];
+            }
+            
+            // Show true model line (hidden in Phase 1, visible later)
+            if (gameState.phase >= 2) {
+                chart.data.datasets[2].data = [
+                    { x: 0, y: TRUE_B },
+                    { x: 60, y: TRUE_W * 60 + TRUE_B }
+                ];
+            } else {
+                chart.data.datasets[2].data = [];
+            }
+            
+            chart.update();
+        }
+        
+        // Start simulation
+        function startSimulation() {
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('chartInfo').innerHTML = 
+                '<strong>🎬 Simulation running...</strong><br>Watch the pattern emerge!';
+            
+            gameState.simulationInterval = setInterval(() => {
+                if (gameState.revealIndex < gameState.houses.length) {
+                    gameState.revealIndex++;
+                    document.getElementById('housesShown').textContent = gameState.revealIndex;
+                    updateChart();
+                } else {
+                    clearInterval(gameState.simulationInterval);
+                    document.getElementById('chartInfo').innerHTML = 
+                        '<strong>✅ All houses revealed!</strong><br>Now identify the pattern.';
+                    document.getElementById('patternSelection').classList.remove('hidden');
+                }
+            }, 600);
+        }
+        
+        // Check pattern selection
+        function checkPattern() {
+            const selected = document.getElementById('patternSelect').value;
+            const feedbackDiv = document.getElementById('patternFeedback');
+            
+            if (!selected) {
+                feedbackDiv.innerHTML = '<div class="feedback warning">Please select a pattern type!</div>';
+                return;
+            }
+            
+            if (selected === 'linear') {
+                feedbackDiv.innerHTML = '<div class="feedback success">🎉 Correct! The pattern is LINEAR!<br>Great observation skills!</div>';
+                setTimeout(() => {
+                    goToPhase2();
+                }, 2000);
+            } else {
+                feedbackDiv.innerHTML = '<div class="feedback warning">❌ Not quite! Look at the graph again.<br>The points form a straight line - that\'s a LINEAR pattern!<br>Try again!</div>';
+                document.getElementById('patternSelect').value = '';
+            }
+        }
+        
+        // Go to Phase 2
+        function goToPhase2() {
+            gameState.phase = 2;
+            document.getElementById('phase1').classList.add('hidden');
+            document.getElementById('phase2').classList.remove('hidden');
+            document.getElementById('headerSubtitle').textContent = 'Understanding the linear model';
+            
+            // Ensure chart is visible
+            document.querySelector('.game-area').classList.remove('phase3-mode');
+            
+            updateChart();
+        }
+        
+        // Start Phase 3
+        function startPhase3() {
+            gameState.phase = 3;
+            gameState.testHouses = generateTestHouses();
+            gameState.testHouseIndex = 0;
+            gameState.housesCompleted = 0;
+            gameState.completedHousesData = [];
+            gameState.score = 100;
+            
+            document.getElementById('phase2').classList.add('hidden');
+            document.getElementById('phase3').classList.remove('hidden');
+            document.getElementById('headerSubtitle').textContent = 'Find W for different houses!';
+            
+            // Hide chart and center layout for Phase 3
+            document.querySelector('.game-area').classList.add('phase3-mode');
+            
+            // Initialize Phase 3 chart
+            if (!phase3Chart) {
+                initPhase3Chart();
+            }
+            
+            // Show intro modal
+            document.getElementById('phase3IntroModal').classList.remove('hidden');
+        }
+        
+        // Close Phase 3 intro modal and start first house
+        function closePhase3IntroModal() {
+            document.getElementById('phase3IntroModal').classList.add('hidden');
+            loadTestHouse();
+        }
+        
+        // Load current test house
+        function loadTestHouse() {
+            const house = gameState.testHouses[gameState.testHouseIndex];
+            
+            // Randomize starting W for variety (between 10 and 70)
+            gameState.currentW = Math.floor(Math.random() * 60) + 10;
+            
+            gameState.attempts = 0;
+            gameState.iterationHistory = [];
+            
+            document.getElementById('currentHouseNum').textContent = gameState.testHouseIndex + 1;
+            document.getElementById('housesCompleted').textContent = gameState.housesCompleted;
+            document.getElementById('testArea').textContent = house.area;
+            document.getElementById('testPrice').textContent = Math.round(house.price);
+            document.getElementById('nextHouseBtn').classList.add('hidden');
+            document.getElementById('iterationTableContainer').innerHTML = '';
+            
+            // Reset slider
+            document.getElementById('wSlider').value = gameState.currentW;
+            document.getElementById('wSlider').disabled = false;
+            document.getElementById('submitWBtn').disabled = false;
+            document.getElementById('sliderValue').textContent = gameState.currentW.toFixed(1);
+            
+            updatePhase3Display();
+            updatePhase3Chart();
+        }
+        
+        // Move to next test house
+        function nextTestHouse() {
+            gameState.testHouseIndex++;
+            if (gameState.testHouseIndex < gameState.testHouses.length) {
+                loadTestHouse();
+            }
+        }
+        
+        // Update Phase 3 display
+        function updatePhase3Display() {
+            document.getElementById('currentW').textContent = gameState.currentW.toFixed(1);
+            document.getElementById('gameScore').textContent = gameState.score;
+            document.getElementById('attempts').textContent = gameState.attempts;
+        }
+        
+        // Initialize Phase 3 mini chart
+        function initPhase3Chart() {
+            const ctx = document.getElementById('phase3Chart').getContext('2d');
+            phase3Chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Completed Houses',
+                            data: [],
+                            backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 3,
+                            pointRadius: 10,
+                            pointHoverRadius: 12
+                        },
+                        {
+                            label: 'Current Prediction',
+                            data: [],
+                            type: 'line',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Area (m²)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 50
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price ($)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 2000
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update Phase 3 chart
+        function updatePhase3Chart() {
+            const house = gameState.testHouses[gameState.testHouseIndex];
+            
+            // Show completed houses
+            phase3Chart.data.datasets[0].data = gameState.completedHousesData;
+            
+            // Show current prediction line
+            phase3Chart.data.datasets[1].data = [
+                { x: 0, y: TRUE_B },
+                { x: 50, y: gameState.currentW * 50 + TRUE_B }
+            ];
+            
+            phase3Chart.update();
+        }
+        
+        // Update W display from slider (without checking)
+        function updateWDisplay() {
+            const slider = document.getElementById('wSlider');
+            gameState.currentW = parseFloat(slider.value);
+            document.getElementById('sliderValue').textContent = gameState.currentW.toFixed(1);
+            document.getElementById('currentW').textContent = gameState.currentW.toFixed(1);
+            
+            updatePhase3Chart();
+        }
+        
+        // Submit W value and check if correct
+        function submitWValue() {
+            // Check if W is correct
+            checkWValue();
+        }
+        
+        // Check if W value is correct
+        function checkWValue() {
+            const house = gameState.testHouses[gameState.testHouseIndex];
+            const prediction = gameState.currentW * house.area + TRUE_B;
+            
+            let feedback = '';
+            let isCorrect = false;
+            
+            if (gameState.currentW === TRUE_W) {
+                feedback = '✓ Correct!';
+                isCorrect = true;
+            } else if (gameState.currentW >= 35 && gameState.currentW <= 45) {
+                // Within reasonable range - give softer feedback
+                if (gameState.currentW < TRUE_W) {
+                    feedback = 'Low';
+                } else {
+                    feedback = 'High';
+                }
+            } else {
+                // Outside reasonable range - give stronger feedback
+                if (gameState.currentW < TRUE_W) {
+                    feedback = 'Too low';
+                } else {
+                    feedback = 'Too high';
+                }
+            }
+            
+            // Update single row iteration table
+            updateSingleIterationRow(prediction, feedback, isCorrect);
+            
+            // If correct (exactly 40), mark house as complete
+            if (isCorrect) {
+                completeHouse();
+            }
+        }
+        
+        // Update single iteration table row
+        function updateSingleIterationRow(prediction, feedback, isCorrect) {
+            const house = gameState.testHouses[gameState.testHouseIndex];
+            gameState.attempts++;
+            
+            // Only reduce score if answer is incorrect
+            if (!isCorrect) {
+                gameState.score = Math.max(0, gameState.score - 2);
+            }
+            document.getElementById('gameScore').textContent = gameState.score;
+            
+            // Create or update table
+            let tableContainer = document.getElementById('iterationTableContainer');
+            let table = tableContainer.querySelector('.iteration-table');
+            
+            if (!table) {
+                // Create new table with header
+                const tableHTML = `
+                    <table class="iteration-table">
+                        <thead>
+                            <tr>
+                                <th>Attempt</th>
+                                <th>Ŷ = W × ${house.area} + ${TRUE_B}</th>
+                                <th>Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="iterationTableBody">
+                        </tbody>
+                    </table>
+                `;
+                tableContainer.innerHTML = tableHTML;
+                table = tableContainer.querySelector('.iteration-table');
+            }
+            
+            // Append new row to tbody
+            const tbody = document.getElementById('iterationTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${gameState.attempts}</td>
+                <td>${Math.round(prediction)}</td>
+                <td>${feedback}</td>
+            `;
+            tbody.appendChild(newRow);
+            
+            // Scroll to bottom of container
+            tableContainer.scrollTop = tableContainer.scrollHeight;
+        }
+        
+        // Complete current house
+        function completeHouse() {
+            const house = gameState.testHouses[gameState.testHouseIndex];
+            
+            // Add to completed houses for plotting
+            gameState.completedHousesData.push({
+                x: house.area,
+                y: house.price
+            });
+            
+            gameState.housesCompleted++;
+            document.getElementById('housesCompleted').textContent = gameState.housesCompleted;
+            
+            // Disable slider temporarily
+            document.getElementById('wSlider').disabled = true;
+            document.getElementById('submitWBtn').disabled = true;
+            
+            updatePhase3Chart();
+            
+            if (gameState.housesCompleted < 5) {
+                document.getElementById('nextHouseBtn').classList.remove('hidden');
+            } else {
+                // All houses completed - show completion modal
+                document.getElementById('finalScore').textContent = gameState.score;
+                document.getElementById('completionModal').classList.remove('hidden');
+            }
+        }
+        
+        // Go to next phase
+        function goToNextPhase() {
+            document.getElementById('completionModal').classList.add('hidden');
+            startPhase4a();
+        }
+        
+        // Move to next test house
+        function nextTestHouse() {
+            gameState.testHouseIndex++;
+            if (gameState.testHouseIndex < gameState.testHouses.length) {
+                loadTestHouse();
+            }
+        }
+        
+        // Phase 4a: Fixed-Step Algorithm
+        let phase4aState = {
+            currentW: 25,
+            stepSize: 1.0,
+            iterations: 0,
+            isRunning: false,
+            intervalId: null,
+            houseIndex: 0,
+            wHistory: [],
+            oscillationDetected: false
+        };
+        
+        let phase4aChart = null;
+        
+        function startPhase4a() {
+            gameState.phase = 4;
+            document.getElementById('phase3').classList.add('hidden');
+            document.getElementById('phase4a').classList.remove('hidden');
+            document.getElementById('headerSubtitle').textContent = 'Fixed-Step Algorithm';
+            
+            resetFixedStep();
+            if (!phase4aChart) {
+                initPhase4aChart();
+            }
+            
+            document.getElementById('fixedStepSize').oninput = function() {
+                phase4aState.stepSize = parseFloat(this.value);
+                document.getElementById('fixedStepValue').textContent = this.value;
+                document.getElementById('fixed-alpha').textContent = this.value;
+            };
+        }
+        
+        function initPhase4aChart() {
+            const ctx = document.getElementById('phase4aChart').getContext('2d');
+            phase4aChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'W Value Over Time',
+                            data: [],
+                            borderColor: 'rgba(255, 152, 0, 1)',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Target W = 40',
+                            data: [],
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 2,
+                            borderDash: [10, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 200
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Iteration',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 50
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'W Value',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 70
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updatePhase4aChart() {
+            const maxPoints = 200;
+            let displayData = phase4aState.wHistory;
+            if (displayData.length > maxPoints) {
+                const step = Math.floor(displayData.length / maxPoints);
+                displayData = displayData.filter((_, i) => i % step === 0 || i === displayData.length - 1);
+            }
+            
+            phase4aChart.data.datasets[0].data = displayData;
+            
+            const maxIteration = Math.max(phase4aState.iterations, 50);
+            phase4aChart.options.scales.x.max = maxIteration;
+            
+            phase4aChart.data.datasets[1].data = [
+                { x: 0, y: TRUE_W },
+                { x: maxIteration, y: TRUE_W }
+            ];
+            
+            phase4aChart.update();
+        }
+        
+        function startFixedStep() {
+            if (phase4aState.isRunning) return;
+            
+            phase4aState.isRunning = true;
+            document.getElementById('fixedStartBtn').disabled = true;
+            document.getElementById('fixedPauseBtn').disabled = false;
+            document.getElementById('fixedStepSize').disabled = true;
+            
+            phase4aState.intervalId = setInterval(fixedStepIteration, 300);
+        }
+        
+        function pauseFixedStep() {
+            phase4aState.isRunning = false;
+            clearInterval(phase4aState.intervalId);
+            document.getElementById('fixedStartBtn').disabled = false;
+            document.getElementById('fixedPauseBtn').disabled = true;
+        }
+        
+        function resetFixedStep() {
+            pauseFixedStep();
+            
+            phase4aState.currentW = Math.floor(Math.random() * 30) + 20;
+            phase4aState.iterations = 0;
+            phase4aState.houseIndex = 0;
+            phase4aState.wHistory = [{ x: 0, y: phase4aState.currentW }];
+            phase4aState.oscillationDetected = false;
+            
+            document.getElementById('fixed-currentW').textContent = phase4aState.currentW.toFixed(1);
+            document.getElementById('fixed-iterations').textContent = 0;
+            document.getElementById('fixedObservation').classList.add('hidden');
+            document.getElementById('phase4aNextBtn').disabled = true;
+            document.getElementById('phase4aPrompt').innerHTML = '▶️ <strong>Run the algorithm</strong> to see the oscillation problem, then proceed to Robbins-Monro!';
+            document.getElementById('fixedStartBtn').disabled = false;
+            document.getElementById('fixedStepSize').disabled = false;
+            
+            if (phase4aChart) {
+                updatePhase4aChart();
+            }
+        }
+        
+        function fixedStepIteration() {
+            const house = gameState.testHouses[phase4aState.houseIndex];
+            
+            const prediction = phase4aState.currentW * house.area + TRUE_B;
+            const actualPrice = house.price;
+            const error = prediction - actualPrice;
+            
+            // Fixed-step update: just add or subtract α
+            if (error > 0) {
+                phase4aState.currentW -= phase4aState.stepSize;
+            } else {
+                phase4aState.currentW += phase4aState.stepSize;
+            }
+            
+            phase4aState.iterations++;
+            phase4aState.wHistory.push({ x: phase4aState.iterations, y: phase4aState.currentW });
+            
+            document.getElementById('fixed-currentW').textContent = phase4aState.currentW.toFixed(1);
+            document.getElementById('fixed-iterations').textContent = phase4aState.iterations;
+            
+            updatePhase4aChart();
+            
+            phase4aState.houseIndex = (phase4aState.houseIndex + 1) % 5;
+            
+            // Check for convergence (getting very close to target)
+            const distanceFromTarget = Math.abs(phase4aState.currentW - TRUE_W);
+            if (phase4aState.iterations > 10 && distanceFromTarget < 0.5) {
+                pauseFixedStep();
+                const exactMatch = Math.abs(phase4aState.currentW - TRUE_W) < 0.01;
+                document.getElementById('fixedObservationText').innerHTML = 
+                    '⚠️ <strong>Close to target!</strong> W = ' + phase4aState.currentW.toFixed(1) + 
+                    ' (target: 40.0, after ' + phase4aState.iterations + ' iterations)<br><br>' +
+                    (exactMatch ? 
+                        'Lucky! Hit exactly 40.0, but with fixed steps, it may not stay there...' : 
+                        'Notice: We\'re close but not <em>exactly</em> at 40.0. Fixed steps make it hard to land precisely on the target!');
+                document.getElementById('fixedObservation').classList.remove('hidden');
+                document.getElementById('phase4aNextBtn').disabled = false;
+                document.getElementById('phase4aPrompt').innerHTML = '✅ <strong>Ready!</strong> Now see how Robbins-Monro solves this problem.';
+                return;
+            }
+            
+            // Detect oscillation
+            if (phase4aState.iterations > 20 && !phase4aState.oscillationDetected) {
+                const recentHistory = phase4aState.wHistory.slice(-10);
+                const values = recentHistory.map(p => p.y);
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                
+                if (max - min > 2 && Math.abs(phase4aState.currentW - TRUE_W) < 10) {
+                    phase4aState.oscillationDetected = true;
+                    pauseFixedStep();
+                    document.getElementById('fixedObservationText').innerHTML = 
+                        '⚠️ The algorithm is <strong>oscillating</strong> around the target! It keeps jumping back and forth because it always moves by the same amount (α), even when it\'s close.<br><br>' +
+                        '<strong>The Problem:</strong> Fixed steps don\'t adapt to how close we are to the target.';
+                    document.getElementById('fixedObservation').classList.remove('hidden');
+                    document.getElementById('phase4aNextBtn').disabled = false;
+                    document.getElementById('phase4aPrompt').innerHTML = '✅ <strong>Problem identified!</strong> See how Robbins-Monro fixes this.';
+                }
+            }
+            
+            if (phase4aState.iterations >= 100) {
+                pauseFixedStep();
+                if (!phase4aState.oscillationDetected) {
+                    document.getElementById('fixedObservationText').innerHTML = 
+                        '⚠️ Notice how the algorithm struggles to settle on the exact value? It keeps bouncing around the target with fixed steps.<br><br>' +
+                        '<strong>After 100 iterations</strong>, still not stable! This is inefficient.';
+                    document.getElementById('fixedObservation').classList.remove('hidden');
+                    document.getElementById('phase4aNextBtn').disabled = false;
+                    document.getElementById('phase4aPrompt').innerHTML = '✅ <strong>Seen enough?</strong> Discover the Robbins-Monro solution!';
+                }
+            }
+        }
+        
+        function completePhase4a() {
+            pauseFixedStep();
+            document.getElementById('phase4a').classList.add('hidden');
+            startPhase4b();
+        }
+        
+        function revealFixedStepAnswer() {
+            document.getElementById('fixedStepAnswer').classList.remove('hidden');
+            document.getElementById('revealAnswerBtn').style.display = 'none';
+        }
+        
+        // Phase 4b: Robbins-Monro Algorithm
+        let phase4State = {
+            currentW: 25,
+            learningRate: 0.01,
+            iterations: 0,
+            isRunning: false,
+            intervalId: null,
+            houseIndex: 0,
+            wHistory: [],
+            errorHistory: [],
+            predictionMade: false,
+            userTotalAttempts: 0,
+            userFinalScore: 0
+        };
+        
+        let phase4Chart = null;
+        
+        function startPhase4b() {
+            gameState.phase = 4;
+            document.getElementById('phase4a').classList.add('hidden');
+            document.getElementById('phase4b').classList.remove('hidden');
+            document.getElementById('headerSubtitle').textContent = 'Robbins-Monro: Proportional Updates';
+            
+            // Store user's Phase 3 performance
+            phase4State.userTotalAttempts = gameState.attempts || 0;
+            phase4State.userFinalScore = gameState.score;
+            
+            // Initialize Phase 4
+            resetRobbinsMonro();
+            if (!phase4Chart) {
+                initPhase4Chart();
+            }
+            
+            // Set up learning rate control
+            document.getElementById('learningRate').oninput = function() {
+                phase4State.learningRate = parseFloat(this.value);
+                document.getElementById('learningRateValue').textContent = this.value;
+                
+                // Give hints based on learning rate
+                const hint = document.getElementById('learningRateHint');
+                const maxArea = 40; // Max house area in our dataset
+                const theoreticalMax = 1 / maxArea; // 0.025
+                
+                if (this.value < 0.01) {
+                    hint.textContent = '🐌 Very slow - will take many iterations, but very stable';
+                    hint.style.color = '#666';
+                } else if (this.value > theoreticalMax * 2) { // > 0.05
+                    hint.textContent = `⚠️ Too large! α × max_area = ${(this.value * maxArea).toFixed(1)} >> 1. Will likely diverge!`;
+                    hint.style.color = '#f44336';
+                } else if (this.value > theoreticalMax) { // 0.025-0.05
+                    hint.textContent = `⚡ Medium - α × max_area = ${(this.value * maxArea).toFixed(1)}. May oscillate a bit.`;
+                    hint.style.color = '#ff9800';
+                } else {
+                    hint.textContent = `✅ Good! α × max_area = ${(this.value * maxArea).toFixed(2)} < 1. Should converge smoothly.`;
+                    hint.style.color = '#4caf50';
+                }
+            };
+            
+            // Set up animation speed control
+            document.getElementById('animationSpeed').oninput = function() {
+                const speeds = ['Slow', 'Medium', 'Fast'];
+                document.getElementById('speedValue').textContent = speeds[this.value - 1];
+            };
+        }
+        
+        function initPhase4Chart() {
+            const ctx = document.getElementById('phase4Chart').getContext('2d');
+            phase4Chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'W Value Over Time',
+                            data: [],
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Target W = 40',
+                            data: [],
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 2,
+                            borderDash: [10, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 200
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Iteration',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 50
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'W Value',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 70
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updatePhase4Chart() {
+            // Limit data points shown to prevent performance issues
+            const maxPoints = 200;
+            let displayData = phase4State.wHistory;
+            if (displayData.length > maxPoints) {
+                // Sample evenly from the data
+                const step = Math.floor(displayData.length / maxPoints);
+                displayData = displayData.filter((_, i) => i % step === 0 || i === displayData.length - 1);
+            }
+            
+            phase4Chart.data.datasets[0].data = displayData;
+            
+            // Update x-axis max to show all data
+            const maxIteration = Math.max(phase4State.iterations, 50);
+            phase4Chart.options.scales.x.max = maxIteration;
+            
+            // Target line
+            phase4Chart.data.datasets[1].data = [
+                { x: 0, y: TRUE_W },
+                { x: maxIteration, y: TRUE_W }
+            ];
+            
+            phase4Chart.update();
+        }
+        
+        function startRobbinsMonro() {
+            if (phase4State.isRunning) return;
+            
+            phase4State.isRunning = true;
+            document.getElementById('rmStartBtn').disabled = true;
+            document.getElementById('rmPauseBtn').disabled = false;
+            document.getElementById('learningRate').disabled = true;
+            document.getElementById('animationSpeed').disabled = true;
+            
+            const speeds = [1000, 500, 100];
+            const speedIndex = parseInt(document.getElementById('animationSpeed').value) - 1;
+            const delay = speeds[speedIndex];
+            
+            phase4State.intervalId = setInterval(robbinsMonroStep, delay);
+        }
+        
+        function checkPrediction() {
+            const answer = document.getElementById('predictionAnswer').value;
+            const feedback = document.getElementById('predictionFeedback');
+            
+            if (!answer) {
+                feedback.innerHTML = '<div style="color: #ff9800;">⚠️ Please select an answer first!</div>';
+                return;
+            }
+            
+            if (answer === 'converge') {
+                feedback.innerHTML = '<div style="color: #4caf50; font-weight: bold;">✅ Correct! Proportional updates eliminate oscillation and converge smoothly. Watch how much better it performs!</div>';
+                phase4State.predictionMade = true;
+                document.getElementById('predictionChallenge').style.opacity = '0.7';
+            } else {
+                feedback.innerHTML = '<div style="color: #f44336;">❌ Not quite. Because Robbins-Monro adjusts by an amount proportional to the error, it makes smaller adjustments as it gets closer, avoiding oscillation!</div>';
+            }
+        }
+        
+        function revealAlphaAnswer() {
+            document.getElementById('alphaAnswer').classList.remove('hidden');
+            document.getElementById('revealAlphaBtn').style.display = 'none';
+        }
+        
+        function pauseRobbinsMonro() {
+            phase4State.isRunning = false;
+            clearInterval(phase4State.intervalId);
+            document.getElementById('rmStartBtn').disabled = false;
+            document.getElementById('rmPauseBtn').disabled = true;
+        }
+        
+        function resetRobbinsMonro() {
+            pauseRobbinsMonro();
+            
+            phase4State.currentW = Math.floor(Math.random() * 40) + 15; // Random start between 15-55
+            phase4State.iterations = 0;
+            phase4State.houseIndex = 0;
+            phase4State.wHistory = [{ x: 0, y: phase4State.currentW }];
+            phase4State.errorHistory = [];
+            
+            document.getElementById('rm-currentW').textContent = phase4State.currentW.toFixed(1);
+            document.getElementById('rm-iterations').textContent = 0;
+            document.getElementById('rm-error').textContent = Math.abs(phase4State.currentW - TRUE_W).toFixed(1);
+            document.getElementById('rmConvergenceMessage').classList.add('hidden');
+            document.getElementById('phase4NextBtn').style.display = 'none';
+            document.getElementById('rmStartBtn').disabled = false;
+            document.getElementById('learningRate').disabled = false;
+            document.getElementById('animationSpeed').disabled = false;
+            
+            if (phase4Chart) {
+                updatePhase4Chart();
+            }
+        }
+        
+        function robbinsMonroStep() {
+            // Get current house
+            const house = gameState.testHouses[phase4State.houseIndex];
+            
+            // Calculate prediction
+            const prediction = phase4State.currentW * house.area + TRUE_B;
+            const actualPrice = house.price;
+            const error = prediction - actualPrice;
+            
+            // Debug logging (can be removed later)
+            if (phase4State.iterations < 5 || phase4State.iterations % 10 === 0) {
+                console.log(`Iteration ${phase4State.iterations}: House area=${house.area}, actual price=${actualPrice.toFixed(1)}, W=${phase4State.currentW.toFixed(2)}, prediction=${prediction.toFixed(1)}, error=${error.toFixed(2)}, α=${phase4State.learningRate}, update=${(-phase4State.learningRate * error).toFixed(2)}`);
+            }
+            
+            // Robbins-Monro update: W_new = W_old - α × (Ŷ - Y)
+            const update = phase4State.learningRate * error;
+            phase4State.currentW = phase4State.currentW - update;
+            
+            // Safety check: prevent explosion
+            if (Math.abs(phase4State.currentW) > 1000 || isNaN(phase4State.currentW)) {
+                console.error('Algorithm diverged! W exploded to:', phase4State.currentW);
+                console.error('Last update:', update, 'Error:', error, 'Learning rate:', phase4State.learningRate);
+                pauseRobbinsMonro();
+                alert('⚠️ Algorithm diverged! The learning rate might be too high.\nTry resetting with a smaller α (e.g., 0.01).');
+                return;
+            }
+            
+            phase4State.iterations++;
+            
+            // Record history
+            phase4State.wHistory.push({ x: phase4State.iterations, y: phase4State.currentW });
+            phase4State.errorHistory.push(Math.abs(phase4State.currentW - TRUE_W));
+            
+            // Update display
+            document.getElementById('rm-currentW').textContent = phase4State.currentW.toFixed(1);
+            document.getElementById('rm-iterations').textContent = phase4State.iterations;
+            document.getElementById('rm-error').textContent = Math.abs(phase4State.currentW - TRUE_W).toFixed(1);
+            
+            updatePhase4Chart();
+            
+            // Move to next house (cycle through all 5)
+            phase4State.houseIndex = (phase4State.houseIndex + 1) % 5;
+            
+            // Check convergence
+            if (Math.abs(phase4State.currentW - TRUE_W) < 0.5 && phase4State.iterations > 10) {
+                pauseRobbinsMonro();
+                document.getElementById('rmFinalIterations').textContent = phase4State.iterations;
+                document.getElementById('rmConvergenceMessage').classList.remove('hidden');
+                
+                // Add comparison message
+                const comparisonMsg = document.getElementById('comparisonMessage');
+                const totalAttempts = phase4State.userTotalAttempts;
+                const algorithmIterations = phase4State.iterations;
+                
+                if (algorithmIterations < totalAttempts) {
+                    comparisonMsg.innerHTML = `<strong>🏆 The algorithm was more efficient!</strong> It took ${algorithmIterations} iterations vs your ${totalAttempts} attempts.`;
+                    comparisonMsg.style.color = '#4caf50';
+                } else if (algorithmIterations > totalAttempts) {
+                    comparisonMsg.innerHTML = `<strong>🎉 You were more efficient!</strong> You took ${totalAttempts} attempts vs the algorithm's ${algorithmIterations} iterations. Nice work!`;
+                    comparisonMsg.style.color = '#2196f3';
+                } else {
+                    comparisonMsg.innerHTML = `<strong>🤝 Perfect tie!</strong> Both took ${algorithmIterations} attempts/iterations.`;
+                    comparisonMsg.style.color = '#ff9800';
+                }
+                
+                document.getElementById('phase4NextBtn').style.display = 'block';
+            }
+            
+            // Safety stop at 500 iterations
+            if (phase4State.iterations >= 500) {
+                pauseRobbinsMonro();
+                alert('Maximum iterations reached. Try adjusting the learning rate.');
+            }
+        }
+        
+        function completePhase4() {
+            document.getElementById('phase4b').classList.add('hidden');
+            startPhase5();
+        }
+        
+        // Phase 5: Noisy Data
+        let phase5State = {
+            currentW: 25,
+            learningRate: 0.01,
+            iterations: 0,
+            isRunning: false,
+            intervalId: null,
+            houseIndex: 0,
+            wHistory: [],
+            errorHistory: []
+        };
+        
+        let phase5Chart = null;
+        
+        function startPhase5() {
+            gameState.phase = 5;
+            document.getElementById('phase4b').classList.add('hidden');
+            document.getElementById('phase5').classList.remove('hidden');
+            document.getElementById('headerSubtitle').textContent = 'Robbins-Monro: Noisy Data Robustness';
+            
+            resetNoisyRobbinsMonro();
+            if (!phase5Chart) {
+                initPhase5Chart();
+            }
+            
+            // Set up learning rate control
+            document.getElementById('noisyLearningRate').oninput = function() {
+                phase5State.learningRate = parseFloat(this.value);
+                document.getElementById('noisyLearningRateValue').textContent = this.value;
+                
+                const hint = document.getElementById('noisyLearningRateHint');
+                const maxArea = 40;
+                const theoreticalMax = 1 / maxArea;
+                
+                if (this.value < 0.01) {
+                    hint.textContent = '🐌 Very slow - but very stable with noise!';
+                    hint.style.color = '#666';
+                } else if (this.value > theoreticalMax * 2) {
+                    hint.textContent = `⚠️ Too large! May struggle with noise.`;
+                    hint.style.color = '#f44336';
+                } else if (this.value > theoreticalMax) {
+                    hint.textContent = `⚡ Medium - noise will be more visible.`;
+                    hint.style.color = '#ff9800';
+                } else {
+                    hint.textContent = `✅ Good! Should handle noise well.`;
+                    hint.style.color = '#4caf50';
+                }
+            };
+        }
+        
+        function initPhase5Chart() {
+            const ctx = document.getElementById('phase5Chart').getContext('2d');
+            phase5Chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'W Value Over Time (with noisy data)',
+                            data: [],
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Target W = 40',
+                            data: [],
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 2,
+                            borderDash: [10, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 200
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Iteration',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 100
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'W Value',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 70
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updatePhase5Chart() {
+            const maxPoints = 200;
+            let displayData = phase5State.wHistory;
+            if (displayData.length > maxPoints) {
+                const step = Math.floor(displayData.length / maxPoints);
+                displayData = displayData.filter((_, i) => i % step === 0 || i === displayData.length - 1);
+            }
+            
+            phase5Chart.data.datasets[0].data = displayData;
+            
+            const maxIteration = Math.max(phase5State.iterations, 100);
+            phase5Chart.options.scales.x.max = maxIteration;
+            
+            phase5Chart.data.datasets[1].data = [
+                { x: 0, y: TRUE_W },
+                { x: maxIteration, y: TRUE_W }
+            ];
+            
+            phase5Chart.update();
+        }
+        
+        function startNoisyRobbinsMonro() {
+            if (phase5State.isRunning) return;
+            
+            phase5State.isRunning = true;
+            document.getElementById('noisyStartBtn').disabled = true;
+            document.getElementById('noisyPauseBtn').disabled = false;
+            document.getElementById('noisyLearningRate').disabled = true;
+            
+            phase5State.intervalId = setInterval(noisyRobbinsMonroStep, 100);
+        }
+        
+        function pauseNoisyRobbinsMonro() {
+            phase5State.isRunning = false;
+            clearInterval(phase5State.intervalId);
+            document.getElementById('noisyStartBtn').disabled = false;
+            document.getElementById('noisyPauseBtn').disabled = true;
+        }
+        
+        function resetNoisyRobbinsMonro() {
+            pauseNoisyRobbinsMonro();
+            
+            phase5State.currentW = Math.floor(Math.random() * 40) + 15;
+            phase5State.iterations = 0;
+            phase5State.houseIndex = 0;
+            phase5State.wHistory = [{ x: 0, y: phase5State.currentW }];
+            phase5State.errorHistory = [];
+            
+            document.getElementById('noisy-currentW').textContent = phase5State.currentW.toFixed(1);
+            document.getElementById('noisy-iterations').textContent = 0;
+            document.getElementById('noisy-error').textContent = Math.abs(phase5State.currentW - TRUE_W).toFixed(1);
+            document.getElementById('noisyConvergenceMessage').classList.add('hidden');
+            document.getElementById('phase5NextBtn').style.display = 'none';
+            document.getElementById('noisyStartBtn').disabled = false;
+            document.getElementById('noisyLearningRate').disabled = false;
+            
+            if (phase5Chart) {
+                updatePhase5Chart();
+            }
+        }
+        
+        function noisyRobbinsMonroStep() {
+            const house = gameState.testHouses[phase5State.houseIndex];
+            
+            // Add random noise to the observation
+            const noise = (Math.random() - 0.5) * 100; // Noise between -50 and +50
+            const noisyPrice = house.price + noise;
+            
+            // Calculate prediction
+            const prediction = phase5State.currentW * house.area + TRUE_B;
+            const error = prediction - noisyPrice; // Using noisy observation!
+            
+            // Robbins-Monro update with noisy data
+            const update = phase5State.learningRate * error;
+            phase5State.currentW = phase5State.currentW - update;
+            
+            // Safety check
+            if (Math.abs(phase5State.currentW) > 1000 || isNaN(phase5State.currentW)) {
+                pauseNoisyRobbinsMonro();
+                alert('⚠️ Algorithm diverged with noisy data! Try a smaller α.');
+                return;
+            }
+            
+            phase5State.iterations++;
+            
+            // Record history
+            phase5State.wHistory.push({ x: phase5State.iterations, y: phase5State.currentW });
+            phase5State.errorHistory.push(Math.abs(phase5State.currentW - TRUE_W));
+            
+            // Update display
+            document.getElementById('noisy-currentW').textContent = phase5State.currentW.toFixed(1);
+            document.getElementById('noisy-iterations').textContent = phase5State.iterations;
+            document.getElementById('noisy-error').textContent = Math.abs(phase5State.currentW - TRUE_W).toFixed(1);
+            
+            updatePhase5Chart();
+            
+            // Move to next house
+            phase5State.houseIndex = (phase5State.houseIndex + 1) % 5;
+            
+            // Check convergence (more lenient with noisy data)
+            if (Math.abs(phase5State.currentW - TRUE_W) < 1.0 && phase5State.iterations > 50) {
+                pauseNoisyRobbinsMonro();
+                document.getElementById('noisyFinalIterations').textContent = phase5State.iterations;
+                document.getElementById('noisyConvergenceMessage').classList.remove('hidden');
+                document.getElementById('phase5NextBtn').style.display = 'block';
+            }
+            
+            // Stop at max iterations
+            if (phase5State.iterations >= 200) {
+                pauseNoisyRobbinsMonro();
+                if (Math.abs(phase5State.currentW - TRUE_W) < 2.0) {
+                    document.getElementById('noisyFinalIterations').textContent = phase5State.iterations;
+                    document.getElementById('noisyConvergenceMessage').classList.remove('hidden');
+                    document.getElementById('phase5NextBtn').style.display = 'block';
+                }
+            }
+        }
+        
+        function completePhase5() {
+            document.getElementById('finalCompletionModal').classList.remove('hidden');
+        }
+        
+        function closeFinalModal() {
+            document.getElementById('finalCompletionModal').classList.add('hidden');
+        }
+        
+        // Initialize game
+        function init() {
+            gameState.houses = generateHouses();
+            gameState.testHouses = generateTestHouses();
+            initChart();
+            updateChart();
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
