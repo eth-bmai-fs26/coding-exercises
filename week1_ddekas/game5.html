@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Gradient Descent</title>
+    <style>
+        :root {
+            --bg0: #05070c;
+            --bg1: #0b1020;
+            --grid: rgba(255, 255, 255, 0.06);
+            --text: #e7e9ef;
+            --muted: rgba(231, 233, 239, 0.75);
+            --ok: #34d399;
+            --bad: #fb7185;
+            --accent: #7dd3fc;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 600px at 60% 20%, var(--bg1), var(--bg0));
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .wrap {
+            width: 960px;
+            max-width: calc(100% - 24px);
+            margin: 14px auto;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.20);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .topbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .controls label, .input-group label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            outline: none;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        button {
+            padding: 7px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(125, 211, 252, 0.10);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: rgba(125, 211, 252, 0.50);
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: rgba(52, 211, 153, 0.2);
+            border-color: rgba(52, 211, 153, 0.4);
+        }
+
+        button.primary:hover {
+            border-color: rgba(52, 211, 153, 0.7);
+        }
+
+        canvas {
+            width: 100%;
+            height: 340px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+            display: block;
+        }
+
+        .info-panel {
+            display: block;
+        }
+
+        .step-display {
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 8px;
+        }
+
+        .step-display h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .history-table th {
+            background: rgba(125, 211, 252, 0.1);
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .history-table td {
+            background: rgba(0, 0, 0, 0.2);
+            font-family: monospace;
+        }
+
+        .history-table tr:last-child td {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--ok);
+        }
+
+        .history-container {
+            overflow-y: auto;
+            overflow: visible;
+        }
+
+        .msg {
+            margin-top: 6px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--muted);
+            min-height: 18px;
+        }
+
+        .msg.success {
+            color: var(--ok);
+        }
+
+        .msg.info {
+            color: var(--accent);
+        }
+
+        .help {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.4;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="row">
+        <div class="topbar">
+            <div class="controls">
+                <div class="input-group">
+                    <label for="startW">Starting w:</label>
+                    <input id="startW" type="number" step="0.5" value="5"/>
+                </div>
+                <div class="input-group">
+                    <label for="learningRate">η (learning rate):</label>
+                    <input id="learningRate" type="number" step="0.001" value="0.01"/>
+                </div>
+                <button id="resetBtn">Reset</button>
+            </div>
+            <div class="controls">
+                <button id="stepBtn" class="primary">Step</button>
+                <button id="autoBtn">Auto Run</button>
+                <button id="stopBtn" disabled>Stop</button>
+            </div>
+        </div>
+
+        <canvas id="c" width="960" height="340"></canvas>
+
+        <div class="info-panel">
+            <div class="step-display">
+                <h3>Descent History (Last 5 Steps)</h3>
+                <div class="history-container">
+                    <table class="history-table">
+                        <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>w</th>
+                            <th>f'(w)</th>
+                            <th>Δw</th>
+                        </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="msg" class="msg"></div>
+
+        <div class="help">
+            Gradient descent updates w by moving opposite to the gradient: w_new = w − η · f'(w)<br>
+            Watch how the algorithm descends toward a local minimum step by step.
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+
+    const startWInput = document.getElementById("startW");
+    const learningRateInput = document.getElementById("learningRate");
+    const resetBtn = document.getElementById("resetBtn");
+    const stepBtn = document.getElementById("stepBtn");
+    const autoBtn = document.getElementById("autoBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const historyBody = document.getElementById("historyBody");
+    const msg = document.getElementById("msg");
+
+    let currentW = 5;
+    let learningRate = 0.01;
+    let history = [];
+    let autoInterval = null;
+    let stepCount = 0;
+
+    const xMin = -1, xMax = 6;
+
+    function f(w) {
+        return 0.5 * Math.pow(w, 4) - 3 * Math.pow(w, 3) + 2 * Math.pow(w, 2) + 5 * Math.sin(2 * w) + 3 * Math.cos(w) + 10;
+    }
+
+    function derivative(w) {
+        return 2 * Math.pow(w, 3) - 9 * Math.pow(w, 2) + 4 * w + 10 * Math.cos(2 * w) - 3 * Math.sin(w);
+    }
+
+    function X(x) {
+        const pad = 40;
+        return pad + (x - xMin) / (xMax - xMin) * (canvas.width - 2 * pad);
+    }
+
+    function findVisibleScale() {
+        const n = 200;
+        let ymin = Infinity, ymax = -Infinity;
+        for (let i = 0; i <= n; i++) {
+            const x = xMin + (xMax - xMin) * (i / n);
+            const y = f(x);
+            ymin = Math.min(ymin, y);
+            ymax = Math.max(ymax, y);
+        }
+        const pad = 0.15 * (ymax - ymin);
+        return {lo: ymin - pad, hi: ymax + pad};
+    }
+
+    let scale = findVisibleScale();
+
+    function Y(y) {
+        const padTop = 30, padBottom = 30;
+        const h = canvas.height - padTop - padBottom;
+        return padTop + (1 - (y - scale.lo) / (scale.hi - scale.lo)) * h;
+    }
+
+    function setMessage(text, kind) {
+        msg.textContent = text || "";
+        msg.classList.remove("success", "info");
+        if (kind) msg.classList.add(kind);
+    }
+
+    function formatNum(n, decimals = 4) {
+        return Number(n.toFixed(decimals)).toString();
+    }
+
+    function updateHistoryTable() {
+        historyBody.innerHTML = "";
+        const lastFive = history.slice(-5);
+        const startIndex = Math.max(0, history.length - 5);
+
+        lastFive.forEach((h, i) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${startIndex + i + 1}</td>
+                <td>${formatNum(h.w)}</td>
+                <td>${formatNum(h.dw)}</td>
+                <td>${formatNum(h.deltaW)}</td>
+            `;
+            historyBody.appendChild(row);
+        });
+    }
+
+    function performStep() {
+        const w = currentW;
+        const fw = f(w);
+        const dw = derivative(w);
+        const deltaW = -learningRate * dw;
+        const newW = w + deltaW;
+
+        stepCount++;
+        history.push({w, fw, dw, deltaW});
+
+        updateHistoryTable();
+
+        currentW = newW;
+        draw();
+
+        if (Math.abs(deltaW) < 1e-6) {
+            stopAuto();
+            setMessage(`Converged! Local minimum near w = ${formatNum(currentW)}, f(w) = ${formatNum(f(currentW))}`, "success");
+            stepBtn.disabled = true;
+            autoBtn.disabled = true;
+        } else if (stepCount >= 500) {
+            stopAuto();
+            setMessage("Maximum steps reached. Try adjusting learning rate.", "info");
+        } else if (Math.abs(currentW) > 100) {
+            stopAuto();
+            setMessage("Diverging! Learning rate too high.", "info");
+            stepBtn.disabled = true;
+            autoBtn.disabled = true;
+        }
+    }
+
+    function reset() {
+        stopAuto();
+        currentW = Number(startWInput.value) || 5;
+        learningRate = Number(learningRateInput.value) || 0.01;
+        history = [];
+        stepCount = 0;
+        historyBody.innerHTML = "";
+        stepBtn.disabled = false;
+        autoBtn.disabled = false;
+        setMessage("", null);
+        draw();
+    }
+
+    function startAuto() {
+        if (autoInterval) return;
+        autoBtn.disabled = true;
+        stopBtn.disabled = false;
+        autoInterval = setInterval(() => {
+            if (!stepBtn.disabled) {
+                performStep();
+            } else {
+                stopAuto();
+            }
+        }, 150);
+    }
+
+    function stopAuto() {
+        if (autoInterval) {
+            clearInterval(autoInterval);
+            autoInterval = null;
+        }
+        autoBtn.disabled = stepBtn.disabled;
+        stopBtn.disabled = true;
+    }
+
+    function drawStars() {
+        const seed = 54321;
+
+        function rand(i) {
+            let x = (seed + i * 2654435761) >>> 0;
+            x ^= x << 13;
+            x >>>= 0;
+            x ^= x >> 17;
+            x >>>= 0;
+            x ^= x << 5;
+            x >>>= 0;
+            return (x % 1000) / 1000;
+        }
+
+        for (let i = 0; i < 80; i++) {
+            const rx = rand(i * 3 + 1);
+            const ry = rand(i * 3 + 2);
+            const r = rand(i * 3 + 3);
+            const x = rx * canvas.width;
+            const y = ry * canvas.height * 0.4;
+            const a = 0.15 + 0.4 * r;
+            ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+            ctx.fillRect(x, y, 1.2, 1.2);
+        }
+    }
+
+    function drawGrid() {
+        ctx.strokeStyle = "rgba(255,255,255,0.06)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+            ctx.moveTo(X(x), 0);
+            ctx.lineTo(X(x), canvas.height);
+        }
+        const yStep = (scale.hi - scale.lo) / 8;
+        for (let y = scale.lo; y <= scale.hi; y += yStep) {
+            ctx.moveTo(0, Y(y));
+            ctx.lineTo(canvas.width, Y(y));
+        }
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(231,233,239,0.5)";
+        ctx.font = "11px system-ui";
+        for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+            ctx.fillText(x.toString(), X(x) - 4, canvas.height - 8);
+        }
+    }
+
+    function drawCurve() {
+        ctx.beginPath();
+        const n = 300;
+        for (let i = 0; i <= n; i++) {
+            const x = xMin + (xMax - xMin) * (i / n);
+            const y = f(x);
+            const cx = X(x);
+            const cy = Y(y);
+            if (i === 0) ctx.moveTo(cx, cy);
+            else ctx.lineTo(cx, cy);
+        }
+        ctx.strokeStyle = "rgba(52,211,153,0.8)";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+    }
+
+    function drawPath() {
+        if (history.length === 0) return;
+
+        ctx.beginPath();
+        for (let i = 0; i < history.length; i++) {
+            const h = history[i];
+            const cx = X(h.w);
+            const cy = Y(h.fw);
+            if (i === 0) ctx.moveTo(cx, cy);
+            else ctx.lineTo(cx, cy);
+        }
+        ctx.lineTo(X(currentW), Y(f(currentW)));
+        ctx.strokeStyle = "rgba(251,113,133,0.6)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        for (let i = 0; i < history.length; i++) {
+            const h = history[i];
+            const cx = X(h.w);
+            const cy = Y(h.fw);
+            const alpha = 0.3 + 0.7 * (i / history.length);
+            ctx.fillStyle = `rgba(251,113,133,${alpha})`;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function drawCurrentPoint() {
+        const fw = f(currentW);
+        const cx = X(currentW);
+        const cy = Y(fw);
+
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 20);
+        gradient.addColorStop(0, "rgba(125,211,252,0.4)");
+        gradient.addColorStop(1, "rgba(125,211,252,0)");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(125,211,252,1)";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        if (currentW >= xMin && currentW <= xMax) {
+            const dw = derivative(currentW);
+            const tangentLen = 0.8;
+            const x1 = currentW - tangentLen;
+            const y1 = fw - dw * tangentLen;
+            const x2 = currentW + tangentLen;
+            const y2 = fw + dw * tangentLen;
+
+            ctx.beginPath();
+            ctx.moveTo(X(x1), Y(y1));
+            ctx.lineTo(X(x2), Y(y2));
+            ctx.strokeStyle = "rgba(251,191,36,0.7)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const arrowDir = dw > 0 ? -1 : 1;
+            const arrowX = cx + arrowDir * 30;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(arrowX, cy);
+            ctx.lineTo(arrowX - arrowDir * 8, cy - 5);
+            ctx.moveTo(arrowX, cy);
+            ctx.lineTo(arrowX - arrowDir * 8, cy + 5);
+            ctx.strokeStyle = "rgba(52,211,153,0.9)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "rgba(125,211,252,0.9)";
+        ctx.font = "12px system-ui";
+        ctx.fillText(`w = ${formatNum(currentW, 2)}`, cx + 12, cy - 12);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const vignette = ctx.createRadialGradient(
+            canvas.width * 0.5, canvas.height * 0.3, 50,
+            canvas.width * 0.5, canvas.height * 0.3, canvas.width * 0.8
+        );
+        vignette.addColorStop(0, "rgba(125,211,252,0.06)");
+        vignette.addColorStop(1, "rgba(0,0,0,0.0)");
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawStars();
+        drawGrid();
+        drawCurve();
+        drawPath();
+        drawCurrentPoint();
+    }
+
+    resetBtn.addEventListener("click", reset);
+    stepBtn.addEventListener("click", performStep);
+    autoBtn.addEventListener("click", startAuto);
+    stopBtn.addEventListener("click", stopAuto);
+
+    startWInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") reset();
+    });
+
+    learningRateInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") reset();
+    });
+
+    reset();
+</script>
+</body>
+</html>

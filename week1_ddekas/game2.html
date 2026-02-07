@@ -1,9 +1,10 @@
+<!-- week1_ddekas/game2.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Minimum Lander - Game 2</title>
+  <title>Minimum Lander</title>
   <style>
     :root {
       --bg0: #05070c;
@@ -14,14 +15,12 @@
       --ok: #34d399;
       --bad: #fb7185;
     }
-
     body {
       margin: 0;
       background: radial-gradient(1200px 600px at 60% 20%, var(--bg1), var(--bg0));
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
     .wrap {
       width: 920px;
       max-width: calc(100% - 24px);
@@ -32,9 +31,7 @@
       background: rgba(0,0,0,0.20);
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
     }
-
     .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
-
     .topbar {
       display: flex;
       gap: 10px;
@@ -42,10 +39,8 @@
       flex-wrap: wrap;
       justify-content: space-between;
     }
-
     .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .controls label { font-size: 13px; color: var(--muted); }
-
     input[type="number"] {
       width: 100px;
       padding: 6px 8px;
@@ -55,7 +50,6 @@
       color: var(--text);
       outline: none;
     }
-
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -65,7 +59,6 @@
       -moz-appearance: textfield;
       appearance: textfield;
     }
-
     button {
       padding: 7px 10px;
       border-radius: 10px;
@@ -74,10 +67,8 @@
       color: var(--text);
       cursor: pointer;
     }
-
     button:hover { border-color: rgba(125,211,252,0.50); }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
-
     .hud {
       font-size: 13px;
       color: var(--muted);
@@ -86,14 +77,12 @@
       flex-wrap: wrap;
       align-items: center;
     }
-
     .pill {
       padding: 3px 8px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.04);
     }
-
     canvas {
       width: 100%;
       height: 480px;
@@ -102,7 +91,6 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
       display: block;
     }
-
     .msg {
       margin-top: 6px;
       text-align: center;
@@ -110,10 +98,8 @@
       color: var(--muted);
       min-height: 18px;
     }
-
     .msg.success { color: var(--ok); }
     .msg.fail { color: var(--bad); }
-
     .help {
       font-size: 13px;
       color: var(--muted);
@@ -138,49 +124,32 @@
           <span class="pill">Error: <span id="errLbl">—</span></span>
         </div>
       </div>
-
       <canvas id="c" width="920" height="480"></canvas>
       <div id="msg" class="msg"></div>
-
       <div class="help">
-        Two fixed windows reveal the function slopes. <br> Guess the X coordinate that gives the function its minimum value.
+        Read the curve and enter the W you think is the local minimum.
       </div>
     </div>
   </div>
-
   <script>
     const canvas = document.getElementById("c");
     const ctx = canvas.getContext("2d");
-
     const guessInput = document.getElementById("guessX");
     const landBtn = document.getElementById("landBtn");
     const newBtn = document.getElementById("newBtn");
-
     const errLbl = document.getElementById("errLbl");
     const msg = document.getElementById("msg");
-
     const xMin = -20, xMax = 20;
-    const WINDOW_SIZE = 1;
-    const WINDOW_SEPARATION = 28;
-
-    const TRUE_MINIMUM_X = 2;
-
-    const windowCenterX = 0;
-
+    const REVEAL_RADIUS = 0.5;
+    const TRUE_MINIMUM_X = -3;
     function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-
-    function surfaceY(x) {
-      return x * x - 4 * x + 7;
-    }
-
+    function surfaceY(x) { return x * x + 6 * x + 10; }
     function X(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
-
     function Y(y01) {
       const padTop = 24, padBottom = 34;
       const h = canvas.height - padTop - padBottom;
       return padTop + (1 - y01) * h;
     }
-
     function findVisibleScale() {
       const n = 200;
       let ymin = Infinity, ymax = -Infinity;
@@ -193,41 +162,33 @@
       const pad = 0.10 * (ymax - ymin);
       return { lo: ymin - pad, hi: ymax + pad };
     }
-
     function normalizeY(y, scale) { return (y - scale.lo) / (scale.hi - scale.lo); }
-
     const lander = {
       x: 0, y: 0.95, vx: 0, vy: 0, targetX: 0,
       mode: "idle"
     };
-
+    let revealedRegions = [];
     let scale = findVisibleScale();
-
     function setMessage(text, kind) {
       msg.textContent = text || "";
       msg.classList.remove("success", "fail");
       if (kind) msg.classList.add(kind);
     }
-
     function resetGame() {
       scale = findVisibleScale();
-
       errLbl.textContent = "—";
       setMessage("", null);
-
       lander.x = 0;
       lander.y = 0.92;
       lander.vx = 0;
       lander.vy = 0;
       lander.targetX = 0;
       lander.mode = "idle";
-
+      revealedRegions = [];
       guessInput.value = "";
       landBtn.disabled = false;
-
       draw();
     }
-
     function drawStars() {
       const seed = 12345;
       function rand(i) {
@@ -248,7 +209,6 @@
         ctx.fillRect(x, y, 1.2, 1.2);
       }
     }
-
     function drawGrid() {
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim();
       ctx.lineWidth = 1;
@@ -259,104 +219,46 @@
       for (let j = 1; j < 8; j++) { ctx.moveTo(0, j * stepY); ctx.lineTo(canvas.width, j * stepY); }
       ctx.stroke();
     }
-
-    function getWindowYScale(centerX) {
-      const xLo = centerX - WINDOW_SIZE / 2;
-      const xHi = centerX + WINDOW_SIZE / 2;
-      const n = 50;
-      let ymin = Infinity, ymax = -Infinity;
-      for (let i = 0; i <= n; i++) {
-        const x = xLo + (xHi - xLo) * (i / n);
-        const y = surfaceY(x);
-        ymin = Math.min(ymin, y);
-        ymax = Math.max(ymax, y);
+    function isRevealed(x) {
+      for (const region of revealedRegions) {
+        if (x >= region.min && x <= region.max) return true;
       }
-      const yPad = 0.15 * (ymax - ymin || 0.1);
-      return { lo: ymin - yPad, hi: ymax + yPad };
+      return false;
     }
-
-    function drawSingleWindow(centerX, winX, winY, winW, winH, label, yScale) {
-      const xLo = centerX - WINDOW_SIZE / 2;
-      const xHi = centerX + WINDOW_SIZE / 2;
-
-      ctx.fillStyle = "rgba(0,0,0,0.35)";
-      ctx.strokeStyle = "rgba(125,211,252,0.5)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(winX, winY, winW, winH, 10);
-      ctx.fill();
-      ctx.stroke();
-
-      const innerPad = 12;
-      const ix = winX + innerPad;
-      const iy = winY + innerPad;
-      const iw = winW - innerPad * 2;
-      const ih = winH - innerPad * 2;
-
-      const ymin = yScale.lo;
-      const ymax = yScale.hi;
-
-      const Xw = (x) => ix + (x - xLo) / (xHi - xLo) * iw;
-      const Yw = (y) => iy + (1 - (y - ymin) / (ymax - ymin)) * ih;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(winX, winY, winW, winH, 10);
-      ctx.clip();
-
-      const n = 100;
-      ctx.beginPath();
-      for (let i = 0; i <= n; i++) {
-        const x = xLo + (xHi - xLo) * (i / n);
-        const y = surfaceY(x);
-        const cx = Xw(x);
-        const cy = Yw(y);
-        if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
-      }
-      ctx.strokeStyle = "rgba(52,211,153,0.9)";
+    function drawSurface() {
+      if (revealedRegions.length === 0) return;
+      const n = 600;
+      ctx.strokeStyle = "rgba(0,100,0,0.9)"; // dark green
       ctx.lineWidth = 2.5;
-      ctx.stroke();
-
-      ctx.restore();
-
-      ctx.fillStyle = "rgba(231,233,239,0.7)";
-      ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-      ctx.fillText(`x: ${xLo.toFixed(1)} to ${xHi.toFixed(1)}`, winX + 8, winY + winH - 8);
-
-      ctx.fillStyle = "rgba(125,211,252,0.8)";
-      ctx.font = "bold 12px system-ui";
-      const labelWidth = ctx.measureText(label).width;
-      ctx.fillText(label, winX + winW / 2 - labelWidth / 2, winY - 8);
+      let inSegment = false;
+      for (let i = 0; i <= n; i++) {
+        const x = xMin + (xMax - xMin) * (i / n);
+        const revealed = isRevealed(x);
+        if (revealed) {
+          const y = surfaceY(x);
+          const cx = X(x);
+          const cy = Y(normalizeY(y, scale));
+          if (!inSegment) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            inSegment = true;
+          } else {
+            ctx.lineTo(cx, cy);
+          }
+        } else {
+          if (inSegment) {
+            ctx.stroke();
+            inSegment = false;
+          }
+        }
+      }
+      if (inSegment) {
+        ctx.stroke();
+      }
     }
-
-    function drawViewWindows() {
-      const winW = 160;
-      const winH = 160;
-
-      const leftCenterX = windowCenterX - WINDOW_SEPARATION / 2;
-      const rightCenterX = windowCenterX + WINDOW_SEPARATION / 2;
-
-      const leftWinX = X(leftCenterX) - winW / 2;
-      const rightWinX = X(rightCenterX) - winW / 2;
-
-      const leftY = surfaceY(leftCenterX);
-      const rightY = surfaceY(rightCenterX);
-
-      const leftWinY = Y(normalizeY(leftY, scale)) - winH / 2;
-      const rightWinY = Y(normalizeY(rightY, scale)) - winH / 2;
-
-      // Use independent y-scales for accurate slope display
-      const leftYScale = getWindowYScale(leftCenterX);
-      const rightYScale = getWindowYScale(rightCenterX);
-
-      drawSingleWindow(leftCenterX, leftWinX, leftWinY, winW, winH, "", leftYScale);
-      drawSingleWindow(rightCenterX, rightWinX, rightWinY, winW, winH, "", rightYScale);
-    }
-
     function drawLander() {
       const lx = X(lander.x);
       const ly = Y(lander.y);
-
       if (lander.mode !== "idle" && lander.mode !== "done") {
         ctx.beginPath();
         ctx.moveTo(lx - 6, ly + 10);
@@ -366,17 +268,14 @@
         ctx.fillStyle = "rgba(251,191,36,0.45)";
         ctx.fill();
       }
-
       ctx.fillStyle = "rgba(231,233,239,0.9)";
       ctx.beginPath();
       ctx.roundRect(lx - 10, ly - 10, 20, 18, 5);
       ctx.fill();
-
       ctx.fillStyle = "rgba(125,211,252,0.6)";
       ctx.beginPath();
       ctx.arc(lx, ly - 2, 4, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.strokeStyle = "rgba(231,233,239,0.85)";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -385,20 +284,25 @@
       ctx.moveTo(lx + 8, ly + 8);
       ctx.lineTo(lx + 16, ly + 16);
       ctx.stroke();
+      // Draw landing point marker on the curve when landed
+      if (lander.mode === "done") {
+        const groundY = Y(normalizeY(surfaceY(lander.x), scale));
+        ctx.fillStyle = "rgba(0,100,0,1)"; // dark green
+        ctx.beginPath();
+        ctx.arc(lx, groundY, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
-
     function drawAxesLabels() {
       ctx.fillStyle = "rgba(231,233,239,0.65)";
       ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
-      ctx.fillText(`x: ${xMin}`, 10, canvas.height - 10);
-      const r = `x: ${xMax}`;
+      ctx.fillText(`w_min: ${xMin}`, 10, canvas.height - 10);
+      const r = `w_max: ${xMax}`;
       const w = ctx.measureText(r).width;
       ctx.fillText(r, canvas.width - w - 10, canvas.height - 10);
     }
-
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       const vignette = ctx.createRadialGradient(
         canvas.width * 0.55, canvas.height * 0.20, 50,
         canvas.width * 0.55, canvas.height * 0.20, canvas.width * 0.9
@@ -407,24 +311,20 @@
       vignette.addColorStop(1, "rgba(0,0,0,0.0)");
       ctx.fillStyle = vignette;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       drawStars();
       drawGrid();
-      drawViewWindows();
+      drawSurface();
       drawAxesLabels();
       drawLander();
     }
-
     const TOP_Y = 0.985;
     const LIFT_RATE = 2.4;
     const DROP_RATE = 2.2;
     const DX_EPS = 0.08;
     const DY_EPS = 0.01;
     const WIN_EPS = 0.01;
-
     function step() {
       const dt = 1 / 60;
-
       if (lander.mode === "lifting") {
         lander.y = clamp(lander.y + LIFT_RATE * dt, 0, 1);
         if (lander.y >= TOP_Y - DY_EPS) {
@@ -437,52 +337,44 @@
         const ax = clamp(dx * 10, -48, 48);
         lander.vx = clamp(lander.vx + ax * dt, -40, 40);
         lander.x = clamp(lander.x + lander.vx * dt, xMin, xMax);
-
         if (Math.abs(dx) < DX_EPS) {
           lander.mode = "dropping";
           lander.vx = 0;
         }
       } else if (lander.mode === "dropping") {
         lander.y = clamp(lander.y - DROP_RATE * dt, 0, 1);
-
         const groundY = normalizeY(surfaceY(lander.x), scale);
         if (lander.y <= groundY + 0.004) {
-          lander.y = groundY + 0.004;
+          lander.y = groundY + 0.06;
           lander.mode = "done";
           landBtn.disabled = false;
-
+          revealedRegions.push({
+            min: lander.x - REVEAL_RADIUS,
+            max: lander.x + REVEAL_RADIUS
+          });
           const err = Math.abs(lander.targetX - TRUE_MINIMUM_X);
           errLbl.textContent = `${err.toFixed(3)}`;
-
           if (err <= WIN_EPS) setMessage("You found the minimum!", "success");
           else setMessage("Not quite — try again.", "fail");
         }
       }
-
       draw();
       requestAnimationFrame(step);
     }
-
     landBtn.addEventListener("click", () => {
       const gx = Number(guessInput.value);
       if (!Number.isFinite(gx)) return;
-
       const gxc = clamp(gx, xMin, xMax);
       guessInput.value = gxc;
-
       lander.targetX = gxc;
-
       errLbl.textContent = "—";
       setMessage("", null);
       landBtn.disabled = true;
-
       lander.mode = "lifting";
       lander.vx = 0;
       lander.vy = 0;
     });
-
     newBtn.addEventListener("click", () => resetGame());
-
     resetGame();
     requestAnimationFrame(step);
   </script>

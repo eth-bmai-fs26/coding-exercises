@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Slope Calculator</title>
+    <style>
+        :root {
+            --bg0: #05070c;
+            --bg1: #0b1020;
+            --grid: rgba(255, 255, 255, 0.06);
+            --text: #e7e9ef;
+            --muted: rgba(231, 233, 239, 0.75);
+            --ok: #34d399;
+            --bad: #fb7185;
+            --soft-green: rgba(52, 211, 153, 0.85);
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 600px at 60% 20%, var(--bg1), var(--bg0));
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .wrap {
+            width: 920px;
+            max-width: calc(100% - 24px);
+            margin: 14px auto;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.20);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .topbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .controls label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            outline: none;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        input.correct {
+            border-color: var(--ok);
+            background: rgba(52, 211, 153, 0.15);
+        }
+
+        input.incorrect {
+            border-color: var(--bad);
+            background: rgba(251, 113, 133, 0.15);
+        }
+
+        button {
+            padding: 7px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(125, 211, 252, 0.10);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: rgba(125, 211, 252, 0.50);
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .query-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .query-section label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .query-result {
+            font-size: 13px;
+            color: var(--ok);
+            min-width: 120px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 480px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+            display: block;
+        }
+
+        .msg {
+            margin-top: 6px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--muted);
+            min-height: 18px;
+        }
+
+        .msg.success {
+            color: var(--ok);
+        }
+
+        .msg.fail {
+            color: var(--bad);
+        }
+
+        .help {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.35;
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="row">
+        <div class="topbar">
+            <div class="controls">
+                <div class="input-group">
+                    <label for="slopeLeft">Left slope:</label>
+                    <input id="slopeLeft" type="number" step="0.1"/>
+                </div>
+                <div class="input-group">
+                    <label for="slopeRight">Right slope:</label>
+                    <input id="slopeRight" type="number" step="0.1"/>
+                </div>
+                <button id="checkBtn">Check</button>
+                <button id="newBtn">Try Again</button>
+            </div>
+            <div class="query-section">
+                <input id="queryW" type="number" step="0.1" placeholder="Enter w"/>
+                <button id="queryBtn">Query Function</button>
+                <span id="queryResult" class="query-result"></span>
+            </div>
+        </div>
+
+        <canvas id="c" width="920" height="480"></canvas>
+        <div id="msg" class="msg"></div>
+
+        <div class="help">
+            Calculate the slope at the center of each window.<br>
+            To do so, use the formula that was discussed during the lecture.<br> <br>
+            Hint: Query the function to retrieve values as needed.
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+
+    const slopeLeftInput = document.getElementById("slopeLeft");
+    const slopeRightInput = document.getElementById("slopeRight");
+    const checkBtn = document.getElementById("checkBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    const queryWInput = document.getElementById("queryW");
+    const queryBtn = document.getElementById("queryBtn");
+    const queryResult = document.getElementById("queryResult");
+
+    const msg = document.getElementById("msg");
+
+    const xMin = -20, xMax = 20;
+    const WINDOW_SIZE = 1;
+    const WINDOW_SEPARATION = 28;
+
+    const windowCenterX = 0;
+
+    const leftCenterX = windowCenterX - WINDOW_SEPARATION / 2;
+    const rightCenterX = windowCenterX + WINDOW_SEPARATION / 2;
+
+    function clamp(v, a, b) {
+        return Math.max(a, Math.min(b, v));
+    }
+
+    function surfaceY(w) {
+        return w * w - 4 * w + 7;
+    }
+
+    function derivative(w) {
+        return 2 * w - 4;
+    }
+
+    function X(x) {
+        return (x - xMin) / (xMax - xMin) * canvas.width;
+    }
+
+    function Y(y01) {
+        const padTop = 24, padBottom = 34;
+        const h = canvas.height - padTop - padBottom;
+        return padTop + (1 - y01) * h;
+    }
+
+    function findVisibleScale() {
+        const n = 200;
+        let ymin = Infinity, ymax = -Infinity;
+        for (let i = 0; i <= n; i++) {
+            const x = xMin + (xMax - xMin) * (i / n);
+            const y = surfaceY(x);
+            ymin = Math.min(ymin, y);
+            ymax = Math.max(ymax, y);
+        }
+        const pad = 0.10 * (ymax - ymin);
+        return {lo: ymin - pad, hi: ymax + pad};
+    }
+
+    function normalizeY(y, scale) {
+        return (y - scale.lo) / (scale.hi - scale.lo);
+    }
+
+    let scale = findVisibleScale();
+
+    function setMessage(text, kind) {
+        msg.textContent = text || "";
+        msg.classList.remove("success", "fail");
+        if (kind) msg.classList.add(kind);
+    }
+
+    function resetGame() {
+        slopeLeftInput.value = "";
+        slopeRightInput.value = "";
+        slopeLeftInput.classList.remove("correct", "incorrect");
+        slopeRightInput.classList.remove("correct", "incorrect");
+        checkBtn.disabled = false;
+
+        queryWInput.value = "";
+        queryResult.textContent = "";
+
+        setMessage("", null);
+        draw();
+    }
+
+    function drawStars() {
+        const seed = 12345;
+
+        function rand(i) {
+            let x = (seed + i * 2654435761) >>> 0;
+            x ^= x << 13;
+            x >>>= 0;
+            x ^= x >> 17;
+            x >>>= 0;
+            x ^= x >> 5;
+            x >>>= 0;
+            return (x % 1000) / 1000;
+        }
+
+        for (let i = 0; i < 140; i++) {
+            const rx = rand(i * 3 + 1);
+            const ry = rand(i * 3 + 2);
+            const r = rand(i * 3 + 3);
+            const x = rx * canvas.width;
+            const y = ry * canvas.height * 0.65;
+            const a = 0.15 + 0.6 * r;
+            ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+            ctx.fillRect(x, y, 1.2, 1.2);
+        }
+    }
+
+    function drawGrid() {
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim();
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const stepX = canvas.width / 10;
+        const stepY = canvas.height / 8;
+        for (let i = 1; i < 10; i++) {
+            ctx.moveTo(i * stepX, 0);
+            ctx.lineTo(i * stepX, canvas.height);
+        }
+        for (let j = 1; j < 8; j++) {
+            ctx.moveTo(0, j * stepY);
+            ctx.lineTo(canvas.width, j * stepY);
+        }
+        ctx.stroke();
+    }
+
+    function getWindowYScale(centerX) {
+        const xLo = centerX - WINDOW_SIZE / 2;
+        const xHi = centerX + WINDOW_SIZE / 2;
+        const n = 50;
+        let ymin = Infinity, ymax = -Infinity;
+        for (let i = 0; i <= n; i++) {
+            const x = xLo + (xHi - xLo) * (i / n);
+            const y = surfaceY(x);
+            ymin = Math.min(ymin, y);
+            ymax = Math.max(ymax, y);
+        }
+        const yPad = 0.15 * (ymax - ymin || 0.1);
+        return {lo: ymin - yPad, hi: ymax + yPad};
+    }
+
+    // --- Window drawing to match your sketch and color scheme ---
+    function drawSingleWindow(centerX, winX, winY, winW, winH, label, yScale) {
+        const xLo = centerX - WINDOW_SIZE / 2;
+        const xHi = centerX + WINDOW_SIZE / 2;
+
+        // Window outline (cyan)
+        ctx.strokeStyle = "rgba(125,211,252,0.5)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(winX, winY, winW, winH);
+        ctx.stroke();
+
+        // Curve inside window (green)
+        const innerPad = 0;
+        const ix = winX + innerPad;
+        const iy = winY + innerPad;
+        const iw = winW - innerPad * 2;
+        const ih = winH - innerPad * 2;
+
+        const ymin = yScale.lo;
+        const ymax = yScale.hi;
+
+        const Xw = (x) => ix + (x - xLo) / (xHi - xLo) * iw;
+        const Yw = (y) => iy + (1 - (y - ymin) / (ymax - ymin)) * ih;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(winX, winY, winW, winH);
+        ctx.clip();
+
+        const n = 100;
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+            const x = xLo + (xHi - xLo) * (i / n);
+            const y = surfaceY(x);
+            const cx = Xw(x);
+            const cy = Yw(y);
+            if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+        }
+        ctx.strokeStyle = "rgba(52,211,153,0.9)";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.restore();
+
+        // --- Soft green labels/arrows ---
+        ctx.font = "bold 14px monospace";
+        ctx.fillStyle = "rgba(52,211,153,0.85)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // a (left, at function height)
+        const aY = Yw(surfaceY(xLo));
+        ctx.fillText("a", winX - 28, aY);
+
+        // b (right, at function height)
+        const bY = Yw(surfaceY(xHi));
+        ctx.fillText("b", winX + winW + 28, bY);
+
+        // l (below left)
+        ctx.fillText("l", winX, winY + winH + 32);
+
+        // r (below right)
+        ctx.fillText("r", winX + winW, winY + winH + 32);
+
+        // ε line with arrows (above window)
+        const epsY = winY - 32;
+        const epsX1 = winX + 12;
+        const epsX2 = winX + winW - 12;
+        ctx.strokeStyle = "rgba(52,211,153,0.85)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(epsX1, epsY);
+        ctx.lineTo(epsX2, epsY);
+        ctx.stroke();
+        // Draw arrows
+        ctx.beginPath();
+        ctx.moveTo(epsX1, epsY - 7); ctx.lineTo(epsX1, epsY + 7);
+        ctx.moveTo(epsX2, epsY - 7); ctx.lineTo(epsX2, epsY + 7);
+        ctx.stroke();
+        // ε label
+        ctx.font = "bold 12px monospace";
+        ctx.fillText("ε", winX + winW / 2, epsY - 18);
+    }
+
+    function drawViewWindows() {
+        const winW = 160;
+        const winH = 160;
+
+        const leftWinX = X(leftCenterX) - winW / 2;
+        const rightWinX = X(rightCenterX) - winW / 2;
+
+        const leftY = surfaceY(leftCenterX);
+        const rightY = surfaceY(rightCenterX);
+
+        const leftWinY = Y(normalizeY(leftY, scale)) - winH / 2;
+        const rightWinY = Y(normalizeY(rightY, scale)) - winH / 2;
+
+        const leftYScale = getWindowYScale(leftCenterX);
+        const rightYScale = getWindowYScale(rightCenterX);
+
+        drawSingleWindow(leftCenterX, leftWinX, leftWinY, winW, winH, "", leftYScale);
+        drawSingleWindow(rightCenterX, rightWinX, rightWinY, winW, winH, "", rightYScale);
+    }
+
+    function drawAxesLabels() {
+        // Draw small w_min and w_max at the bottom corners of the grid in black
+        ctx.font = "bold 12px monospace";
+        ctx.fillStyle = "rgba(231,233,239,0.65)";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(`w_min: ${xMin}`, 8, canvas.height - 6);
+
+        ctx.textAlign = "right";
+        ctx.fillText(`w_max: ${xMax}`, canvas.width - 8, canvas.height - 6);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const vignette = ctx.createRadialGradient(
+            canvas.width * 0.55, canvas.height * 0.20, 50,
+            canvas.width * 0.55, canvas.height * 0.20, canvas.width * 0.9
+        );
+        vignette.addColorStop(0, "rgba(125,211,252,0.10)");
+        vignette.addColorStop(1, "rgba(0,0,0,0.0)");
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawStars();
+        drawGrid();
+        drawViewWindows();
+        drawAxesLabels();
+    }
+
+    queryBtn.addEventListener("click", () => {
+        const w = Number(queryWInput.value);
+        if (!Number.isFinite(w)) {
+            queryResult.textContent = "Enter a valid number";
+            queryResult.style.color = "var(--bad)";
+            return;
+        }
+        const result = surfaceY(w);
+        queryResult.textContent = `f(${w}) = ${result}`;
+        queryResult.style.color = "var(--ok)";
+    });
+
+    queryWInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            queryBtn.click();
+        }
+    });
+
+    checkBtn.addEventListener("click", () => {
+        const leftGuess = Number(slopeLeftInput.value);
+        const rightGuess = Number(slopeRightInput.value);
+
+        if (!Number.isFinite(leftGuess) || !Number.isFinite(rightGuess)) {
+            setMessage("Please enter both slopes.", "fail");
+            return;
+        }
+
+        const leftCorrect = derivative(leftCenterX);
+        const rightCorrect = derivative(rightCenterX);
+
+        const tolerance = 0.5;
+        const leftOk = Math.abs(leftGuess - leftCorrect) <= tolerance;
+        const rightOk = Math.abs(rightGuess - rightCorrect) <= tolerance;
+
+        slopeLeftInput.classList.remove("correct", "incorrect");
+        slopeRightInput.classList.remove("correct", "incorrect");
+        slopeLeftInput.classList.add(leftOk ? "correct" : "incorrect");
+        slopeRightInput.classList.add(rightOk ? "correct" : "incorrect");
+
+        if (leftOk && rightOk) {
+            setMessage(`Correct! Left: ${leftCorrect}, Right: ${rightCorrect}`, "success");
+        } else {
+            setMessage(`Not quite. Left: ${leftCorrect}, Right: ${rightCorrect}`, "fail");
+        }
+
+        checkBtn.disabled = true;
+    });
+
+    newBtn.addEventListener("click", () => resetGame());
+
+    resetGame();
+</script>
+</body>
+</html>
