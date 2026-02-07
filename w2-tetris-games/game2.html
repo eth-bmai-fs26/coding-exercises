@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Convolution Puzzle — Find the Origins</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d12;
+            --surface: #16161e;
+            --border: #2a2a3a;
+            --text: #e8e6f0;
+            --dim: #6b6888;
+            --accent: #4ae0ff;
+            --piece0: #ff6b4a;
+            --piece1: #4ae0ff;
+            --piece2: #ffe04a;
+            --piece3: #b04aff;
+            --grid-line: #1e1e2e;
+            --cell-size: 46px;
+            --success: #4aff7a;
+            --wrong: #ff4a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .app {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 30px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), var(--piece0));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            font-weight: 300;
+            color: var(--dim);
+            margin-top: 6px;
+            font-size: 0.95rem;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 40px;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* === PIECES PANEL (left) === */
+        .pieces-panel {
+            justify-self: end;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            width: fit-content;
+        }
+
+        .pieces-panel h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .piece-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .piece-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.02);
+            width: calc(4 * 26px + 3 * 1px + 20px + 4px);
+            height: calc(4 * 26px + 3 * 1px + 20px + 4px);
+        }
+
+        .piece-slot:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .piece-slot.selected {
+            border-color: var(--accent);
+            background: rgba(74, 224, 255, 0.08);
+        }
+
+        .piece-slot.correct {
+            border-color: var(--success);
+            background: rgba(74, 255, 122, 0.08);
+            pointer-events: none;
+        }
+
+        .piece-slot.wrong {
+            border-color: var(--wrong);
+            background: rgba(255, 74, 74, 0.08);
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-6px);
+            }
+            75% {
+                transform: translateX(6px);
+            }
+        }
+
+        .piece-mini-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .piece-mini-grid .mini-cell {
+            width: 26px;
+            height: 26px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .piece-mini-grid .mini-cell.filled {
+            border: none;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* === MAIN BOARD === */
+        .board-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-grid {
+            display: inline-grid;
+            gap: 1px;
+            background: var(--grid-line);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .board-grid .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background: var(--bg);
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+
+        .board-grid .cell.border-ring {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .board-grid .cell:hover {
+            background: #1a1a2a;
+        }
+
+        .board-grid .cell.filled {
+            background: #3a3a50;
+            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .board-grid .cell.bbox-hint {
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .board-grid .cell.preview {
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
+        }
+
+        .board-grid .cell.correct-reveal {
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: background 0.4s;
+        }
+
+        .board-grid .cell.corner-marker {
+            position: relative;
+        }
+
+        .board-grid .cell.corner-marker::after {
+            content: '◆';
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .board-grid .cell.wrong-click {
+            animation: pulse-wrong 0.5s ease;
+        }
+
+        @keyframes pulse-wrong {
+            0%, 100% {
+                box-shadow: inset 0 0 0 0 transparent;
+            }
+            50% {
+                box-shadow: inset 0 0 20px rgba(255, 74, 74, 0.5);
+            }
+        }
+
+        /* === SCORE PANEL (right) === */
+        .score-panel {
+            justify-self: start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 28px;
+            text-align: center;
+        }
+
+        .score-panel h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-bottom: 14px;
+        }
+
+        .score-display {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--dim);
+            margin-top: 6px;
+        }
+
+        /* === BUTTONS === */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            padding: 10px 22px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px rgba(74, 224, 255, 0.1);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+
+        .btn.primary:hover {
+            box-shadow: 0 0 30px rgba(74, 224, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* === SUCCESS OVERLAY === */
+        .success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 13, 18, 0.92);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-overlay.show {
+            display: flex;
+        }
+
+        .success-overlay h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            color: var(--success);
+            animation: successPop 0.5s ease;
+        }
+
+        .success-overlay p {
+            color: var(--dim);
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: auto;
+            padding: 20px 0;
+            color: var(--dim);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .instructions kbd {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 900px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
+
+            .pieces-panel, .score-panel {
+                justify-self: center;
+            }
+
+            :root {
+                --cell-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <h1>⬛ Reverse Convolution</h1>
+        <p>Find the top-left corner of each piece's 4×4 grid on the board</p>
+    </header>
+
+    <div class="game-layout">
+        <!-- Pieces (left) -->
+        <div class="pieces-panel">
+            <h2>Pieces</h2>
+            <div class="piece-slots" id="pieceSlots"></div>
+        </div>
+
+        <!-- Board (center) -->
+        <div class="board-panel">
+            <div class="board-grid" id="boardGrid"></div>
+            <div class="actions">
+                <button class="btn primary" onclick="newGame()">▶ New Game</button>
+            </div>
+        </div>
+
+        <!-- Score (right) -->
+        <div class="score-panel">
+            <h2>Progress</h2>
+            <div class="score-display" id="scoreDisplay">0/4</div>
+            <div class="score-label">pieces found</div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <kbd>Click</kbd> a piece to select · <kbd>Click</kbd> the board at its top-left 4×4 corner
+    </div>
+</div>
+
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+    <h2>🎉 All Found!</h2>
+    <p>You identified every piece origin correctly.</p>
+    <button class="btn primary" onclick="newGame()" style="margin-top:10px;">Play Again</button>
+</div>
+
+<script>
+    const TETROMINOES = {
+        I: [[1, 1, 1, 1]],
+        O: [[1, 1], [1, 1]],
+        T: [[1, 1, 1], [0, 1, 0]],
+        S: [[0, 1, 1], [1, 1, 0]],
+        Z: [[1, 1, 0], [0, 1, 1]],
+        L: [[1, 0], [1, 0], [1, 1]],
+        J: [[0, 1], [0, 1], [1, 1]],
+    };
+
+    const PIECE_NAMES = Object.keys(TETROMINOES);
+    const COLORS = ['var(--piece0)', 'var(--piece1)', 'var(--piece2)', 'var(--piece3)'];
+    const RAW_COLORS = ['#ff6b4a', '#4ae0ff', '#ffe04a', '#b04aff'];
+    const BOARD_SIZE = 10;
+
+    let puzzleBoard = [];
+    let pieces = [];
+    let solutionOrigins = []; // [{r, c}] top-left of each piece's 4x4 bbox
+    let selectedPiece = -1;
+    let foundCount = 0;
+
+    function deepCopy(arr) {
+        return arr.map(r => [...r]);
+    }
+
+    function rotateCW(shape) {
+        const rows = shape.length, cols = shape[0].length;
+        const result = [];
+        for (let c = 0; c < cols; c++) {
+            const row = [];
+            for (let r = rows - 1; r >= 0; r--) row.push(shape[r][c]);
+            result.push(row);
+        }
+        return result;
+    }
+
+    function flipH(shape) {
+        return shape.map(r => [...r].reverse());
+    }
+
+    function shapeToCoords(shape) {
+        const coords = [];
+        for (let r = 0; r < shape.length; r++)
+            for (let c = 0; c < shape[r].length; c++)
+                if (shape[r][c]) coords.push([r, c]);
+        return coords;
+    }
+
+    function randInt(n) {
+        return Math.floor(Math.random() * n);
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = randInt(i + 1);
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function shapeKey(shape) {
+        return shape.map(r => r.join('')).join('|');
+    }
+
+    function generatePuzzle() {
+        const shuffled = shuffle([...PIECE_NAMES]);
+        const pickedNames = shuffled.slice(0, 4);
+        const chosen = pickedNames.map(name => {
+            let shape = deepCopy(TETROMINOES[name]);
+            const rots = randInt(4);
+            for (let r = 0; r < rots; r++) shape = rotateCW(shape);
+            if (Math.random() > 0.5) shape = flipH(shape);
+            // Center into a 4x4 grid
+            const grid4 = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+            const offR = Math.floor((4 - shape.length) / 2);
+            const offC = Math.floor((4 - shape[0].length) / 2);
+            for (let r = 0; r < shape.length; r++)
+                for (let c = 0; c < shape[r].length; c++)
+                    grid4[r + offR][c + offC] = shape[r][c];
+            return grid4;
+        });
+
+        const keys = new Set();
+        for (const s of chosen) {
+            const k = shapeKey(s);
+            if (keys.has(k)) return null;
+            keys.add(k);
+        }
+
+        const board = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+        const origins = [];
+
+        // Place pieces only in the inner area (1-cell margin from edges)
+        for (let i = 0; i < 4; i++) {
+            let placed = false;
+            for (let attempt = 0; attempt < 200; attempt++) {
+                const coords = shapeToCoords(chosen[i]);
+                // Origin must be at least 1 from edge, and 4x4 bbox must end at least 1 from opposite edge
+                const offR = 1 + randInt(BOARD_SIZE - 5);
+                const offC = 1 + randInt(BOARD_SIZE - 5);
+                const absolute = coords.map(([r, c]) => [r + offR, c + offC]);
+
+                const valid = absolute.every(([r, c]) =>
+                    r >= 1 && r < BOARD_SIZE - 1 && c >= 1 && c < BOARD_SIZE - 1 && board[r][c] === 0
+                );
+
+                if (valid) {
+                    absolute.forEach(([r, c]) => board[r][c] = i + 1);
+                    origins.push({r: offR, c: offC});
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) return null;
+        }
+
+        return {board, chosen, origins};
+    }
+
+    function initGame() {
+        let puzzle = null;
+        for (let tries = 0; tries < 100; tries++) {
+            puzzle = generatePuzzle();
+            if (puzzle) break;
+        }
+        if (!puzzle) {
+            alert('Failed to generate, try again.');
+            return;
+        }
+
+        puzzleBoard = puzzle.board;
+        solutionOrigins = puzzle.origins;
+        foundCount = 0;
+        selectedPiece = -1;
+
+        pieces = puzzle.chosen.map((shape, i) => ({
+            shape: deepCopy(shape),
+            color: COLORS[i],
+            rawColor: RAW_COLORS[i],
+            found: false,
+        }));
+    }
+
+    function renderBoard() {
+        const grid = document.getElementById('boardGrid');
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, var(--cell-size))`;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+
+                const isBorder = r === 0 || r === BOARD_SIZE - 1 || c === 0 || c === BOARD_SIZE - 1;
+
+                if (isBorder) {
+                    cell.classList.add('border-ring');
+                } else if (puzzleBoard[r][c] > 0) {
+                    const pieceIdx = puzzleBoard[r][c] - 1;
+                    if (pieces[pieceIdx].found) {
+                        cell.classList.add('correct-reveal');
+                        cell.style.background = pieces[pieceIdx].color;
+                        const origin = solutionOrigins[pieceIdx];
+                        if (r === origin.r && c === origin.c) {
+                            cell.classList.add('corner-marker');
+                            cell.style.color = pieces[pieceIdx].rawColor;
+                        }
+                    } else {
+                        cell.classList.add('filled');
+                    }
+                }
+
+                cell.addEventListener('click', () => handleBoardClick(r, c));
+                cell.addEventListener('mouseenter', () => showPreview(r, c));
+                cell.addEventListener('mouseleave', clearPreview);
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function renderPieces() {
+        const slots = document.getElementById('pieceSlots');
+        slots.innerHTML = '';
+        pieces.forEach((piece, i) => {
+            const slot = document.createElement('div');
+            slot.className = 'piece-slot' +
+                (selectedPiece === i ? ' selected' : '') +
+                (piece.found ? ' correct' : '');
+            slot.addEventListener('click', () => selectPiece(i));
+
+            const miniGrid = document.createElement('div');
+            miniGrid.className = 'piece-mini-grid';
+            miniGrid.style.gridTemplateColumns = `repeat(4, 26px)`;
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const mc = document.createElement('div');
+                    const isFilled = piece.shape[r][c];
+                    mc.className = 'mini-cell' + (isFilled ? ' filled' : '');
+                    if (isFilled) mc.style.background = piece.color;
+                    miniGrid.appendChild(mc);
+                }
+            }
+            slot.appendChild(miniGrid);
+            slots.appendChild(slot);
+        });
+    }
+
+    function renderScore() {
+        document.getElementById('scoreDisplay').textContent = `${foundCount}/4`;
+    }
+
+    function selectPiece(i) {
+        if (pieces[i].found) return;
+        selectedPiece = (selectedPiece === i) ? -1 : i;
+        renderPieces();
+    }
+
+    function showPreview(boardR, boardC) {
+        if (selectedPiece < 0) return;
+        const piece = pieces[selectedPiece];
+        if (piece.found) return;
+
+        const grid = document.getElementById('boardGrid');
+
+        // Show 4x4 bounding box hint
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                const br = boardR + r;
+                const bc = boardC + c;
+                if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE) {
+                    grid.children[br * BOARD_SIZE + bc].classList.add('bbox-hint');
+                }
+            }
+        }
+
+        // Highlight where the piece would be
+        const coords = shapeToCoords(piece.shape);
+        coords.forEach(([r, c]) => {
+            const br = boardR + r;
+            const bc = boardC + c;
+            if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE) {
+                const cell = grid.children[br * BOARD_SIZE + bc];
+                cell.classList.remove('bbox-hint');
+                cell.classList.add('preview');
+                cell.style.boxShadow = `inset 0 0 14px ${piece.rawColor}50`;
+            }
+        });
+    }
+
+    function clearPreview() {
+        const grid = document.getElementById('boardGrid');
+        for (const cell of grid.children) {
+            cell.classList.remove('preview');
+            cell.classList.remove('bbox-hint');
+            if (!cell.classList.contains('correct-reveal')) cell.style.boxShadow = '';
+        }
+    }
+
+    function handleBoardClick(r, c) {
+        if (selectedPiece < 0) return;
+        const piece = pieces[selectedPiece];
+        if (piece.found) return;
+
+        const origin = solutionOrigins[selectedPiece];
+
+        if (r === origin.r && c === origin.c) {
+            // Correct!
+            piece.found = true;
+            foundCount++;
+            selectedPiece = -1;
+            renderBoard();
+            renderPieces();
+            renderScore();
+            checkWin();
+        } else {
+            // Wrong — shake the piece slot and flash the cell
+            const grid = document.getElementById('boardGrid');
+            const cell = grid.children[r * BOARD_SIZE + c];
+            cell.classList.add('wrong-click');
+            setTimeout(() => cell.classList.remove('wrong-click'), 500);
+
+            const slots = document.querySelectorAll('.piece-slot');
+            const slot = slots[selectedPiece];
+            slot.classList.add('wrong');
+            setTimeout(() => slot.classList.remove('wrong'), 400);
+        }
+    }
+
+    function checkWin() {
+        if (foundCount === 4) {
+            setTimeout(() => {
+                document.getElementById('successOverlay').classList.add('show');
+            }, 400);
+        }
+    }
+
+    function newGame() {
+        document.getElementById('successOverlay').classList.remove('show');
+        initGame();
+        renderBoard();
+        renderPieces();
+        renderScore();
+    }
+
+    newGame();
+</script>
+</body>
+</html>
