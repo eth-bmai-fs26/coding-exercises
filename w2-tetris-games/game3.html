@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Classifier — Cross vs H Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;600;700&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a10;
+            --surface: #12121c;
+            --border: #222236;
+            --text: #e0dff0;
+            --dim: #5e5c78;
+            --accent: #00e4a0;
+            --hot: #ff5c5c;
+            --warm: #ffb347;
+            --cool: #4a9eff;
+            --purple: #a86eff;
+            --cell: 44px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0, 228, 160, 0.03) 0%, transparent 60%),
+            radial-gradient(ellipse at 70% 80%, rgba(168, 110, 255, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .app {
+            max-width: 100%;
+            padding: 24px 30px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--accent);
+        }
+
+        header p {
+            font-weight: 300;
+            color: var(--dim);
+            margin-top: 4px;
+            font-size: 0.88rem;
+        }
+
+        /* === CONTROLS === */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 9px 20px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+
+        .btn.run {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+            padding: 9px 28px;
+        }
+
+        .btn.run:hover {
+            box-shadow: 0 0 24px rgba(0, 228, 160, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* === PIPELINE === */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 1;
+            justify-content: center;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.3;
+            transition: opacity 0.5s ease;
+            position: relative;
+        }
+
+        .stage.active {
+            opacity: 1;
+        }
+
+        .stage-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--dim);
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .stage.active .stage-label {
+            color: var(--accent);
+        }
+
+        /* Arrow between stages */
+        .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+        }
+
+        .arrow.active {
+            opacity: 1;
+        }
+
+        .arrow svg {
+            width: 48px;
+            height: 24px;
+        }
+
+        .arrow-line {
+            stroke: var(--accent);
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            stroke-dashoffset: 0;
+        }
+
+        .arrow.active .arrow-line {
+            animation: dashFlow 0.8s linear infinite;
+        }
+
+        @keyframes dashFlow {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .arrow-head {
+            fill: var(--accent);
+        }
+
+        /* === GRIDS === */
+        .grid-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            position: relative;
+        }
+
+        .grid {
+            display: inline-grid;
+            gap: 2px;
+        }
+
+        .grid .cell {
+            width: var(--cell);
+            height: var(--cell);
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .grid .cell.on {
+            background: var(--text);
+            box-shadow: 0 0 12px rgba(224, 223, 240, 0.15);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .grid .cell.hot {
+            background: var(--hot);
+            box-shadow: 0 0 16px rgba(255, 92, 92, 0.3);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .grid .cell.warm {
+            background: var(--warm);
+            box-shadow: 0 0 14px rgba(255, 179, 71, 0.25);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .grid .cell.cool {
+            background: var(--cool);
+            box-shadow: 0 0 14px rgba(74, 158, 255, 0.25);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .grid .cell.accent {
+            background: var(--accent);
+            box-shadow: 0 0 18px rgba(0, 228, 160, 0.35);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .grid .cell.pop {
+            animation: cellPop 0.4s ease;
+        }
+
+        @keyframes cellPop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* === KERNELS (small) === */
+        .kernels-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .kernel-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .kernel-card .kernel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kernel-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .kernel-grid .kcell {
+            width: 22px;
+            height: 22px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--dim);
+        }
+
+        .kernel-grid .kcell.k-on {
+            background: rgba(0, 228, 160, 0.15);
+            border-color: rgba(0, 228, 160, 0.3);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* === CLASSIFICATION RESULT === */
+        .result-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            transition: all 0.5s ease;
+        }
+
+        .result-value.is-one {
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(0, 228, 160, 0.25);
+            background: rgba(0, 228, 160, 0.08);
+        }
+
+        .result-value.is-zero {
+            color: var(--hot);
+            border-color: var(--hot);
+            box-shadow: 0 0 30px rgba(255, 92, 92, 0.2);
+            background: rgba(255, 92, 92, 0.06);
+        }
+
+        .result-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-reason {
+            font-size: 0.72rem;
+            color: var(--dim);
+            text-align: center;
+            max-width: 100px;
+            line-height: 1.4;
+        }
+
+        /* === STEP INDICATOR === */
+        .step-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.done {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(0, 228, 160, 0.4);
+        }
+
+        .step-dot.current {
+            background: var(--accent);
+            transform: scale(1.3);
+            box-shadow: 0 0 12px rgba(0, 228, 160, 0.5);
+        }
+
+        .step-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--dim);
+            margin-left: 8px;
+            transition: color 0.3s;
+        }
+
+        /* === FOOTER === */
+        .footer {
+            margin-top: auto;
+            padding: 16px 0;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--dim);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1100px) {
+            :root {
+                --cell: 34px;
+            }
+
+            .arrow {
+                padding: 0 8px;
+            }
+
+            .arrow svg {
+                width: 32px;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .pipeline {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <h1>CNN Pattern Classifier</h1>
+        <p>Watch convolution layers detect a Cross (+) or H in real time</p>
+    </header>
+
+    <div class="controls">
+        <span style="font-family:'JetBrains Mono';font-size:0.7rem;color:var(--dim);margin-right:4px;">INPUT:</span>
+        <button class="btn active" id="btnCross" onclick="selectShape('cross')">+ Cross</button>
+        <button class="btn" id="btnH" onclick="selectShape('H')">H Shape</button>
+        <button class="btn" id="btnRandom" onclick="selectShape('random')">? Random</button>
+        <button class="btn run" onclick="runPipeline()">▶ Run CNN</button>
+    </div>
+
+    <div class="step-bar" id="stepBar">
+        <div class="step-dot" id="dot0"></div>
+        <div class="step-dot" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div class="step-dot" id="dot3"></div>
+        <div class="step-dot" id="dot4"></div>
+        <span class="step-text" id="stepText">Select a shape and press Run</span>
+    </div>
+
+    <div class="pipeline">
+        <!-- Stage 1: Input -->
+        <div class="stage" id="stageInput">
+            <div class="stage-label">Input (6×6)</div>
+            <div class="grid-container">
+                <div class="grid" id="inputGrid" style="grid-template-columns: repeat(6, var(--cell));"></div>
+            </div>
+        </div>
+
+        <div class="arrow" id="arrow0">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
+        </div>
+
+        <!-- Stage 2: Kernels -->
+        <div class="stage" id="stageKernels">
+            <div class="stage-label">Conv Kernels (3×3)</div>
+            <div class="kernels-row" id="kernelsRow"></div>
+        </div>
+
+        <div class="arrow" id="arrow1">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
+        </div>
+
+        <!-- Stage 3: Feature Maps (intermediate layer 1) -->
+        <div class="stage" id="stageFeatures">
+            <div class="stage-label">Feature Map (max)</div>
+            <div class="grid-container" id="featureMaps">
+                <div class="grid" id="featureGrid"></div>
+            </div>
+        </div>
+
+        <div class="arrow" id="arrow2">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
+        </div>
+
+        <!-- Stage 4: Max Pool -->
+        <div class="stage" id="stagePooled">
+            <div class="stage-label">Max Pool (2×2)</div>
+            <div class="grid-container">
+                <div class="grid" id="pooledGrid" style="grid-template-columns: repeat(2, var(--cell));"></div>
+            </div>
+        </div>
+
+        <div class="arrow" id="arrow3">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
+        </div>
+
+        <!-- Stage 5: Classification -->
+        <div class="stage" id="stageResult">
+            <div class="stage-label">Classification</div>
+            <div class="result-box">
+                <div class="result-value" id="resultValue">?</div>
+                <div class="result-reason" id="resultReason"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Rule: if ≥ 2 perfect matches (score = 4) found across feature maps → <span style="color:var(--accent);">1</span>
+        (H or Cross detected), else <span style="color:var(--hot);">0</span>
+    </div>
+</div>
+
+<script>
+    // === SHAPES ===
+    // === KERNELS (feature detectors) — Left-facing T and Right-facing T ===
+    const KERNELS = [
+        {
+            name: 'Left T',
+            data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]],
+            color: 'hot',
+        },
+        {
+            name: 'Right T',
+            data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]],
+            color: 'cool',
+        },
+    ];
+
+    const PERFECT_MATCH = 4; // value when kernel perfectly overlaps
+    const CLASSIFY_THRESHOLD = 2; // need at least 2 perfect-match cells across both feature maps
+
+    let currentShape = 'cross';
+    let animating = false;
+
+    function selectShape(type) {
+        if (animating) return;
+        currentShape = type;
+        document.getElementById('btnCross').className = 'btn' + (type === 'cross' ? ' active' : '');
+        document.getElementById('btnH').className = 'btn' + (type === 'H' ? ' active' : '');
+        document.getElementById('btnRandom').className = 'btn' + (type === 'random' ? ' active' : '');
+        resetPipeline();
+    }
+
+    // Base 3x3 patterns
+    const BASE_SHAPES = {
+        H: [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
+        cross: [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+    };
+
+    // Non-T tetrominoes for random "noise" shapes
+    const NOISE_PIECES = {
+        I: [[1, 1, 1, 1]],
+        O: [[1, 1], [1, 1]],
+        S: [[0, 1, 1], [1, 1, 0]],
+        Z: [[1, 1, 0], [0, 1, 1]],
+        L: [[1, 0], [1, 0], [1, 1]],
+        J: [[0, 1], [0, 1], [1, 1]],
+    };
+    const NOISE_NAMES = Object.keys(NOISE_PIECES);
+
+    function rotateCW(shape) {
+        const rows = shape.length, cols = shape[0].length;
+        const result = [];
+        for (let c = 0; c < cols; c++) {
+            const row = [];
+            for (let r = rows - 1; r >= 0; r--) row.push(shape[r][c]);
+            result.push(row);
+        }
+        return result;
+    }
+
+    function shapeToCoords(shape) {
+        const coords = [];
+        for (let r = 0; r < shape.length; r++)
+            for (let c = 0; c < shape[r].length; c++)
+                if (shape[r][c]) coords.push([r, c]);
+        return coords;
+    }
+
+    function generateNoiseInput() {
+        for (let attempt = 0; attempt < 200; attempt++) {
+            const grid = Array.from({length: 6}, () => Array(6).fill(0));
+            let success = true;
+
+            for (let p = 0; p < 2; p++) {
+                const name = NOISE_NAMES[Math.floor(Math.random() * NOISE_NAMES.length)];
+                let shape = NOISE_PIECES[name].map(r => [...r]);
+                const rots = Math.floor(Math.random() * 4);
+                for (let i = 0; i < rots; i++) shape = rotateCW(shape);
+
+                let placed = false;
+                for (let att = 0; att < 50; att++) {
+                    const offR = 1 + Math.floor(Math.random() * 3);
+                    const offC = 1 + Math.floor(Math.random() * 3);
+                    const coords = shapeToCoords(shape);
+                    const abs = coords.map(([r, c]) => [r + offR, c + offC]);
+                    const valid = abs.every(([r, c]) => r >= 1 && r <= 4 && c >= 1 && c <= 4 && grid[r][c] === 0);
+                    if (valid) {
+                        abs.forEach(([r, c]) => grid[r][c] = 1);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) {
+                    success = false;
+                    break;
+                }
+            }
+
+            if (!success) continue;
+
+            // Only accept if it classifies as 0
+            const ftl = convolve(grid, KERNELS[0].data);
+            const ftr = convolve(grid, KERNELS[1].data);
+            const merged = ftl.map((row, r) => row.map((v, c) => Math.max(v, ftr[r][c])));
+            const count4 = merged.flat().filter(v => v >= PERFECT_MATCH).length;
+            if (count4 < CLASSIFY_THRESHOLD) return grid;
+        }
+        // Fallback
+        const grid = Array.from({length: 6}, () => Array(6).fill(0));
+        grid[1][1] = 1;
+        grid[1][2] = 1;
+        grid[2][1] = 1;
+        grid[2][2] = 1;
+        grid[3][3] = 1;
+        grid[3][4] = 1;
+        grid[4][4] = 1;
+        return grid;
+    }
+
+    function getInput() {
+        if (currentShape === 'random') {
+            return generateNoiseInput();
+        }
+        const grid = Array.from({length: 6}, () => Array(6).fill(0));
+        const base = BASE_SHAPES[currentShape];
+        const offR = 1 + Math.floor(Math.random() * 2);
+        const offC = 1 + Math.floor(Math.random() * 2);
+        for (let r = 0; r < 3; r++)
+            for (let c = 0; c < 3; c++)
+                grid[r + offR][c + offC] = base[r][c];
+        return grid;
+    }
+
+    // === CONVOLUTION ===
+    function convolve(input, kernel) {
+        const outSize = input.length - kernel.length + 1;
+        const result = [];
+        for (let r = 0; r < outSize; r++) {
+            const row = [];
+            for (let c = 0; c < outSize; c++) {
+                let sum = 0;
+                for (let kr = 0; kr < kernel.length; kr++)
+                    for (let kc = 0; kc < kernel[0].length; kc++)
+                        sum += input[r + kr][c + kc] * kernel[kr][kc];
+                row.push(sum);
+            }
+            result.push(row);
+        }
+        return result;
+    }
+
+    function maxPool(featureMap) {
+        let max = 0;
+        for (const row of featureMap)
+            for (const v of row)
+                if (v > max) max = v;
+        return max;
+    }
+
+    // === RENDERING ===
+    function renderGrid(container, data, cols, cellClass) {
+        container.innerHTML = '';
+        container.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
+        for (let r = 0; r < data.length; r++) {
+            for (let c = 0; c < data[r].length; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = data[r][c];
+                container.appendChild(cell);
+            }
+        }
+    }
+
+    function renderKernels() {
+        const row = document.getElementById('kernelsRow');
+        row.innerHTML = '';
+        KERNELS.forEach(k => {
+            const card = document.createElement('div');
+            card.className = 'kernel-card';
+            const title = document.createElement('div');
+            title.className = 'kernel-title';
+            title.textContent = k.name;
+            card.appendChild(title);
+            const grid = document.createElement('div');
+            grid.className = 'kernel-grid';
+            grid.style.gridTemplateColumns = `repeat(${k.data[0].length}, 22px)`;
+            for (let r = 0; r < k.data.length; r++) {
+                for (let c = 0; c < k.data[0].length; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'kcell' + (k.data[r][c] ? ' k-on' : '');
+                    cell.textContent = k.data[r][c];
+                    grid.appendChild(cell);
+                }
+            }
+            card.appendChild(grid);
+            row.appendChild(card);
+        });
+    }
+
+    function resetPipeline() {
+        document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.arrow').forEach(a => a.classList.remove('active'));
+        for (let i = 0; i < 5; i++) {
+            document.getElementById('dot' + i).className = 'step-dot';
+        }
+        document.getElementById('stepText').textContent = 'Select a shape and press Run';
+        document.getElementById('resultValue').textContent = '?';
+        document.getElementById('resultValue').className = 'result-value';
+        document.getElementById('resultReason').textContent = '';
+
+        const input = getInput();
+        renderGrid(document.getElementById('inputGrid'), input, input[0].length);
+        renderKernels();
+
+        document.getElementById('featureGrid').innerHTML = '';
+        document.getElementById('pooledGrid').innerHTML = '';
+    }
+
+    // === ANIMATION PIPELINE ===
+    async function runPipeline() {
+        if (animating) return;
+        animating = true;
+
+        resetPipeline();
+        const input = getInput();
+
+        const setStep = (idx, text) => {
+            for (let i = 0; i < 5; i++) {
+                const dot = document.getElementById('dot' + i);
+                if (i < idx) dot.className = 'step-dot done';
+                else if (i === idx) dot.className = 'step-dot current';
+                else dot.className = 'step-dot';
+            }
+            document.getElementById('stepText').textContent = text;
+        };
+
+        // Step 0: Show input
+        setStep(0, 'Loading input image...');
+        document.getElementById('stageInput').classList.add('active');
+        const inputGrid = document.getElementById('inputGrid');
+        inputGrid.innerHTML = '';
+        inputGrid.style.gridTemplateColumns = `repeat(${input[0].length}, var(--cell))`;
+        for (let r = 0; r < input.length; r++) {
+            for (let c = 0; c < input[0].length; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = input[r][c];
+                if (input[r][c]) cell.classList.add('on');
+                cell.style.animationDelay = `${(r * 5 + c) * 30}ms`;
+                cell.classList.add('pop');
+                inputGrid.appendChild(cell);
+            }
+        }
+        await delay(800);
+
+        // Step 1: Show kernels
+        setStep(1, 'Applying convolution kernels...');
+        document.getElementById('arrow0').classList.add('active');
+        document.getElementById('stageKernels').classList.add('active');
+        await delay(800);
+
+        // Step 2: Compute and show feature maps
+        setStep(2, 'Computing feature maps...');
+        document.getElementById('arrow1').classList.add('active');
+        document.getElementById('stageFeatures').classList.add('active');
+
+        const featureMapsContainer = document.getElementById('featureMaps');
+        const featureResults = [];
+
+        for (let ki = 0; ki < KERNELS.length; ki++) {
+            const fmap = convolve(input, KERNELS[ki].data);
+            featureResults.push(fmap);
+        }
+
+        // Merge feature maps via element-wise max
+        const fmRows = featureResults[0].length;
+        const fmCols = featureResults[0][0].length;
+        const merged = [];
+        for (let r = 0; r < fmRows; r++) {
+            const row = [];
+            for (let c = 0; c < fmCols; c++) {
+                let maxVal = 0;
+                for (const fmap of featureResults)
+                    if (fmap[r][c] > maxVal) maxVal = fmap[r][c];
+                row.push(maxVal);
+            }
+            merged.push(row);
+        }
+
+        // Render merged feature map
+        const featureGrid = document.getElementById('featureGrid');
+        featureGrid.innerHTML = '';
+        featureGrid.style.gridTemplateColumns = `repeat(${fmCols}, var(--cell))`;
+
+        for (let r = 0; r < fmRows; r++) {
+            for (let c = 0; c < fmCols; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = merged[r][c];
+                if (merged[r][c] >= PERFECT_MATCH) cell.classList.add('accent');
+                else if (merged[r][c] >= 3) cell.classList.add('warm');
+                else if (merged[r][c] >= 2) {
+                    cell.style.background = 'rgba(255,255,255,0.08)';
+                }
+                cell.classList.add('pop');
+                cell.style.animationDelay = `${(r * fmCols + c) * 60}ms`;
+                featureGrid.appendChild(cell);
+            }
+        }
+
+        await delay(300);
+
+        await delay(600);
+
+        // Step 3: Max Pooling (2x2)
+        setStep(3, 'Max pooling (2×2)...');
+        document.getElementById('arrow2').classList.add('active');
+        document.getElementById('stagePooled').classList.add('active');
+
+        const pooledGrid = document.getElementById('pooledGrid');
+        pooledGrid.innerHTML = '';
+        pooledGrid.style.gridTemplateColumns = `repeat(2, var(--cell))`;
+
+        // 2x2 max pool on the 4x4 merged feature map → 2x2 output
+        const pooled = [];
+        for (let r = 0; r < fmRows; r += 2) {
+            const row = [];
+            for (let c = 0; c < fmCols; c += 2) {
+                const maxVal = Math.max(
+                    merged[r][c],
+                    merged[r][c + 1] || 0,
+                    (merged[r + 1] || [])[c] || 0,
+                    (merged[r + 1] || [])[c + 1] || 0
+                );
+                row.push(maxVal);
+            }
+            pooled.push(row);
+        }
+
+        for (let r = 0; r < pooled.length; r++) {
+            for (let c = 0; c < pooled[0].length; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell pop';
+                cell.textContent = pooled[r][c];
+                cell.style.animationDelay = `${(r * 2 + c) * 150}ms`;
+                if (pooled[r][c] >= PERFECT_MATCH) cell.classList.add('accent');
+                else if (pooled[r][c] >= 3) cell.classList.add('warm');
+                pooledGrid.appendChild(cell);
+            }
+        }
+
+        await delay(800);
+
+        // Step 4: Classification — count perfect matches in merged feature map
+        setStep(4, 'Classifying...');
+        document.getElementById('arrow3').classList.add('active');
+        document.getElementById('stageResult').classList.add('active');
+
+        let perfectCount = 0;
+        for (const row of pooled)
+            for (const v of row)
+                if (v >= PERFECT_MATCH) perfectCount++;
+
+        const isDetected = perfectCount >= CLASSIFY_THRESHOLD;
+
+        const resultEl = document.getElementById('resultValue');
+        const reasonEl = document.getElementById('resultReason');
+
+        await delay(400);
+
+        resultEl.textContent = isDetected ? '1' : '0';
+        resultEl.className = 'result-value ' + (isDetected ? 'is-one' : 'is-zero');
+        reasonEl.textContent = `${perfectCount} perfect match${perfectCount !== 1 ? 'es' : ''} found (need ≥${CLASSIFY_THRESHOLD})`;
+
+        animating = false;
+    }
+
+    function delay(ms) {
+        return new Promise(r => setTimeout(r, ms));
+    }
+
+    // === INIT ===
+    resetPipeline();
+</script>
+</body>
+</html>
