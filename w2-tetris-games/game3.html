@@ -21,11 +21,7 @@
             --cell: 44px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: var(--bg);
@@ -53,11 +49,7 @@
             align-items: center;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
+        header { text-align: center; margin-bottom: 16px; }
         header h1 {
             font-family: 'JetBrains Mono', monospace;
             font-size: 1.6rem;
@@ -65,7 +57,6 @@
             letter-spacing: -0.5px;
             color: var(--accent);
         }
-
         header p {
             font-weight: 300;
             color: var(--dim);
@@ -73,7 +64,6 @@
             font-size: 0.88rem;
         }
 
-        /* === CONTROLS === */
         .controls {
             display: flex;
             gap: 12px;
@@ -96,19 +86,13 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-
-        .btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
         .btn.active {
             background: var(--accent);
             color: var(--bg);
             border-color: var(--accent);
             font-weight: 700;
         }
-
         .btn.run {
             background: var(--accent);
             color: var(--bg);
@@ -116,13 +100,11 @@
             font-weight: 700;
             padding: 9px 28px;
         }
-
         .btn.run:hover {
             box-shadow: 0 0 24px rgba(0, 228, 160, 0.3);
             transform: translateY(-1px);
         }
 
-        /* === PIPELINE === */
         .pipeline {
             display: flex;
             align-items: center;
@@ -141,10 +123,7 @@
             transition: opacity 0.5s ease;
             position: relative;
         }
-
-        .stage.active {
-            opacity: 1;
-        }
+        .stage.active { opacity: 1; }
 
         .stage-label {
             font-family: 'JetBrains Mono', monospace;
@@ -155,12 +134,8 @@
             margin-bottom: 10px;
             transition: color 0.3s;
         }
+        .stage.active .stage-label { color: var(--accent); }
 
-        .stage.active .stage-label {
-            color: var(--accent);
-        }
-
-        /* Arrow between stages */
         .arrow {
             display: flex;
             align-items: center;
@@ -169,38 +144,18 @@
             opacity: 0.15;
             transition: opacity 0.5s ease;
         }
-
-        .arrow.active {
-            opacity: 1;
-        }
-
-        .arrow svg {
-            width: 48px;
-            height: 24px;
-        }
-
+        .arrow.active { opacity: 1; }
+        .arrow svg { width: 48px; height: 24px; }
         .arrow-line {
             stroke: var(--accent);
             stroke-width: 2;
             stroke-dasharray: 6 4;
             stroke-dashoffset: 0;
         }
+        .arrow.active .arrow-line { animation: dashFlow 0.8s linear infinite; }
+        @keyframes dashFlow { to { stroke-dashoffset: -10; } }
+        .arrow-head { fill: var(--accent); }
 
-        .arrow.active .arrow-line {
-            animation: dashFlow 0.8s linear infinite;
-        }
-
-        @keyframes dashFlow {
-            to {
-                stroke-dashoffset: -10;
-            }
-        }
-
-        .arrow-head {
-            fill: var(--accent);
-        }
-
-        /* === GRIDS === */
         .grid-container {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -209,11 +164,7 @@
             position: relative;
         }
 
-        .grid {
-            display: inline-grid;
-            gap: 2px;
-        }
-
+        .grid { display: inline-grid; gap: 2px; }
         .grid .cell {
             width: var(--cell);
             height: var(--cell);
@@ -235,61 +186,105 @@
             color: var(--bg);
             font-weight: 700;
         }
-
         .grid .cell.hot {
             background: var(--hot);
             box-shadow: 0 0 16px rgba(255, 92, 92, 0.3);
             color: #fff;
             font-weight: 700;
         }
-
         .grid .cell.warm {
             background: var(--warm);
             box-shadow: 0 0 14px rgba(255, 179, 71, 0.25);
             color: var(--bg);
             font-weight: 700;
         }
-
         .grid .cell.cool {
             background: var(--cool);
             box-shadow: 0 0 14px rgba(74, 158, 255, 0.25);
             color: #fff;
             font-weight: 700;
         }
-
         .grid .cell.accent {
             background: var(--accent);
             box-shadow: 0 0 18px rgba(0, 228, 160, 0.35);
             color: var(--bg);
             font-weight: 700;
         }
-
-        .grid .cell.pop {
-            animation: cellPop 0.4s ease;
-        }
-
+        .grid .cell.pop { animation: cellPop 0.4s ease; }
         @keyframes cellPop {
-            0% {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            70% {
-                transform: scale(1.15);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        /* === KERNELS (small) === */
+        .fmap-stack {
+            position: relative;
+            cursor: pointer;
+            min-width: 230px;
+            min-height: 230px;
+        }
+        .fmap-stack.fmap-stack-sm {
+            min-width: 140px;
+            min-height: 140px;
+        }
+        .fmap-back, .fmap-front {
+            position: absolute;
+            transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+        }
+        .fmap-back {
+            top: 18px;
+            left: 18px;
+            opacity: 0.5;
+            z-index: 1;
+        }
+        .fmap-front {
+            top: 0;
+            left: 0;
+            z-index: 2;
+            box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        .fmap-stack:hover { z-index: 10; }
+        .fmap-stack:hover .fmap-front {
+            transform: translateX(-55%);
+            box-shadow: none;
+        }
+        .fmap-stack:hover .fmap-back {
+            transform: translateX(55%);
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+        .fmap-hint {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            color: var(--dim);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        .fmap-stack:hover .fmap-hint { opacity: 0; }
+
+        .fmap-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            text-align: center;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .kernels-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
         }
-
         .kernel-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -297,7 +292,6 @@
             padding: 8px;
             text-align: center;
         }
-
         .kernel-card .kernel-title {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem;
@@ -306,12 +300,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        .kernel-grid {
-            display: inline-grid;
-            gap: 1px;
-        }
-
+        .kernel-grid { display: inline-grid; gap: 1px; }
         .kernel-grid .kcell {
             width: 22px;
             height: 22px;
@@ -325,7 +314,6 @@
             font-size: 0.55rem;
             color: var(--dim);
         }
-
         .kernel-grid .kcell.k-on {
             background: rgba(0, 228, 160, 0.15);
             border-color: rgba(0, 228, 160, 0.3);
@@ -333,14 +321,101 @@
             font-weight: 700;
         }
 
-        /* === CLASSIFICATION RESULT === */
+        /* === DENSE LAYER === */
+        .dense-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+        }
+
+        .dense-row {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .dense-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 4px 5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .dense-cell .dc-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--dim);
+        }
+
+        .dense-cell .dc-weight {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            color: var(--dim);
+            opacity: 0.6;
+        }
+
+        .dense-cell.active-cell .dc-val {
+            color: var(--accent);
+        }
+
+        .dense-cell.hot-cell .dc-val {
+            color: var(--hot);
+        }
+
+        .dense-cell.cool-cell .dc-val {
+            color: var(--cool);
+        }
+
+        .dense-cell.perfect {
+            background: rgba(0, 228, 160, 0.12);
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 14px rgba(0, 228, 160, 0.35);
+            animation: perfectPulse 1.2s ease infinite;
+        }
+
+        .dense-cell.perfect .dc-val {
+            color: var(--accent) !important;
+        }
+
+        @keyframes perfectPulse {
+            0%, 100% { box-shadow: 0 0 14px rgba(0, 228, 160, 0.35); }
+            50% { box-shadow: 0 0 22px rgba(0, 228, 160, 0.55); }
+        }
+
+        .dense-equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--dim);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .dense-equation .eq-sum {
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .dense-equation .eq-sum.pass { color: var(--accent); }
+        .dense-equation .eq-sum.fail { color: var(--hot); }
+
         .result-box {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
         }
-
         .result-value {
             font-family: 'JetBrains Mono', monospace;
             font-size: 3rem;
@@ -355,21 +430,18 @@
             background: var(--surface);
             transition: all 0.5s ease;
         }
-
         .result-value.is-one {
             color: var(--accent);
             border-color: var(--accent);
             box-shadow: 0 0 30px rgba(0, 228, 160, 0.25);
             background: rgba(0, 228, 160, 0.08);
         }
-
         .result-value.is-zero {
             color: var(--hot);
             border-color: var(--hot);
             box-shadow: 0 0 30px rgba(255, 92, 92, 0.2);
             background: rgba(255, 92, 92, 0.06);
         }
-
         .result-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.65rem;
@@ -377,7 +449,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         .result-reason {
             font-size: 0.72rem;
             color: var(--dim);
@@ -386,14 +457,12 @@
             line-height: 1.4;
         }
 
-        /* === STEP INDICATOR === */
         .step-bar {
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
             align-items: center;
         }
-
         .step-dot {
             width: 10px;
             height: 10px;
@@ -401,18 +470,15 @@
             background: var(--border);
             transition: all 0.3s;
         }
-
         .step-dot.done {
             background: var(--accent);
             box-shadow: 0 0 8px rgba(0, 228, 160, 0.4);
         }
-
         .step-dot.current {
             background: var(--accent);
             transform: scale(1.3);
             box-shadow: 0 0 12px rgba(0, 228, 160, 0.5);
         }
-
         .step-text {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
@@ -421,7 +487,6 @@
             transition: color 0.3s;
         }
 
-        /* === FOOTER === */
         .footer {
             margin-top: auto;
             padding: 16px 0;
@@ -433,28 +498,13 @@
         }
 
         @media (max-width: 1100px) {
-            :root {
-                --cell: 34px;
-            }
-
-            .arrow {
-                padding: 0 8px;
-            }
-
-            .arrow svg {
-                width: 32px;
-            }
+            :root { --cell: 34px; }
+            .arrow { padding: 0 8px; }
+            .arrow svg { width: 32px; }
         }
-
         @media (max-width: 800px) {
-            .pipeline {
-                flex-wrap: wrap;
-                gap: 20px;
-            }
-
-            .arrow {
-                display: none;
-            }
+            .pipeline { flex-wrap: wrap; gap: 20px; }
+            .arrow { display: none; }
         }
     </style>
 </head>
@@ -479,71 +529,84 @@
         <div class="step-dot" id="dot2"></div>
         <div class="step-dot" id="dot3"></div>
         <div class="step-dot" id="dot4"></div>
+        <div class="step-dot" id="dot5"></div>
         <span class="step-text" id="stepText">Select a shape and press Run</span>
     </div>
 
     <div class="pipeline">
-        <!-- Stage 1: Input -->
         <div class="stage" id="stageInput">
-            <div class="stage-label">Input (6×6)</div>
+            <div class="stage-label">Input</div>
             <div class="grid-container">
                 <div class="grid" id="inputGrid" style="grid-template-columns: repeat(6, var(--cell));"></div>
             </div>
         </div>
 
         <div class="arrow" id="arrow0">
-            <svg viewBox="0 0 48 24">
-                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
-                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
-            </svg>
+            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
-        <!-- Stage 2: Kernels -->
         <div class="stage" id="stageKernels">
-            <div class="stage-label">Conv Kernels (3×3)</div>
+            <div class="stage-label">Convolution</div>
             <div class="kernels-row" id="kernelsRow"></div>
         </div>
 
         <div class="arrow" id="arrow1">
-            <svg viewBox="0 0 48 24">
-                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
-                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
-            </svg>
+            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
-        <!-- Stage 3: Feature Maps (intermediate layer 1) -->
         <div class="stage" id="stageFeatures">
-            <div class="stage-label">Feature Map (max)</div>
-            <div class="grid-container" id="featureMaps">
-                <div class="grid" id="featureGrid"></div>
+            <div class="stage-label">Feature Maps</div>
+            <div class="fmap-stack">
+                <div class="grid-container fmap-back">
+                    <div class="fmap-tag" style="color:var(--cool);">Right T</div>
+                    <div class="grid" id="featureGrid1"></div>
+                </div>
+                <div class="grid-container fmap-front">
+                    <div class="fmap-tag" style="color:var(--hot);">Left T</div>
+                    <div class="grid" id="featureGrid0"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
             </div>
         </div>
 
         <div class="arrow" id="arrow2">
-            <svg viewBox="0 0 48 24">
-                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
-                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
-            </svg>
+            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
-        <!-- Stage 4: Max Pool -->
         <div class="stage" id="stagePooled">
-            <div class="stage-label">Max Pool (2×2)</div>
-            <div class="grid-container">
-                <div class="grid" id="pooledGrid" style="grid-template-columns: repeat(2, var(--cell));"></div>
+            <div class="stage-label">Max Pooling</div>
+            <div class="fmap-stack fmap-stack-sm">
+                <div class="grid-container fmap-back">
+                    <div class="fmap-tag" style="color:var(--cool);">Right T</div>
+                    <div class="grid" id="pooledGrid1" style="grid-template-columns: repeat(2, var(--cell));"></div>
+                </div>
+                <div class="grid-container fmap-front">
+                    <div class="fmap-tag" style="color:var(--hot);">Left T</div>
+                    <div class="grid" id="pooledGrid0" style="grid-template-columns: repeat(2, var(--cell));"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
             </div>
         </div>
 
         <div class="arrow" id="arrow3">
-            <svg viewBox="0 0 48 24">
-                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
-                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
-            </svg>
+            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
-        <!-- Stage 5: Classification -->
+        <!-- Dense Layer stage -->
+        <div class="stage" id="stageDense">
+            <div class="stage-label">Dense Layer</div>
+            <div class="dense-box" id="denseBox">
+                <div class="dense-row" id="denseRow"></div>
+                <div class="dense-equation" id="denseEquation"></div>
+            </div>
+        </div>
+
+        <div class="arrow" id="arrow4">
+            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+        </div>
+
         <div class="stage" id="stageResult">
-            <div class="stage-label">Classification</div>
+            <div class="stage-label">Output</div>
             <div class="result-box">
                 <div class="result-value" id="resultValue">?</div>
                 <div class="result-reason" id="resultReason"></div>
@@ -552,29 +615,19 @@
     </div>
 
     <div class="footer">
-        Rule: if ≥ 2 perfect matches (score = 4) found across feature maps → <span style="color:var(--accent);">1</span>
+        Rule: flatten pooled values → if ≥ 2 values equal 4 → <span style="color:var(--accent);">1</span>
         (H or Cross detected), else <span style="color:var(--hot);">0</span>
     </div>
 </div>
 
 <script>
-    // === SHAPES ===
-    // === KERNELS (feature detectors) — Left-facing T and Right-facing T ===
     const KERNELS = [
-        {
-            name: 'Left T',
-            data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]],
-            color: 'hot',
-        },
-        {
-            name: 'Right T',
-            data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]],
-            color: 'cool',
-        },
+        { name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot' },
+        { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
     ];
 
-    const PERFECT_MATCH = 4; // value when kernel perfectly overlaps
-    const CLASSIFY_THRESHOLD = 2; // need at least 2 perfect-match cells across both feature maps
+    const PERFECT_MATCH = 4;
+    const CLASSIFY_THRESHOLD = 2;
 
     let currentShape = 'cross';
     let animating = false;
@@ -588,13 +641,11 @@
         resetPipeline();
     }
 
-    // Base 3x3 patterns
     const BASE_SHAPES = {
         H: [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
         cross: [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
     };
 
-    // Non-T tetrominoes for random "noise" shapes
     const NOISE_PIECES = {
         I: [[1, 1, 1, 1]],
         O: [[1, 1], [1, 1]],
@@ -628,13 +679,11 @@
         for (let attempt = 0; attempt < 200; attempt++) {
             const grid = Array.from({length: 6}, () => Array(6).fill(0));
             let success = true;
-
             for (let p = 0; p < 2; p++) {
                 const name = NOISE_NAMES[Math.floor(Math.random() * NOISE_NAMES.length)];
                 let shape = NOISE_PIECES[name].map(r => [...r]);
                 const rots = Math.floor(Math.random() * 4);
                 for (let i = 0; i < rots; i++) shape = rotateCW(shape);
-
                 let placed = false;
                 for (let att = 0; att < 50; att++) {
                     const offR = 1 + Math.floor(Math.random() * 3);
@@ -648,37 +697,19 @@
                         break;
                     }
                 }
-                if (!placed) {
-                    success = false;
-                    break;
-                }
+                if (!placed) { success = false; break; }
             }
-
             if (!success) continue;
-
-            // Only accept if it classifies as 0
-            const ftl = convolve(grid, KERNELS[0].data);
-            const ftr = convolve(grid, KERNELS[1].data);
-            const merged = ftl.map((row, r) => row.map((v, c) => Math.max(v, ftr[r][c])));
-            const count4 = merged.flat().filter(v => v >= PERFECT_MATCH).length;
-            if (count4 < CLASSIFY_THRESHOLD) return grid;
+            return grid;
         }
-        // Fallback
         const grid = Array.from({length: 6}, () => Array(6).fill(0));
-        grid[1][1] = 1;
-        grid[1][2] = 1;
-        grid[2][1] = 1;
-        grid[2][2] = 1;
-        grid[3][3] = 1;
-        grid[3][4] = 1;
-        grid[4][4] = 1;
+        grid[1][1] = 1; grid[1][2] = 1; grid[2][1] = 1; grid[2][2] = 1;
+        grid[3][3] = 1; grid[3][4] = 1; grid[4][4] = 1;
         return grid;
     }
 
     function getInput() {
-        if (currentShape === 'random') {
-            return generateNoiseInput();
-        }
+        if (currentShape === 'random') return generateNoiseInput();
         const grid = Array.from({length: 6}, () => Array(6).fill(0));
         const base = BASE_SHAPES[currentShape];
         const offR = 1 + Math.floor(Math.random() * 2);
@@ -689,7 +720,6 @@
         return grid;
     }
 
-    // === CONVOLUTION ===
     function convolve(input, kernel) {
         const outSize = input.length - kernel.length + 1;
         const result = [];
@@ -707,26 +737,16 @@
         return result;
     }
 
-    function maxPool(featureMap) {
-        let max = 0;
-        for (const row of featureMap)
-            for (const v of row)
-                if (v > max) max = v;
-        return max;
-    }
-
-    // === RENDERING ===
-    function renderGrid(container, data, cols, cellClass) {
+    function renderGrid(container, data, cols) {
         container.innerHTML = '';
         container.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
-        for (let r = 0; r < data.length; r++) {
+        for (let r = 0; r < data.length; r++)
             for (let c = 0; c < data[r].length; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.textContent = data[r][c];
                 container.appendChild(cell);
             }
-        }
     }
 
     function renderKernels() {
@@ -742,14 +762,13 @@
             const grid = document.createElement('div');
             grid.className = 'kernel-grid';
             grid.style.gridTemplateColumns = `repeat(${k.data[0].length}, 22px)`;
-            for (let r = 0; r < k.data.length; r++) {
+            for (let r = 0; r < k.data.length; r++)
                 for (let c = 0; c < k.data[0].length; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'kcell' + (k.data[r][c] ? ' k-on' : '');
                     cell.textContent = k.data[r][c];
                     grid.appendChild(cell);
                 }
-            }
             card.appendChild(grid);
             row.appendChild(card);
         });
@@ -758,32 +777,58 @@
     function resetPipeline() {
         document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.arrow').forEach(a => a.classList.remove('active'));
-        for (let i = 0; i < 5; i++) {
-            document.getElementById('dot' + i).className = 'step-dot';
-        }
+        for (let i = 0; i < 6; i++) document.getElementById('dot' + i).className = 'step-dot';
         document.getElementById('stepText').textContent = 'Select a shape and press Run';
         document.getElementById('resultValue').textContent = '?';
         document.getElementById('resultValue').className = 'result-value';
         document.getElementById('resultReason').textContent = '';
+        document.getElementById('denseEquation').innerHTML = '';
 
         const input = getInput();
         renderGrid(document.getElementById('inputGrid'), input, input[0].length);
         renderKernels();
 
-        document.getElementById('featureGrid').innerHTML = '';
-        document.getElementById('pooledGrid').innerHTML = '';
+        function fillEmpty(id, cols, rows) {
+            const grid = document.getElementById(id);
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
+            for (let i = 0; i < cols * rows; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                grid.appendChild(cell);
+            }
+        }
+        fillEmpty('featureGrid0', 4, 4);
+        fillEmpty('featureGrid1', 4, 4);
+        fillEmpty('pooledGrid0', 2, 2);
+        fillEmpty('pooledGrid1', 2, 2);
+
+        // Pre-fill dense row with 8 placeholder cells
+        const denseRow = document.getElementById('denseRow');
+        denseRow.innerHTML = '';
+        for (let i = 0; i < 8; i++) {
+            const dc = document.createElement('div');
+            dc.className = 'dense-cell';
+            const val = document.createElement('span');
+            val.className = 'dc-val';
+            val.textContent = '·';
+            const weight = document.createElement('span');
+            weight.className = 'dc-weight';
+            weight.textContent = '×1';
+            dc.appendChild(val);
+            dc.appendChild(weight);
+            denseRow.appendChild(dc);
+        }
     }
 
-    // === ANIMATION PIPELINE ===
     async function runPipeline() {
         if (animating) return;
         animating = true;
-
         resetPipeline();
         const input = getInput();
 
         const setStep = (idx, text) => {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 6; i++) {
                 const dot = document.getElementById('dot' + i);
                 if (i < idx) dot.className = 'step-dot done';
                 else if (i === idx) dot.className = 'step-dot current';
@@ -792,13 +837,13 @@
             document.getElementById('stepText').textContent = text;
         };
 
-        // Step 0: Show input
+        // Step 0: Input
         setStep(0, 'Loading input image...');
         document.getElementById('stageInput').classList.add('active');
         const inputGrid = document.getElementById('inputGrid');
         inputGrid.innerHTML = '';
         inputGrid.style.gridTemplateColumns = `repeat(${input[0].length}, var(--cell))`;
-        for (let r = 0; r < input.length; r++) {
+        for (let r = 0; r < input.length; r++)
             for (let c = 0; c < input[0].length; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
@@ -808,136 +853,156 @@
                 cell.classList.add('pop');
                 inputGrid.appendChild(cell);
             }
-        }
         await delay(800);
 
-        // Step 1: Show kernels
+        // Step 1: Kernels
         setStep(1, 'Applying convolution kernels...');
         document.getElementById('arrow0').classList.add('active');
         document.getElementById('stageKernels').classList.add('active');
         await delay(800);
 
-        // Step 2: Compute and show feature maps
+        // Step 2: Feature maps
         setStep(2, 'Computing feature maps...');
         document.getElementById('arrow1').classList.add('active');
         document.getElementById('stageFeatures').classList.add('active');
 
-        const featureMapsContainer = document.getElementById('featureMaps');
         const featureResults = [];
+        const colorClasses = ['hot', 'cool'];
+        for (let ki = 0; ki < KERNELS.length; ki++)
+            featureResults.push(convolve(input, KERNELS[ki].data));
 
-        for (let ki = 0; ki < KERNELS.length; ki++) {
-            const fmap = convolve(input, KERNELS[ki].data);
-            featureResults.push(fmap);
-        }
-
-        // Merge feature maps via element-wise max
         const fmRows = featureResults[0].length;
         const fmCols = featureResults[0][0].length;
-        const merged = [];
-        for (let r = 0; r < fmRows; r++) {
-            const row = [];
-            for (let c = 0; c < fmCols; c++) {
-                let maxVal = 0;
-                for (const fmap of featureResults)
-                    if (fmap[r][c] > maxVal) maxVal = fmap[r][c];
-                row.push(maxVal);
-            }
-            merged.push(row);
-        }
 
-        // Render merged feature map
-        const featureGrid = document.getElementById('featureGrid');
-        featureGrid.innerHTML = '';
-        featureGrid.style.gridTemplateColumns = `repeat(${fmCols}, var(--cell))`;
-
-        for (let r = 0; r < fmRows; r++) {
-            for (let c = 0; c < fmCols; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.textContent = merged[r][c];
-                if (merged[r][c] >= PERFECT_MATCH) cell.classList.add('accent');
-                else if (merged[r][c] >= 3) cell.classList.add('warm');
-                else if (merged[r][c] >= 2) {
-                    cell.style.background = 'rgba(255,255,255,0.08)';
+        for (let ki = 0; ki < KERNELS.length; ki++) {
+            const fmap = featureResults[ki];
+            const featureGrid = document.getElementById('featureGrid' + ki);
+            featureGrid.innerHTML = '';
+            featureGrid.style.gridTemplateColumns = `repeat(${fmCols}, var(--cell))`;
+            for (let r = 0; r < fmRows; r++)
+                for (let c = 0; c < fmCols; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = fmap[r][c];
+                    if (fmap[r][c] >= PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
+                    else if (fmap[r][c] >= 3) cell.classList.add('warm');
+                    else if (fmap[r][c] >= 2) cell.style.background = 'rgba(255,255,255,0.08)';
+                    cell.classList.add('pop');
+                    cell.style.animationDelay = `${(r * fmCols + c) * 60}ms`;
+                    featureGrid.appendChild(cell);
                 }
-                cell.classList.add('pop');
-                cell.style.animationDelay = `${(r * fmCols + c) * 60}ms`;
-                featureGrid.appendChild(cell);
-            }
         }
+        await delay(900);
 
-        await delay(300);
-
-        await delay(600);
-
-        // Step 3: Max Pooling (2x2)
-        setStep(3, 'Max pooling (2×2)...');
+        // Step 3: Max Pool (2×2×2)
+        setStep(3, 'Max pooling (2×2×2)...');
         document.getElementById('arrow2').classList.add('active');
         document.getElementById('stagePooled').classList.add('active');
 
-        const pooledGrid = document.getElementById('pooledGrid');
-        pooledGrid.innerHTML = '';
-        pooledGrid.style.gridTemplateColumns = `repeat(2, var(--cell))`;
-
-        // 2x2 max pool on the 4x4 merged feature map → 2x2 output
-        const pooled = [];
-        for (let r = 0; r < fmRows; r += 2) {
-            const row = [];
-            for (let c = 0; c < fmCols; c += 2) {
-                const maxVal = Math.max(
-                    merged[r][c],
-                    merged[r][c + 1] || 0,
-                    (merged[r + 1] || [])[c] || 0,
-                    (merged[r + 1] || [])[c + 1] || 0
-                );
-                row.push(maxVal);
+        const pooledResults = [];
+        for (let ki = 0; ki < KERNELS.length; ki++) {
+            const fmap = featureResults[ki];
+            const pooled = [];
+            for (let r = 0; r < fmRows; r += 2) {
+                const row = [];
+                for (let c = 0; c < fmCols; c += 2) {
+                    const maxVal = Math.max(
+                        fmap[r][c],
+                        fmap[r][c + 1] || 0,
+                        (fmap[r + 1] || [])[c] || 0,
+                        (fmap[r + 1] || [])[c + 1] || 0
+                    );
+                    row.push(maxVal);
+                }
+                pooled.push(row);
             }
-            pooled.push(row);
+            pooledResults.push(pooled);
+
+            const pooledGrid = document.getElementById('pooledGrid' + ki);
+            pooledGrid.innerHTML = '';
+            pooledGrid.style.gridTemplateColumns = `repeat(2, var(--cell))`;
+            for (let r = 0; r < pooled.length; r++)
+                for (let c = 0; c < pooled[0].length; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell pop';
+                    cell.textContent = pooled[r][c];
+                    cell.style.animationDelay = `${(r * 2 + c) * 150}ms`;
+                    if (pooled[r][c] >= PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
+                    else if (pooled[r][c] >= 3) cell.classList.add('warm');
+                    pooledGrid.appendChild(cell);
+                }
+        }
+        await delay(800);
+
+        // Step 4: Dense Layer — flatten + weighted sum
+        setStep(4, 'Flatten → weighted sum (dense layer)...');
+        document.getElementById('arrow3').classList.add('active');
+        document.getElementById('stageDense').classList.add('active');
+
+        const denseRow = document.getElementById('denseRow');
+        denseRow.innerHTML = '';
+
+        const flatValues = [];
+        const flatColors = [];
+        for (let ki = 0; ki < pooledResults.length; ki++) {
+            for (const row of pooledResults[ki]) {
+                for (const v of row) {
+                    flatValues.push(v);
+                    flatColors.push(ki === 0 ? 'hot' : 'cool');
+                }
+            }
         }
 
-        for (let r = 0; r < pooled.length; r++) {
-            for (let c = 0; c < pooled[0].length; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell pop';
-                cell.textContent = pooled[r][c];
-                cell.style.animationDelay = `${(r * 2 + c) * 150}ms`;
-                if (pooled[r][c] >= PERFECT_MATCH) cell.classList.add('accent');
-                else if (pooled[r][c] >= 3) cell.classList.add('warm');
-                pooledGrid.appendChild(cell);
+        for (let i = 0; i < flatValues.length; i++) {
+            const dc = document.createElement('div');
+            dc.className = 'dense-cell pop ' + flatColors[i] + '-cell';
+            dc.style.animationDelay = `${i * 80}ms`;
+
+            const val = document.createElement('span');
+            val.className = 'dc-val';
+            val.textContent = flatValues[i];
+
+            const weight = document.createElement('span');
+            weight.className = 'dc-weight';
+            weight.textContent = '×1';
+
+            dc.appendChild(val);
+            dc.appendChild(weight);
+            denseRow.appendChild(dc);
+        }
+
+        const perfectCount = flatValues.filter(v => v >= PERFECT_MATCH).length;
+        const isDetected = perfectCount >= CLASSIFY_THRESHOLD;
+
+        await delay(600);
+
+        // Highlight the 4s
+        const cells = denseRow.querySelectorAll('.dense-cell');
+        for (let i = 0; i < flatValues.length; i++) {
+            if (flatValues[i] >= PERFECT_MATCH) {
+                cells[i].classList.add('perfect');
             }
         }
 
         await delay(800);
 
-        // Step 4: Classification — count perfect matches in merged feature map
-        setStep(4, 'Classifying...');
-        document.getElementById('arrow3').classList.add('active');
+        // Step 5: Classification
+        setStep(5, 'Classifying...');
+        document.getElementById('arrow4').classList.add('active');
         document.getElementById('stageResult').classList.add('active');
-
-        let perfectCount = 0;
-        for (const row of pooled)
-            for (const v of row)
-                if (v >= PERFECT_MATCH) perfectCount++;
-
-        const isDetected = perfectCount >= CLASSIFY_THRESHOLD;
 
         const resultEl = document.getElementById('resultValue');
         const reasonEl = document.getElementById('resultReason');
-
         await delay(400);
 
         resultEl.textContent = isDetected ? '1' : '0';
         resultEl.className = 'result-value ' + (isDetected ? 'is-one' : 'is-zero');
-        reasonEl.textContent = `${perfectCount} perfect match${perfectCount !== 1 ? 'es' : ''} found (need ≥${CLASSIFY_THRESHOLD})`;
+        reasonEl.textContent = '';
 
         animating = false;
     }
 
-    function delay(ms) {
-        return new Promise(r => setTimeout(r, ms));
-    }
-
-    // === INIT ===
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     resetPipeline();
 </script>
 </body>
