@@ -19,7 +19,7 @@
             --piece2: #ffe04a;
             --piece3: #b04aff;
             --grid-line: #1e1e2e;
-            --cell-size: 46px;
+            --cell-size: 38px;
             --success: #4aff7a;
             --wrong: #ff4a4a;
         }
@@ -50,15 +50,16 @@
         .app {
             max-width: 100%;
             margin: 0 auto;
-            padding: 20px 30px;
-            min-height: 100vh;
+            padding: 14px 30px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         header h1 {
@@ -80,21 +81,20 @@
         }
 
         .game-layout {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 40px;
+            display: flex;
+            gap: 30px;
             align-items: center;
-            flex: 1;
+            justify-content: center;
             width: 100%;
+            flex-shrink: 0;
         }
 
         /* === PIECES PANEL (left) === */
         .pieces-panel {
-            justify-self: end;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 20px;
+            padding: 14px;
             width: fit-content;
         }
 
@@ -111,7 +111,7 @@
         .piece-slots {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -259,43 +259,11 @@
             }
         }
 
-        /* === SCORE PANEL (right) === */
-        .score-panel {
-            justify-self: start;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px 28px;
-            text-align: center;
-        }
-
-        .score-panel h2 {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--dim);
-            margin-bottom: 14px;
-        }
-
-        .score-display {
-            font-family: 'Space Mono', monospace;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .score-label {
-            font-size: 0.8rem;
-            color: var(--dim);
-            margin-top: 6px;
-        }
-
         /* === BUTTONS === */
         .actions {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 10px;
             justify-content: center;
             flex-wrap: wrap;
         }
@@ -332,85 +300,120 @@
             transform: translateY(-1px);
         }
 
-        /* === SUCCESS OVERLAY === */
-        .success-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(13, 13, 18, 0.92);
-            z-index: 50;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeIn 0.3s ease;
-        }
 
-        .success-overlay.show {
-            display: flex;
-        }
 
-        .success-overlay h2 {
-            font-family: 'Space Mono', monospace;
-            font-size: 2.5rem;
-            color: var(--success);
-            animation: successPop 0.5s ease;
-        }
-
-        .success-overlay p {
-            color: var(--dim);
-            font-size: 1.1rem;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes successPop {
-            0% {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            70% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .instructions {
-            text-align: center;
-            margin-top: auto;
-            padding: 20px 0;
-            color: var(--dim);
-            font-size: 0.82rem;
-            line-height: 1.7;
-            font-family: 'Space Mono', monospace;
-        }
-
-        .instructions kbd {
+        /* === FEATURE MAP PANEL === */
+        .fmap-panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.75rem;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-top: 14px;
+            text-align: center;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
+
+        .fmap-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .fmap-header h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin: 0;
+        }
+
+        .fmap-depth-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--dim);
+        }
+
+        .fmap-stack {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            cursor: pointer;
+        }
+
+        .fmap-layer {
+            position: absolute;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px;
+            top: 50%;
+            transition: left 0.5s ease, top 0.5s ease, opacity 0.5s ease, box-shadow 0.5s ease;
+            animation: layerPop 0.4s ease;
+        }
+
+        @keyframes layerPop {
+            0% { transform: translateY(-50%) scale(0.7); opacity: 0; }
+            70% { transform: translateY(-50%) scale(1.05); }
+            100% { transform: translateY(-50%) scale(1); opacity: 1; }
+        }
+
+        .fmap-layer-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            text-align: center;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .fmap-hint {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.45rem;
+            color: var(--dim);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .fmap-stack:hover .fmap-hint { opacity: 0; }
+
+        .fmap-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .fmap-grid .fm-cell {
+            width: 28px;
+            height: 28px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
 
         @media (max-width: 900px) {
             .game-layout {
-                grid-template-columns: 1fr;
-                justify-items: center;
-            }
-
-            .pieces-panel, .score-panel {
-                justify-self: center;
+                flex-direction: column;
             }
 
             :root {
@@ -441,25 +444,17 @@
             </div>
         </div>
 
-        <!-- Score (right) -->
-        <div class="score-panel">
-            <h2>Progress</h2>
-            <div class="score-display" id="scoreDisplay">0/4</div>
-            <div class="score-label">pieces found</div>
+    </div>
+
+    <div class="fmap-panel">
+        <div class="fmap-header">
+            <h2>Feature Map</h2>
+            <div class="fmap-depth-label" id="fmapDepthLabel">Depth: 0 / 4</div>
         </div>
-    </div>
-
-    <div class="instructions">
-        <kbd>Click</kbd> a piece to select · <kbd>Click</kbd> the board at its top-left 4×4 corner
+        <div class="fmap-stack" id="fmapStack"></div>
     </div>
 </div>
 
-<!-- Success Overlay -->
-<div class="success-overlay" id="successOverlay">
-    <h2>🎉 All Found!</h2>
-    <p>You identified every piece origin correctly.</p>
-    <button class="btn primary" onclick="newGame()" style="margin-top:10px;">Play Again</button>
-</div>
 
 <script>
     const TETROMINOES = {
@@ -471,6 +466,28 @@
         L: [[1, 0], [1, 0], [1, 1]],
         J: [[0, 1], [0, 1], [1, 1]],
     };
+
+    const KERNELS = [
+        { name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot' },
+        { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
+    ];
+
+    function convolve(input, kernel) {
+        const outSize = input.length - kernel.length + 1;
+        const result = [];
+        for (let r = 0; r < outSize; r++) {
+            const row = [];
+            for (let c = 0; c < outSize; c++) {
+                let sum = 0;
+                for (let kr = 0; kr < kernel.length; kr++)
+                    for (let kc = 0; kc < kernel[0].length; kc++)
+                        sum += input[r + kr][c + kc] * kernel[kr][kc];
+                row.push(sum);
+            }
+            result.push(row);
+        }
+        return result;
+    }
 
     const PIECE_NAMES = Object.keys(TETROMINOES);
     const COLORS = ['var(--piece0)', 'var(--piece1)', 'var(--piece2)', 'var(--piece3)'];
@@ -596,6 +613,7 @@
         solutionOrigins = puzzle.origins;
         foundCount = 0;
         selectedPiece = -1;
+        boardSnapshots = [];
 
         pieces = puzzle.chosen.map((shape, i) => ({
             shape: deepCopy(shape),
@@ -669,7 +687,131 @@
     }
 
     function renderScore() {
-        document.getElementById('scoreDisplay').textContent = `${foundCount}/4`;
+    }
+
+    function getPieceSnapshot(pieceIdx) {
+        // Binary board: 1 only where this specific piece is, 0 elsewhere
+        const snap = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+        for (let r = 0; r < BOARD_SIZE; r++)
+            for (let c = 0; c < BOARD_SIZE; c++)
+                if (puzzleBoard[r][c] === pieceIdx + 1)
+                    snap[r][c] = 1;
+        return snap;
+    }
+
+    // Store snapshots as pieces are found
+    let boardSnapshots = [];
+
+    function renderFeatureMaps() {
+        const stack = document.getElementById('fmapStack');
+        stack.innerHTML = '';
+
+        const depth = boardSnapshots.length;
+        const fmapSize = BOARD_SIZE - 3 + 1; // 8
+
+        document.getElementById('fmapDepthLabel').textContent = `Depth: ${depth} / 4`;
+
+        if (depth === 0) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'font-family:"Space Mono",monospace;font-size:0.6rem;color:var(--dim);opacity:0.4;text-align:center;padding-top:30px;';
+            empty.textContent = 'Place a piece to see its feature map';
+            stack.appendChild(empty);
+            return;
+        }
+
+        const cellSize = 28;
+        const kernel = KERNELS[0].data;
+        const containerW = stack.clientWidth || 600;
+        const layerW = fmapSize * cellSize + (fmapSize - 1) + 10;
+
+        // 3D stacked: overlap in center with small depth offset
+        const stackOffset = 12;
+        const stackedCenter = (containerW - layerW) / 2;
+
+        // Unfolded: spread with fixed gap, centered
+        const unfoldSpacing = layerW + 14;
+        const totalUnfoldW = layerW + (depth - 1) * unfoldSpacing;
+        const unfoldStart = (containerW - totalUnfoldW) / 2;
+
+        boardSnapshots.forEach((snapshot, layerIdx) => {
+            const fmap = convolve(snapshot.board, kernel);
+            const pieceColor = snapshot.color;
+
+            const layer = document.createElement('div');
+            layer.className = 'fmap-layer';
+
+            // 3D stacked position — newest piece on top, oldest at back
+            const sLeft = stackedCenter + (layerIdx - (depth - 1) / 2) * stackOffset;
+            const sTop = 50 - (depth - 1 - layerIdx) * 2;
+            layer.style.left = sLeft + 'px';
+            layer.style.top = sTop + '%';
+            layer.style.transform = 'translateY(-50%)';
+            layer.style.zIndex = layerIdx + 1;
+            layer.style.opacity = layerIdx === depth - 1 ? '1' : (0.35 + layerIdx * 0.18);
+            if (layerIdx === depth - 1) {
+                layer.style.boxShadow = '4px 4px 14px rgba(0,0,0,0.4)';
+            }
+
+            // Store positions
+            const uLeft = unfoldStart + layerIdx * unfoldSpacing;
+            layer.dataset.stackedLeft = sLeft;
+            layer.dataset.stackedTop = sTop;
+            layer.dataset.unfoldLeft = uLeft;
+
+            const tag = document.createElement('div');
+            tag.className = 'fmap-layer-tag';
+            tag.style.color = pieceColor;
+            tag.textContent = 'After piece ' + (layerIdx + 1);
+            layer.appendChild(tag);
+
+            const grid = document.createElement('div');
+            grid.className = 'fmap-grid';
+            grid.style.gridTemplateColumns = `repeat(${fmapSize}, ${cellSize}px)`;
+            for (const row of fmap)
+                for (const v of row) {
+                    const cell = document.createElement('div');
+                    cell.className = 'fm-cell';
+                    cell.textContent = v;
+                    if (v > 0) {
+                        const alpha = 0.15 + (v / 4) * 0.85;
+                        cell.style.background = pieceColor;
+                        cell.style.opacity = alpha;
+                        cell.style.color = '#fff';
+                        cell.style.fontWeight = '700';
+                    }
+                    grid.appendChild(cell);
+                }
+            layer.appendChild(grid);
+            stack.appendChild(layer);
+        });
+
+        if (depth > 1) {
+            const hint = document.createElement('span');
+            hint.className = 'fmap-hint';
+            hint.textContent = 'hover to unfold';
+            stack.appendChild(hint);
+
+            stack.onmouseenter = () => {
+                stack.querySelectorAll('.fmap-layer').forEach(l => {
+                    l.style.left = l.dataset.unfoldLeft + 'px';
+                    l.style.top = '50%';
+                    l.style.opacity = '1';
+                    l.style.boxShadow = 'none';
+                });
+            };
+            stack.onmouseleave = () => {
+                stack.querySelectorAll('.fmap-layer').forEach((l, i) => {
+                    l.style.left = l.dataset.stackedLeft + 'px';
+                    l.style.top = l.dataset.stackedTop + '%';
+                    l.style.opacity = i === depth - 1 ? '1' : (0.35 + i * 0.18);
+                    if (i === depth - 1) l.style.boxShadow = '4px 4px 14px rgba(0,0,0,0.4)';
+                    else l.style.boxShadow = '';
+                });
+            };
+        } else {
+            stack.onmouseenter = null;
+            stack.onmouseleave = null;
+        }
     }
 
     function selectPiece(i) {
@@ -730,10 +872,12 @@
             // Correct!
             piece.found = true;
             foundCount++;
+            boardSnapshots.push({ board: getPieceSnapshot(selectedPiece), color: piece.rawColor });
             selectedPiece = -1;
             renderBoard();
             renderPieces();
             renderScore();
+            renderFeatureMaps();
             checkWin();
         } else {
             // Wrong — shake the piece slot and flash the cell
@@ -750,19 +894,14 @@
     }
 
     function checkWin() {
-        if (foundCount === 4) {
-            setTimeout(() => {
-                document.getElementById('successOverlay').classList.add('show');
-            }, 400);
-        }
     }
 
     function newGame() {
-        document.getElementById('successOverlay').classList.remove('show');
         initGame();
         renderBoard();
         renderPieces();
         renderScore();
+        renderFeatureMaps();
     }
 
     newGame();
