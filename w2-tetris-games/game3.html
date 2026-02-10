@@ -109,7 +109,6 @@
             display: flex;
             align-items: center;
             gap: 0;
-            flex: 1;
             justify-content: center;
             flex-wrap: nowrap;
             width: 100%;
@@ -502,9 +501,19 @@
             .arrow { padding: 0 8px; }
             .arrow svg { width: 32px; }
         }
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
+            :root { --cell: 30px; }
             .pipeline { flex-wrap: wrap; gap: 20px; }
             .arrow { display: none; }
+        }
+        @media (max-width: 600px) {
+            :root { --cell: 26px; }
+            .app { padding: 16px 12px; }
+            header h1 { font-size: 1.2rem; }
+            header p { font-size: 0.78rem; }
+            .dense-cell { padding: 3px 4px; }
+            .dense-cell .dc-val { font-size: 0.65rem; }
+            .result-value { width: 70px; height: 70px; font-size: 2.4rem; }
         }
     </style>
 </head>
@@ -615,7 +624,7 @@
     </div>
 
     <div class="footer">
-        Rule: flatten pooled values → if ≥ 2 values equal 4 → <span style="color:var(--accent);">1</span>
+        Rule: flatten pooled values → if ≥ 2 values equal 1 → <span style="color:var(--accent);">1</span>
         (H or Cross detected), else <span style="color:var(--hot);">0</span>
     </div>
 </div>
@@ -626,7 +635,7 @@
         { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
     ];
 
-    const PERFECT_MATCH = 4;
+    const PERFECT_MATCH = 1;
     const CLASSIFY_THRESHOLD = 2;
 
     let currentShape = 'cross';
@@ -868,8 +877,11 @@
 
         const featureResults = [];
         const colorClasses = ['hot', 'cool'];
-        for (let ki = 0; ki < KERNELS.length; ki++)
-            featureResults.push(convolve(input, KERNELS[ki].data));
+        for (let ki = 0; ki < KERNELS.length; ki++) {
+            const kernelSum = KERNELS[ki].data.flat().reduce((a, b) => a + b, 0);
+            const raw = convolve(input, KERNELS[ki].data);
+            featureResults.push(raw.map(row => row.map(v => v === kernelSum ? 1 : 0)));
+        }
 
         const fmRows = featureResults[0].length;
         const fmCols = featureResults[0][0].length;
@@ -884,9 +896,7 @@
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.textContent = fmap[r][c];
-                    if (fmap[r][c] >= PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
-                    else if (fmap[r][c] >= 3) cell.classList.add('warm');
-                    else if (fmap[r][c] >= 2) cell.style.background = 'rgba(255,255,255,0.08)';
+                    if (fmap[r][c] === PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
                     cell.classList.add('pop');
                     cell.style.animationDelay = `${(r * fmCols + c) * 60}ms`;
                     featureGrid.appendChild(cell);
@@ -927,8 +937,7 @@
                     cell.className = 'cell pop';
                     cell.textContent = pooled[r][c];
                     cell.style.animationDelay = `${(r * 2 + c) * 150}ms`;
-                    if (pooled[r][c] >= PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
-                    else if (pooled[r][c] >= 3) cell.classList.add('warm');
+                    if (pooled[r][c] === PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
                     pooledGrid.appendChild(cell);
                 }
         }
@@ -971,15 +980,15 @@
             denseRow.appendChild(dc);
         }
 
-        const perfectCount = flatValues.filter(v => v >= PERFECT_MATCH).length;
+        const perfectCount = flatValues.filter(v => v === PERFECT_MATCH).length;
         const isDetected = perfectCount >= CLASSIFY_THRESHOLD;
 
         await delay(600);
 
-        // Highlight the 4s
+        // Highlight the 1s
         const cells = denseRow.querySelectorAll('.dense-cell');
         for (let i = 0; i < flatValues.length; i++) {
-            if (flatValues[i] >= PERFECT_MATCH) {
+            if (flatValues[i] === PERFECT_MATCH) {
                 cells[i].classList.add('perfect');
             }
         }

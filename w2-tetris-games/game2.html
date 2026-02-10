@@ -19,7 +19,9 @@
             --piece2: #ffe04a;
             --piece3: #b04aff;
             --grid-line: #1e1e2e;
-            --cell-size: 38px;
+            --cell-size: clamp(26px, 4.2vh, 38px);
+            --mini-cell: clamp(16px, 2.8vh, 26px);
+            --fmap-cell: clamp(18px, 3vh, 28px);
             --success: #4aff7a;
             --wrong: #ff4a4a;
         }
@@ -82,11 +84,11 @@
 
         .game-layout {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             align-items: center;
             justify-content: center;
             width: 100%;
-            flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
         /* === PIECES PANEL (left) === */
@@ -119,14 +121,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 8px;
             border-radius: 10px;
             border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
             background: rgba(255, 255, 255, 0.02);
-            width: calc(4 * 26px + 3 * 1px + 20px + 4px);
-            height: calc(4 * 26px + 3 * 1px + 20px + 4px);
+            width: calc(4 * var(--mini-cell) + 3 * 1px + 16px + 4px);
+            height: calc(4 * var(--mini-cell) + 3 * 1px + 16px + 4px);
         }
 
         .piece-slot:hover {
@@ -168,8 +170,8 @@
         }
 
         .piece-mini-grid .mini-cell {
-            width: 26px;
-            height: 26px;
+            width: var(--mini-cell);
+            height: var(--mini-cell);
             border-radius: 2px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.04);
@@ -307,14 +309,15 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 16px 20px;
-            margin-top: 14px;
+            padding: 12px 20px;
+            margin-top: 10px;
             text-align: center;
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
             width: 100%;
+            overflow: hidden;
         }
 
         .fmap-header {
@@ -397,8 +400,8 @@
         }
 
         .fmap-grid .fm-cell {
-            width: 28px;
-            height: 28px;
+            width: var(--fmap-cell);
+            height: var(--fmap-cell);
             border-radius: 2px;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.04);
@@ -414,11 +417,17 @@
         @media (max-width: 900px) {
             .game-layout {
                 flex-direction: column;
+                gap: 10px;
             }
 
-            :root {
-                --cell-size: 36px;
+            .piece-slots {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
             }
+
+            .pieces-panel { padding: 10px; }
+            .pieces-panel h2 { margin-bottom: 8px; }
         }
     </style>
 </head>
@@ -671,7 +680,7 @@
 
             const miniGrid = document.createElement('div');
             miniGrid.className = 'piece-mini-grid';
-            miniGrid.style.gridTemplateColumns = `repeat(4, 26px)`;
+            miniGrid.style.gridTemplateColumns = `repeat(4, var(--mini-cell))`;
             for (let r = 0; r < 4; r++) {
                 for (let c = 0; c < 4; c++) {
                     const mc = document.createElement('div');
@@ -707,7 +716,7 @@
         stack.innerHTML = '';
 
         const depth = boardSnapshots.length;
-        const fmapSize = BOARD_SIZE - 3 + 1; // 8
+        const fmapSize = BOARD_SIZE - 4 + 1; // 7 (10x10 board, 4x4 kernel)
 
         document.getElementById('fmapDepthLabel').textContent = `Depth: ${depth} / 4`;
 
@@ -719,8 +728,8 @@
             return;
         }
 
-        const cellSize = 28;
-        const kernel = KERNELS[0].data;
+        const vh = window.innerHeight / 100;
+        const cellSize = Math.max(18, Math.min(3 * vh, 28));
         const containerW = stack.clientWidth || 600;
         const layerW = fmapSize * cellSize + (fmapSize - 1) + 10;
 
@@ -734,7 +743,10 @@
         const unfoldStart = (containerW - totalUnfoldW) / 2;
 
         boardSnapshots.forEach((snapshot, layerIdx) => {
-            const fmap = convolve(snapshot.board, kernel);
+            const kernel = pieces[snapshot.pieceIdx].shape;
+            const kernelSum = kernel.flat().reduce((a, b) => a + b, 0);
+            const rawFmap = convolve(snapshot.board, kernel);
+            const fmap = rawFmap.map(row => row.map(v => v === kernelSum ? 1 : 0));
             const pieceColor = snapshot.color;
 
             const layer = document.createElement('div');
@@ -766,16 +778,14 @@
 
             const grid = document.createElement('div');
             grid.className = 'fmap-grid';
-            grid.style.gridTemplateColumns = `repeat(${fmapSize}, ${cellSize}px)`;
+            grid.style.gridTemplateColumns = `repeat(${fmapSize}, var(--fmap-cell))`;
             for (const row of fmap)
                 for (const v of row) {
                     const cell = document.createElement('div');
                     cell.className = 'fm-cell';
                     cell.textContent = v;
-                    if (v > 0) {
-                        const alpha = 0.15 + (v / 4) * 0.85;
+                    if (v === 1) {
                         cell.style.background = pieceColor;
-                        cell.style.opacity = alpha;
                         cell.style.color = '#fff';
                         cell.style.fontWeight = '700';
                     }
@@ -872,7 +882,7 @@
             // Correct!
             piece.found = true;
             foundCount++;
-            boardSnapshots.push({ board: getPieceSnapshot(selectedPiece), color: piece.rawColor });
+            boardSnapshots.push({ board: getPieceSnapshot(selectedPiece), color: piece.rawColor, pieceIdx: selectedPiece });
             selectedPiece = -1;
             renderBoard();
             renderPieces();
