@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNN Pipeline — Cubes 1–2–3–4</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0a0a10;
+      --surface:#12121c;
+      --border:#222236;
+      --text:#e0dff0;
+      --dim:#5e5c78;
+
+      --accent:#00e4a0;
+      --hot:#ff5c5c;
+      --cool:#4a9eff;
+      --purple:#a86eff;
+      --pink:#ff6eb4;
+
+      --cell:32px;
+      --kcell:20px;
+
+      --cube: 90px;
+      --cube-pad: 8px;
+      --cube-depth: 18px;
+      --cube-skew: 20deg;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      background:var(--bg); color:var(--text);
+      font-family:'Sora',sans-serif;
+      min-height:100vh; overflow-x:auto;
+    }
+    body::before{
+      content:''; position:fixed; inset:0;
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(0,228,160,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(168,110,255,0.03) 0%, transparent 60%);
+      pointer-events:none;
+    }
+
+    .app{
+      padding:16px 18px 10px;
+      min-height:100vh;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+    }
+    header{ text-align:center; margin-bottom:10px; }
+    header h1{
+      font-family:'JetBrains Mono',monospace;
+      font-size:1.25rem; font-weight:900;
+      letter-spacing:-0.5px; color:var(--accent);
+    }
+    header p{ color:var(--dim); font-size:0.78rem; margin-top:2px; font-weight:300; }
+
+    .controls{
+      display:flex; gap:8px; margin-bottom:10px;
+      align-items:center; flex-wrap:wrap; justify-content:center;
+    }
+    .btn{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.66rem; padding:6px 12px;
+      border:1px solid var(--border); border-radius:6px;
+      background:var(--surface); color:var(--text);
+      cursor:pointer; transition:all 0.2s;
+      letter-spacing:0.4px; text-transform:uppercase;
+    }
+    .btn:hover{ border-color:var(--accent); color:var(--accent); }
+    .btn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:900; }
+    .btn.run{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:900; padding:6px 16px; }
+    .btn.run:hover{ box-shadow:0 0 20px rgba(0,228,160,0.3); transform:translateY(-1px); }
+
+    .step-bar{ display:flex; gap:5px; margin-bottom:10px; align-items:center; }
+    .sd{ width:7px; height:7px; border-radius:50%; background:var(--border); transition:all 0.3s; }
+    .sd.done{ background:var(--accent); box-shadow:0 0 5px rgba(0,228,160,0.35); }
+    .sd.now{ background:var(--accent); transform:scale(1.4); box-shadow:0 0 8px rgba(0,228,160,0.5); }
+    .st{ font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--dim); margin-left:5px; }
+
+    .pipeline{
+      width:100%;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom:8px;
+    }
+    .block{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      min-width: fit-content;
+      opacity:0.18;
+      transition: opacity 0.4s ease, transform 0.35s ease;
+    }
+    .block.on{ opacity:1; transform: translateY(-1px); }
+
+    .lbl{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.55rem;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      color:var(--dim);
+      text-align:center;
+      white-space:nowrap;
+    }
+
+    .arrow{
+      display:flex; align-items:center; justify-content:center;
+      padding-top:26px;
+      opacity:0.12;
+      transition: opacity 0.35s ease;
+      min-width: 26px;
+    }
+    .arrow.on{ opacity:1; }
+    .arrow svg{ width:26px; height:14px; }
+    .al{ stroke:var(--accent); stroke-width:1.5; stroke-dasharray:4 3; }
+    .arrow.on .al{ animation: df 0.85s linear infinite; }
+    @keyframes df{ to{ stroke-dashoffset:-7; } }
+    .ahead{ fill:var(--accent); }
+
+    .grid{ display:inline-grid; gap:1px; }
+    .ic{
+      width:var(--cell); height:var(--cell);
+      border-radius:2px;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.04);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.55rem;
+      color:rgba(255,255,255,0.18);
+      transition:all 0.25s ease;
+    }
+    .ic.on{ background:var(--text); color:var(--bg); font-weight:900; box-shadow:0 0 6px rgba(224,223,240,0.12); }
+    .ic.hl{ outline:2px solid var(--accent); outline-offset:-1px; }
+
+    .filters-col{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+    }
+    .kbox{
+      width: max-content;
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:8px;
+      padding:6px 8px 8px;
+      background:rgba(255,255,255,0.02);
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .kbox.active{
+      border-color: rgba(0,228,160,0.5);
+      box-shadow: 0 0 14px rgba(0,228,160,0.12);
+      transform: translateY(-1px);
+    }
+    .kname{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.5rem;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      margin-bottom:5px;
+      text-align:center;
+      font-weight:900;
+    }
+    .kg{ display:inline-grid; gap:1px; }
+    .kc{
+      width:var(--kcell); height:var(--kcell);
+      border-radius:2px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.05);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.48rem;
+      color:var(--dim);
+    }
+    .kc.k1{ background:rgba(0,228,160,0.15); border-color:rgba(0,228,160,0.3); color:var(--accent); font-weight:900; }
+
+    .cubes-row{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:center;
+      flex-wrap:nowrap;
+    }
+    .cube-card{
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:10px;
+      padding:10px 10px 12px;
+      background:rgba(255,255,255,0.02);
+      transition: transform 0.25s ease, border-color 0.25s ease;
+      min-width: max-content;
+    }
+    .cube-card.active{
+      border-color: rgba(0,228,160,0.5);
+      box-shadow: 0 0 14px rgba(0,228,160,0.10);
+      transform: translateY(-1px);
+    }
+    .cube-title{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.52rem;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      text-align:center;
+      margin-bottom:8px;
+      font-weight:900;
+    }
+
+    .posGrid{
+      display:grid;
+      gap:2px;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:8px;
+      padding:6px;
+      background:rgba(255,255,255,0.01);
+    }
+    .posGrid.r4{ grid-template-rows: repeat(4, 28px); }
+    .posGrid.r5{ grid-template-rows: repeat(5, 28px); }
+    .posGrid.c4{ grid-template-columns: repeat(4, 28px); }
+    .pc{
+      border-radius:4px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:rgba(255,255,255,0.02);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-weight:900;
+      font-size:0.75rem;
+      color: rgba(255,255,255,0.15);
+      transition: all 0.25s ease;
+    }
+    .pc.hit{
+      color:#fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .pc.hot{ background:var(--hot); }
+    .pc.cool{ background:var(--cool); }
+    .pc.purple{ background:var(--purple); }
+    .pc.pink{ background:var(--pink); }
+
+
+
+    .cube{
+      position:relative;
+      width:var(--cube);
+      height:var(--cube);
+      border-radius:10px;
+      background:rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.07);
+      overflow: visible;
+    }
+    .cube::before{
+      content:"";
+      position:absolute;
+      left:10px;
+      top:calc(-1 * var(--cube-depth));
+      width:calc(100% - 10px);
+      height:var(--cube-depth);
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.06);
+      border-bottom:none;
+      transform:skewX(calc(-1 * var(--cube-skew)));
+      transform-origin:left bottom;
+      border-top-left-radius:10px;
+      border-top-right-radius:10px;
+    }
+    .cube::after{
+      content:"";
+      position:absolute;
+      right:calc(-1 * var(--cube-depth));
+      top:10px;
+      width:var(--cube-depth);
+      height:calc(100% - 10px);
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.06);
+      border-left:none;
+      transform:skewY(var(--cube-skew));
+      transform-origin:left top;
+      border-top-right-radius:10px;
+      border-bottom-right-radius:10px;
+    }
+
+    .face{
+      position:absolute;
+      inset:0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:1fr 1fr;
+      gap:2px;
+      padding:8px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.01);
+    }
+    .q{
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.02);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-weight:900;
+      font-size:1.05rem;
+      color: rgba(255,255,255,0.25);
+      transition: all 0.25s ease;
+      user-select:none;
+    }
+
+    .q.hit{
+      color:#fff;
+      box-shadow: 0 0 18px rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.14);
+    }
+    .q.hot{ background:var(--hot); box-shadow:0 0 16px rgba(255,92,92,0.22); }
+    .q.cool{ background:var(--cool); box-shadow:0 0 16px rgba(74,158,255,0.22); }
+    .q.purple{ background:var(--purple); box-shadow:0 0 16px rgba(168,110,255,0.22); }
+    .q.pink{ background:var(--pink); box-shadow:0 0 16px rgba(255,110,180,0.22); }
+
+
+    .q.template{
+      background: rgba(255,255,255,0.02);
+      color: rgba(255,255,255,0.35);
+    }
+
+    .out{
+      width:72px; height:72px;
+      border-radius:14px;
+      border:2px solid var(--border);
+      background:var(--surface);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-weight:900;
+      font-size:2.2rem;
+      transition: all 0.35s ease;
+    }
+    .out.y{
+      color:var(--accent); border-color:var(--accent);
+      background: rgba(0,228,160,0.09);
+      box-shadow: 0 0 26px rgba(0,228,160,0.22);
+    }
+    .out.n{
+      color:var(--hot); border-color:var(--hot);
+      background: rgba(255,92,92,0.08);
+      box-shadow: 0 0 26px rgba(255,92,92,0.16);
+    }
+    .ocap{ font-size:0.72rem; font-weight:700; text-align:center; color:var(--dim); }
+
+    .footer{
+      padding:8px 0; text-align:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.55rem; color:var(--dim); line-height:1.5;
+      max-width: 980px;
+    }
+
+    @media (max-width: 1100px){
+      :root{ --cell:28px; --cube: 84px; --cube-depth: 16px; }
+    }
+    @media (max-width: 800px){
+      :root{ --cell:24px; --cube: 78px; --cube-depth: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>CNN Pipeline — Cubes 1–2–3–4</h1>
+      <p>2×2 maps are cubes with quadrants 1–2–3–4 (position labels)</p>
+    </header>
+
+    <div class="controls">
+      <span style="font-family:'JetBrains Mono';font-size:0.6rem;color:var(--dim);">EXAMPLE:</span>
+      <button class="btn active" id="btnEx1" onclick="pick('ex1')">Example 1</button>
+      <button class="btn" id="btnEx2" onclick="pick('ex2')">Example 2</button>
+      <button class="btn" id="btnEx3" onclick="pick('ex3')">Example 3</button>
+      <button class="btn run" onclick="run()">▶ Run</button>
+    </div>
+
+    <div class="step-bar">
+      <div class="sd" id="d0"></div><div class="sd" id="d1"></div><div class="sd" id="d2"></div><div class="sd" id="d3"></div>
+      <div class="sd" id="d4"></div><div class="sd" id="d5"></div><div class="sd" id="d6"></div><div class="sd" id="d7"></div>
+      <span class="st" id="sT">Choose an example and press Run</span>
+    </div>
+
+    <div class="pipeline">
+
+      <!-- INPUT -->
+      <div class="block" id="bIn">
+        <div class="lbl">Input</div>
+        <div class="grid" id="inGrid"></div>
+      </div>
+
+      <div class="arrow" id="a1">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- FILTERS (colonna) -->
+      <div class="block" id="bK">
+        <div class="lbl">4 Filters</div>
+        <div class="filters-col" id="kCol"></div>
+      </div>
+
+      <div class="arrow" id="a2">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- FILTER POSITIONS -->
+      <div class="block" id="bP">
+        <div class="lbl" id="posLbl">Filter positions 4×4</div>
+        <div class="posGrid r4 c4" id="posGrid"></div>
+      </div>
+
+      <div class="arrow" id="a3">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- ID CUBE -->
+      <div class="block" id="bID">
+        <div class="lbl">ID Matrix 2×2 (1..4)</div>
+        <div class="cube" id="idCube">
+          <div class="face" id="idFace"></div>
+        </div>
+      </div>
+
+      <div class="arrow" id="a4">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- TEMPLATE CUBE -->
+      <div class="block" id="bTpl">
+        <div class="lbl">Final filter (template)</div>
+        <div class="cube" id="tplCube">
+          <div class="face" id="tplFace"></div>
+        </div>
+      </div>
+
+      <div class="arrow" id="a5">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="block" id="bOut">
+        <div class="lbl">Output</div>
+        <div class="out" id="outV">?</div>
+        <div class="ocap" id="outC"></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+const SZ = 6, KS = 3;
+const CSS_COLORS = ['var(--hot)','var(--cool)','var(--purple)','var(--pink)'];
+const COLORS = ['hot','cool','purple','pink'];
+
+const KERNELS = [
+  { id:1, data:[[1,0,0],[1,1,0],[1,0,0]] },
+  { id:2, data:[[0,1,0],[1,1,0],[0,1,0]] },
+  { id:3, data:[[1,0,0],[1,1,1],[0,0,0]] },
+  { id:4, data:[[0,0,1],[1,1,1],[0,0,0]] }
+];
+
+const CUP_1 = [
+  [0,0,0,0,0,0],
+  [0,1,0,0,1,0],
+  [0,1,1,1,1,0],
+  [1,1,0,0,1,1],
+  [1,1,1,1,1,1],
+  [0,0,0,0,0,0]
+];
+
+const CUP_2 = [
+  [0,1,0,0,1,0],
+  [0,1,1,1,1,0],
+  [1,1,0,0,1,1],
+  [1,1,1,1,1,1],
+  [0,0,0,0,0,0],
+  [0,0,0,0,0,0]
+];
+
+const CUP_3 = [
+  [0,0,0,0,0,0],
+  [0,0,0,0,0,0],
+  [0,1,0,0,1,0],
+  [0,1,1,1,1,0],
+  [1,1,0,0,1,1],
+  [1,1,1,1,1,1]
+];
+
+function getInput(){
+  if(variant === 'ex1') return CUP_1;
+  if(variant === 'ex2') return CUP_2;
+  if(variant === 'ex3') return CUP_3;
+  return CUP_1;
+}
+
+let variant = 'ex1';
+let busy = false;
+
+const $ = id => document.getElementById(id);
+function el(tag, cls){ const e = document.createElement(tag); if(cls) e.className = cls; return e; }
+
+const POS_MATRIX_1 = [
+  [0, 0, 0, 0],
+  [0, 1, 0, 2],
+  [0, 0, 0, 0],
+  [3, 0, 0, 4]
+];
+
+const POS_MATRIX_2 = [
+  [0, 1, 0, 2],
+  [0, 0, 0, 0],
+  [3, 0, 0, 4],
+  [0, 0, 0, 0]
+];
+
+const POS_MATRIX_3 = [
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 1, 0, 2],
+  [0, 0, 0, 0],
+  [3, 0, 0, 4]
+];
+
+function getPosMatrix(){
+  if(variant === 'ex1') return POS_MATRIX_1;
+  if(variant === 'ex2') return POS_MATRIX_2;
+  if(variant === 'ex3') return POS_MATRIX_3;
+  return POS_MATRIX_1;
+}
+
+function getIDFromPosMatrix(posMatrix){
+  const id2x2 = [[0,0],[0,0]];
+  const numRows = posMatrix.length;
+  const midRow = Math.ceil(numRows / 2);
+  
+  for(let r=0; r<midRow; r++) for(let c=0;c<2;c++) if(posMatrix[r][c]>0) id2x2[0][0]=posMatrix[r][c];
+  for(let r=0; r<midRow; r++) for(let c=2;c<4;c++) if(posMatrix[r][c]>0) id2x2[0][1]=posMatrix[r][c];
+  for(let r=midRow; r<numRows; r++) for(let c=0;c<2;c++) if(posMatrix[r][c]>0) id2x2[1][0]=posMatrix[r][c];
+  for(let r=midRow; r<numRows; r++) for(let c=2;c<4;c++) if(posMatrix[r][c]>0) id2x2[1][1]=posMatrix[r][c];
+  return id2x2;
+}
+function pick(v){
+  if(busy) return;
+  variant = v;
+  ['Ex1','Ex2','Ex3'].forEach(k => {
+    const b = $('btn' + k);
+    const map = {Ex1:'ex1',Ex2:'ex2',Ex3:'ex3'};
+    b.className = 'btn' + (map[k] === v ? ' active' : '');
+  });
+  reset();
+}
+
+function conv(inp, kern){
+  const out = [];
+  for(let r=0;r<=SZ-KS;r++){
+    const row = [];
+    for(let c=0;c<=SZ-KS;c++){
+      let s=0;
+      for(let kr=0;kr<KS;kr++)
+        for(let kc=0;kc<KS;kc++)
+          s += inp[r+kr][c+kc]*kern[kr][kc];
+      row.push(s);
+    }
+    out.push(row);
+  }
+  return out;
+}
+function maxpool2x2(fm4x4){
+  const out = [[0,0],[0,0]];
+  for(let R=0;R<2;R++){
+    for(let C=0;C<2;C++){
+      const r = R*2, c = C*2;
+      out[R][C] = Math.max(
+        fm4x4[r][c], fm4x4[r][c+1],
+        fm4x4[r+1][c], fm4x4[r+1][c+1]
+      );
+    }
+  }
+  return out;
+}
+function ksum(ki){
+  return KERNELS[ki].data.flat().reduce((a,b)=>a+b,0);
+}
+
+function permute(arr){
+  const out = [];
+  function rec(prefix, rest){
+    if(rest.length === 0){ out.push(prefix); return; }
+    for(let i=0;i<rest.length;i++){
+      rec(prefix.concat([rest[i]]), rest.slice(0,i).concat(rest.slice(i+1)));
+    }
+  }
+  rec([], arr);
+  return out;
+}
+function bestAssignment(pooledAll){
+  const cells = [[0,0],[0,1],[1,0],[1,1]];
+  const perms = permute(cells);
+  let best = null;
+  for(const perm of perms){
+    let score = 0;
+    for(let ki=0;ki<4;ki++){
+      const [r,c] = perm[ki];
+      score += pooledAll[ki][r][c];
+    }
+    if(best === null || score > best.score) best = {score, perm};
+  }
+  const comb = [[0,0],[0,0]];
+  for(let ki=0;ki<4;ki++){
+    const [r,c] = best.perm[ki];
+    comb[r][c] = ki+1;
+  }
+  return comb;
+}
+function same2x2(a,b){
+  for(let r=0;r<2;r++) for(let c=0;c<2;c++) if(a[r][c] !== b[r][c]) return false;
+  return true;
+}
+
+function buildInputGrid(){
+  const inp = getInput();
+  const numRows = inp.length;
+  const numCols = inp[0].length;
+  
+  const inG = $('inGrid');
+  inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
+  inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
+  inG.innerHTML = '';
+  for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
+}
+
+function build(){
+  buildInputGrid();
+  const kCol = $('kCol');
+  kCol.innerHTML = '';
+  KERNELS.forEach((k,ki)=>{
+    const box = el('div','kbox'); box.id = `kbox${ki}`;
+    const nm = el('div','kname');
+    nm.textContent = `Filtro ${k.id}`;
+    nm.style.color = CSS_COLORS[ki];
+    box.appendChild(nm);
+
+    const kg = el('div','kg');
+    kg.style.gridTemplateColumns = `repeat(${KS}, var(--kcell))`;
+    for(let r=0;r<KS;r++){
+      for(let c=0;c<KS;c++){
+        const ce = el('div', 'kc' + (k.data[r][c] ? ' k1' : ''));
+        ce.textContent = k.data[r][c];
+        kg.appendChild(ce);
+      }
+    }
+    box.appendChild(kg);
+    kCol.appendChild(box);
+  });
+
+  buildPosGrid();
+  const idFace = $('idFace'); idFace.innerHTML = '';
+  for(let i=0;i<4;i++){
+    const q = el('div','q');
+    q.textContent = '·';
+    q.style.color = 'rgba(255,255,255,0.25)';
+    idFace.appendChild(q);
+  }
+  const tpl = $('tplFace'); tpl.innerHTML = '';
+  [[1,2],[3,4]].flat().forEach(v=>{
+    const q = el('div','q template');
+    q.textContent = v;
+    tpl.appendChild(q);
+  });
+}
+
+function renderInput(inp, hr, hc){
+  const numRows = inp.length;
+  const numCols = inp[0].length;
+  
+  const inG = $('inGrid');
+  const currentCells = inG.children.length;
+  if(currentCells !== numRows * numCols){
+    inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
+    inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
+    inG.innerHTML = '';
+    for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
+  }
+  
+  const cells = [...inG.children];
+  let idx = 0;
+  for(let r=0;r<numRows;r++){
+    for(let c=0;c<numCols;c++){
+      const ce = cells[idx++];
+      ce.className = 'ic';
+      ce.textContent = inp[r][c];
+      if(inp[r][c]) ce.classList.add('on');
+      if(hr !== undefined && r>=hr && r<hr+KS && c>=hc && c<hc+KS) ce.classList.add('hl');
+    }
+  }
+}
+
+function buildPosGrid(){
+  const posMatrix = getPosMatrix();
+  const numRows = posMatrix.length;
+  const numCols = 4;
+  
+  $('posLbl').textContent = `Filter positions ${numRows}×${numCols}`;
+  const posGrid = $('posGrid');
+  posGrid.className = `posGrid r${numRows} c${numCols}`;
+  posGrid.innerHTML = '';
+  
+  for(let i=0; i<numRows*numCols; i++){
+    const c = el('div','pc');
+    c.textContent = '';
+    posGrid.appendChild(c);
+  }
+}
+
+function clearPosGrid(){
+  buildPosGrid();
+}
+
+function renderPosGrid(fmaps){
+  const posGrid = $('posGrid');
+  const cells = [...posGrid.children];
+  
+  for(let r=0; r<4; r++){
+    for(let c=0; c<4; c++){
+      const idx = r*4 + c;
+      const cell = cells[idx];
+      let maxVal = 0;
+      let maxKi = -1;
+      for(let ki=0; ki<4; ki++){
+        const ks = ksum(ki);
+        if(fmaps[ki][r][c] === ks && fmaps[ki][r][c] > maxVal){
+          maxVal = fmaps[ki][r][c];
+          maxKi = ki;
+        }
+      }
+      
+      if(maxKi >= 0){
+        cell.textContent = maxKi + 1;
+        cell.classList.add('hit', COLORS[maxKi]);
+      } else {
+        cell.textContent = '';
+      }
+    }
+  }
+}
+
+function renderIDCube(comb2x2){
+  const idFace = $('idFace');
+  idFace.innerHTML = '';
+  const ids = [
+    comb2x2[0][0],
+    comb2x2[0][1],
+    comb2x2[1][0],
+    comb2x2[1][1]
+  ];
+
+  for(let i=0;i<4;i++){
+    const id = ids[i];
+    const q = el('div','q');
+    if(id > 0){
+      const ki = id - 1;
+      q.className = 'q hit ' + COLORS[ki];
+      q.textContent = id;
+    } else {
+      q.textContent = '·';
+      q.style.color = 'rgba(255,255,255,0.25)';
+    }
+    idFace.appendChild(q);
+  }
+}
+
+function setStep(i, t){
+  for(let j=0;j<8;j++){
+    const d = $('d'+j);
+    d.className = (j<i) ? 'sd done' : (j===i ? 'sd now' : 'sd');
+  }
+  $('sT').textContent = t;
+}
+function setOn(id, on){
+  const e = $(id);
+  if(!e) return;
+  e.classList.toggle('on', !!on);
+}
+function reset(){
+  ['bIn','bK','bP','bID','bTpl','bOut'].forEach(id => setOn(id,false));
+  ['a1','a2','a3','a4','a5'].forEach(id => $(id).classList.remove('on'));
+
+  for(let ki=0;ki<4;ki++){
+    $(`kbox${ki}`).classList.remove('active');
+  }
+
+  setStep(-1,'Choose an example and press Run');
+  $('outV').textContent='?';
+  $('outV').className='out';
+  $('outC').textContent='';
+
+  renderInput(getInput());
+
+  clearPosGrid();
+  const idFace = $('idFace');
+  idFace.innerHTML = '';
+  for(let i=0;i<4;i++){
+    const q = el('div','q');
+    q.textContent = '·';
+    q.style.color = 'rgba(255,255,255,0.25)';
+    idFace.appendChild(q);
+  }
+}
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function run(){
+  if(busy) return;
+  busy = true;
+
+  setStep(0,'Input loaded');
+  setOn('bIn', true);
+  renderInput(getInput());
+  await wait(220);
+
+  setStep(1,'Applying 4 filters');
+  $('a1').classList.add('on');
+  setOn('bK', true);
+  await wait(200);
+
+  const posMatrix = getPosMatrix();
+  const numRows = posMatrix.length;
+  const numCols = 4;
+  
+  $('posLbl').textContent = `Filter positions ${numRows}×${numCols}`;
+  const posGrid = $('posGrid');
+  posGrid.className = `posGrid r${numRows} c${numCols}`;
+  
+  posGrid.innerHTML = '';
+  for(let i=0; i<numRows*numCols; i++){
+    const c = el('div','pc');
+    posGrid.appendChild(c);
+  }
+  
+  setStep(2,`Filter positions in ${numRows}×${numCols} feature map`);
+  $('a2').classList.add('on');
+  setOn('bP', true);
+
+  const cells = [...posGrid.children];
+  
+  for(let i=0; i<numRows*numCols; i++){
+    const r = Math.floor(i/numCols);
+    const c = i % numCols;
+    const cell = cells[i];
+    const val = posMatrix[r][c];
+    
+    if(val > 0){
+      cell.textContent = val;
+      cell.classList.add('hit', COLORS[val - 1]);
+    }
+    await wait(50);
+  }
+  await wait(120);
+
+  setStep(3,'Building ID matrix (winner per quadrant)');
+  $('a3').classList.add('on');
+  setOn('bID', true);
+
+  const comb = getIDFromPosMatrix(posMatrix);
+  renderIDCube(comb);
+  await wait(240);
+
+  setStep(4,'Comparing with template');
+  $('a4').classList.add('on');
+  setOn('bTpl', true);
+  $('a5').classList.add('on');
+  setOn('bOut', true);
+
+  const TEMPLATE = [[1,2],[3,4]];
+  const ok = same2x2(comb, TEMPLATE);
+
+  const outV = $('outV');
+  const outC = $('outC');
+  outV.textContent = ok ? '1' : '0';
+  outV.className = 'out ' + (ok ? 'y' : 'n');
+  outC.textContent = ok ? 'Match template (cup)' : 'No match';
+  outC.style.color = ok ? 'var(--accent)' : 'var(--hot)';
+
+  setStep(7, ok ? '✓ Output 1' : '✗ Output 0');
+  busy = false;
+}
+
+build();
+reset();
+</script>
+</body>
+</html>
+
