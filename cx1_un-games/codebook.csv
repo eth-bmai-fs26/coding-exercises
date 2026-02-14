@@ -1,0 +1,357 @@
+column_name,description,source,role
+gdp_per_capita_usd,"GDP per capita, current US dollars",World Bank WDI,target
+life_expectancy_at_birth,"Life expectancy at birth, total (years)",World Bank WDI,causal
+fertility_rate,"Fertility rate, total (births per woman)",World Bank WDI,causal
+infant_mortality_per_1000,"Mortality rate, infant (per 1,000 live births)",World Bank WDI,causal
+pct_urban_population,Urban population (% of total population),World Bank WDI,causal
+secondary_enrollment_gross,"School enrollment, secondary (% gross)",World Bank WDI,causal
+gross_capital_formation_pct_gdp,Gross capital formation (% of GDP),World Bank WDI,causal
+fdi_net_inflows_pct_gdp,"Foreign direct investment, net inflows (% of GDP)",World Bank WDI,causal
+gross_savings_pct_gdp,Gross savings (% of GDP),World Bank WDI,causal
+trade_pct_gdp,Trade (% of GDP),World Bank WDI,causal
+exports_pct_gdp,Exports of goods and services (% of GDP),World Bank WDI,causal
+pct_internet_users,Individuals using the Internet (% of population),World Bank WDI,causal
+mobile_subscriptions_per_100,Mobile cellular subscriptions (per 100 people),World Bank WDI,causal
+electric_power_consumption_kwh_pc,Electric power consumption (kWh per capita),World Bank WDI,causal
+inflation_consumer_prices_annual,"Inflation, consumer prices (annual %)",World Bank WDI,causal
+govt_consumption_pct_gdp,General government final consumption expenditure (% of GDP),World Bank WDI,causal
+total_natural_resources_rent_pct_gdp,Total natural resources rents (% of GDP),World Bank WDI,causal
+rule_of_law_index,Rule of Law Index,World Bank WGI,causal
+control_of_corruption_index,Control of Corruption Index,World Bank WGI,causal
+regulatory_quality_index,Regulatory Quality Index,World Bank WGI,causal
+government_effectiveness_index,Government Effectiveness Index,World Bank WGI,causal
+political_stability_index,Political Stability and Absence of Violence Index,World Bank WGI,causal
+voice_and_accountability_index,Voice and Accountability Index,World Bank WGI,causal
+pct_forest_area,Pct Forest Area,World Bank WDI,noise
+pct_arable_land,Pct Arable Land,World Bank WDI,noise
+pm25_air_pollution,Pm25 Air Pollution,World Bank WDI,noise
+military_expenditure_pct_gdp,Military Expenditure Pct Gdp,World Bank WDI,noise
+health_expenditure_pct_gdp,Health Expenditure Pct Gdp,World Bank WDI,noise
+education_expenditure_pct_gdp,Education Expenditure Pct Gdp,World Bank WDI,noise
+unemployment_rate,Unemployment Rate,World Bank WDI,noise
+pct_employment_agriculture,Pct Employment Agriculture,World Bank WDI,noise
+pct_employment_industry,Pct Employment Industry,World Bank WDI,noise
+agriculture_value_added_pct_gdp,Agriculture Value Added Pct Gdp,World Bank WDI,noise
+industry_value_added_pct_gdp,Industry Value Added Pct Gdp,World Bank WDI,noise
+services_value_added_pct_gdp,Services Value Added Pct Gdp,World Bank WDI,noise
+pct_electricity_from_renewables,Pct Electricity From Renewables,World Bank WDI,noise
+pct_energy_from_renewables,Pct Energy From Renewables,World Bank WDI,noise
+land_area_sq_km,Land Area Sq Km,World Bank WDI,noise
+freshwater_withdrawal_pct,Freshwater Withdrawal Pct,World Bank WDI,noise
+pct_smoking_prevalence,Pct Smoking Prevalence,World Bank WDI,noise
+age_dependency_ratio,Age Dependency Ratio,World Bank WDI,noise
+pct_population_over_65,Pct Population Over 65,World Bank WDI,noise
+pct_population_under_15,Pct Population Under 15,World Bank WDI,noise
+current_account_balance_pct_gdp,Current Account Balance Pct Gdp,World Bank WDI,noise
+broad_money_pct_gdp,Broad Money Pct Gdp,World Bank WDI,noise
+noncommunicable_disease_mortality_pct,Noncommunicable Disease Mortality Pct,World Bank WDI,noise
+tuberculosis_incidence_per_100k,Tuberculosis Incidence Per 100K,World Bank WDI,noise
+maternal_mortality_ratio,Maternal Mortality Ratio,World Bank WDI,noise
+miss_universe_wins,Miss Universe wins (all-time),Wikipedia,bizarre
+ikea_stores,Number of IKEA stores,IKEA/Wikipedia,bizarre
+mcdonalds_restaurants,Number of McDonald's restaurants,Wikipedia,bizarre
+unesco_world_heritage_sites,UNESCO World Heritage Sites,UNESCO,bizarre
+olympic_medals_total,Olympic medals (all-time summer),Wikipedia,bizarre
+active_volcanoes,Number of active volcanoes,Smithsonian GVP,bizarre
+letters_in_country_name,Letters in country name,Computed,bizarre
+vowels_in_country_name,Vowels in country name,Computed,bizarre
+consonants_in_country_name,Consonants in country name,Computed,bizarre
+words_in_country_name,Words in country name,Computed,bizarre
+country_name_starts_with_vowel,Starts with vowel (1=yes),Computed,bizarre
+num_time_zones,Number of time zones,Wikipedia,bizarre
+num_border_countries,Number of land borders,Wikipedia,bizarre
+access_to_electricity_pct,Access To Electricity Pct,World Bank WDI,noise
+energy_use_kg_oil_equiv_pc,Energy Use Kg Oil Equiv Pc,World Bank WDI,noise
+energy_imports_pct_use,Energy Imports Pct Use,World Bank WDI,noise
+fossil_fuel_energy_consumption_pct,Fossil Fuel Energy Consumption Pct,World Bank WDI,noise
+electricity_from_coal_pct,Electricity From Coal Pct,World Bank WDI,noise
+electricity_from_natural_gas_pct,Electricity From Natural Gas Pct,World Bank WDI,noise
+electricity_from_nuclear_pct,Electricity From Nuclear Pct,World Bank WDI,noise
+electricity_from_hydro_pct,Electricity From Hydro Pct,World Bank WDI,noise
+electricity_from_oil_pct,Electricity From Oil Pct,World Bank WDI,noise
+air_transport_departures,Air Transport Departures,World Bank WDI,noise
+air_transport_passengers,Air Transport Passengers,World Bank WDI,noise
+domestic_credit_to_private_sector_pct_gdp,Domestic Credit To Private Sector Pct Gdp,World Bank WDI,noise
+reserves_months_imports,Reserves Months Imports,World Bank WDI,noise
+labor_force_total,Labor Force Total,World Bank WDI,noise
+labor_force_participation_rate,Labor Force Participation Rate,World Bank WDI,noise
+labor_force_participation_female,Labor Force Participation Female,World Bank WDI,noise
+labor_force_participation_male,Labor Force Participation Male,World Bank WDI,noise
+employment_in_services_pct,Employment In Services Pct,World Bank WDI,noise
+vulnerable_employment_pct,Vulnerable Employment Pct,World Bank WDI,noise
+wage_and_salaried_workers_pct,Wage And Salaried Workers Pct,World Bank WDI,noise
+self_employed_pct,Self Employed Pct,World Bank WDI,noise
+population_growth_annual_pct,Population Growth Annual Pct,World Bank WDI,noise
+birth_rate_crude_per_1000,Birth Rate Crude Per 1000,World Bank WDI,noise
+death_rate_crude_per_1000,Death Rate Crude Per 1000,World Bank WDI,noise
+survival_to_age_65_female,Survival To Age 65 Female,World Bank WDI,noise
+survival_to_age_65_male,Survival To Age 65 Male,World Bank WDI,noise
+population_ages_15_64_pct,Population Ages 15 64 Pct,World Bank WDI,noise
+rural_population_pct,Rural Population Pct,World Bank WDI,noise
+urban_population_growth_annual_pct,Urban Population Growth Annual Pct,World Bank WDI,noise
+age_dependency_ratio_old,Age Dependency Ratio Old,World Bank WDI,noise
+age_dependency_ratio_young,Age Dependency Ratio Young,World Bank WDI,noise
+food_production_index,Food Production Index,World Bank WDI,noise
+crop_production_index,Crop Production Index,World Bank WDI,noise
+livestock_production_index,Livestock Production Index,World Bank WDI,noise
+cereal_yield_kg_per_hectare,Cereal Yield Kg Per Hectare,World Bank WDI,noise
+fertilizer_consumption_kg_per_hectare,Fertilizer Consumption Kg Per Hectare,World Bank WDI,noise
+agricultural_land_pct,Agricultural Land Pct,World Bank WDI,noise
+arable_land_pct_land_area,Arable Land Pct Land Area,World Bank WDI,noise
+average_precipitation_mm_per_year,Average Precipitation Mm Per Year,World Bank WDI,noise
+capture_fisheries_production_metric_tons,Capture Fisheries Production Metric Tons,World Bank WDI,noise
+aquaculture_production_metric_tons,Aquaculture Production Metric Tons,World Bank WDI,noise
+freshwater_withdrawals_agriculture_pct,Freshwater Withdrawals Agriculture Pct,World Bank WDI,noise
+freshwater_withdrawals_industry_pct,Freshwater Withdrawals Industry Pct,World Bank WDI,noise
+freshwater_withdrawals_domestic_pct,Freshwater Withdrawals Domestic Pct,World Bank WDI,noise
+merchandise_trade_pct_gdp,Merchandise Trade Pct Gdp,World Bank WDI,noise
+high_tech_exports_current_usd,High Tech Exports Current Usd,World Bank WDI,noise
+high_tech_exports_pct_manufactured_exports,High Tech Exports Pct Manufactured Exports,World Bank WDI,noise
+fuel_imports_pct_merchandise_imports,Fuel Imports Pct Merchandise Imports,World Bank WDI,noise
+food_imports_pct_merchandise_imports,Food Imports Pct Merchandise Imports,World Bank WDI,noise
+manufactures_imports_pct_merchandise_imports,Manufactures Imports Pct Merchandise Imports,World Bank WDI,noise
+fuel_exports_pct_merchandise_exports,Fuel Exports Pct Merchandise Exports,World Bank WDI,noise
+food_exports_pct_merchandise_exports,Food Exports Pct Merchandise Exports,World Bank WDI,noise
+manufactures_exports_pct_merchandise_exports,Manufactures Exports Pct Merchandise Exports,World Bank WDI,noise
+merchandise_exports_current_usd,Merchandise Exports Current Usd,World Bank WDI,noise
+merchandise_imports_current_usd,Merchandise Imports Current Usd,World Bank WDI,noise
+scientific_technical_journal_articles,Scientific Technical Journal Articles,World Bank WDI,noise
+fixed_telephone_subscriptions_total,Fixed Telephone Subscriptions Total,World Bank WDI,noise
+fixed_telephone_per_100,Fixed Telephone Per 100,World Bank WDI,noise
+fixed_broadband_subscriptions,Fixed Broadband Subscriptions,World Bank WDI,noise
+fixed_broadband_per_100,Fixed Broadband Per 100,World Bank WDI,noise
+secure_internet_servers,Secure Internet Servers,World Bank WDI,noise
+secure_internet_servers_per_million,Secure Internet Servers Per Million,World Bank WDI,noise
+immunization_dpt_pct_children,Immunization Dpt Pct Children,World Bank WDI,noise
+immunization_measles_pct_children,Immunization Measles Pct Children,World Bank WDI,noise
+school_enrollment_primary_gross,School Enrollment Primary Gross,World Bank WDI,noise
+age_dependency_ratio_young_log,Log transform of age_dependency_ratio_young,Computed transformation,noise
+age_dependency_ratio_young_squared,Square of age_dependency_ratio_young,Computed transformation,noise
+age_dependency_ratio_young_cbrt,Cube root of age_dependency_ratio_young,Computed transformation,noise
+food_exports_pct_merchandise_exports_squared,Square of food_exports_pct_merchandise_exports,Computed transformation,noise
+food_exports_pct_merchandise_exports_cbrt,Cube root of food_exports_pct_merchandise_exports,Computed transformation,noise
+immunization_dpt_pct_children_squared,Square of immunization_dpt_pct_children,Computed transformation,noise
+immunization_dpt_pct_children_cbrt,Cube root of immunization_dpt_pct_children,Computed transformation,noise
+secure_internet_servers_squared,Square of secure_internet_servers,Computed transformation,noise
+secure_internet_servers_cbrt,Cube root of secure_internet_servers,Computed transformation,noise
+current_account_balance_pct_gdp_squared,Square of current_account_balance_pct_gdp,Computed transformation,noise
+current_account_balance_pct_gdp_cbrt,Cube root of current_account_balance_pct_gdp,Computed transformation,noise
+total_natural_resources_rent_pct_gdp_squared,Square of total_natural_resources_rent_pct_gdp,Computed transformation,noise
+total_natural_resources_rent_pct_gdp_cbrt,Cube root of total_natural_resources_rent_pct_gdp,Computed transformation,noise
+fuel_exports_pct_merchandise_exports_squared,Square of fuel_exports_pct_merchandise_exports,Computed transformation,noise
+fuel_exports_pct_merchandise_exports_cbrt,Cube root of fuel_exports_pct_merchandise_exports,Computed transformation,noise
+electricity_from_natural_gas_pct_squared,Square of electricity_from_natural_gas_pct,Computed transformation,noise
+electricity_from_natural_gas_pct_cbrt,Cube root of electricity_from_natural_gas_pct,Computed transformation,noise
+access_to_electricity_pct_squared,Square of access_to_electricity_pct,Computed transformation,noise
+access_to_electricity_pct_cbrt,Cube root of access_to_electricity_pct,Computed transformation,noise
+tuberculosis_incidence_per_100k_squared,Square of tuberculosis_incidence_per_100k,Computed transformation,noise
+tuberculosis_incidence_per_100k_cbrt,Cube root of tuberculosis_incidence_per_100k,Computed transformation,noise
+olympic_medals_total_squared,Square of olympic_medals_total,Computed transformation,noise
+olympic_medals_total_cbrt,Cube root of olympic_medals_total,Computed transformation,noise
+agriculture_value_added_pct_gdp_log,Log transform of agriculture_value_added_pct_gdp,Computed transformation,noise
+agriculture_value_added_pct_gdp_squared,Square of agriculture_value_added_pct_gdp,Computed transformation,noise
+agriculture_value_added_pct_gdp_cbrt,Cube root of agriculture_value_added_pct_gdp,Computed transformation,noise
+exports_pct_gdp_log,Log transform of exports_pct_gdp,Computed transformation,noise
+exports_pct_gdp_squared,Square of exports_pct_gdp,Computed transformation,noise
+exports_pct_gdp_cbrt,Cube root of exports_pct_gdp,Computed transformation,noise
+consonants_in_country_name_squared,Square of consonants_in_country_name,Computed transformation,noise
+consonants_in_country_name_cbrt,Cube root of consonants_in_country_name,Computed transformation,noise
+pm25_air_pollution_log,Log transform of pm25_air_pollution,Computed transformation,noise
+pm25_air_pollution_squared,Square of pm25_air_pollution,Computed transformation,noise
+pm25_air_pollution_cbrt,Cube root of pm25_air_pollution,Computed transformation,noise
+fixed_broadband_per_100_squared,Square of fixed_broadband_per_100,Computed transformation,noise
+fixed_broadband_per_100_cbrt,Cube root of fixed_broadband_per_100,Computed transformation,noise
+manufactures_exports_pct_merchandise_exports_squared,Square of manufactures_exports_pct_merchandise_exports,Computed transformation,noise
+manufactures_exports_pct_merchandise_exports_cbrt,Cube root of manufactures_exports_pct_merchandise_exports,Computed transformation,noise
+pct_employment_agriculture_log,Log transform of pct_employment_agriculture,Computed transformation,noise
+pct_employment_agriculture_squared,Square of pct_employment_agriculture,Computed transformation,noise
+pct_employment_agriculture_cbrt,Cube root of pct_employment_agriculture,Computed transformation,noise
+words_in_country_name_log,Log transform of words_in_country_name,Computed transformation,noise
+words_in_country_name_squared,Square of words_in_country_name,Computed transformation,noise
+words_in_country_name_cbrt,Cube root of words_in_country_name,Computed transformation,noise
+pct_population_under_15_log,Log transform of pct_population_under_15,Computed transformation,noise
+pct_population_under_15_squared,Square of pct_population_under_15,Computed transformation,noise
+pct_population_under_15_cbrt,Cube root of pct_population_under_15,Computed transformation,noise
+average_precipitation_mm_per_year_squared,Square of average_precipitation_mm_per_year,Computed transformation,noise
+average_precipitation_mm_per_year_cbrt,Cube root of average_precipitation_mm_per_year,Computed transformation,noise
+government_effectiveness_index_squared,Square of government_effectiveness_index,Computed transformation,noise
+government_effectiveness_index_cbrt,Cube root of government_effectiveness_index,Computed transformation,noise
+rule_of_law_index_squared,Square of rule_of_law_index,Computed transformation,noise
+rule_of_law_index_cbrt,Cube root of rule_of_law_index,Computed transformation,noise
+life_expectancy_at_birth_x_fertility_rate,Interaction: life_expectancy_at_birth × fertility_rate,Computed interaction,noise
+life_expectancy_at_birth_x_infant_mortality_per_1000,Interaction: life_expectancy_at_birth × infant_mortality_per_1000,Computed interaction,noise
+life_expectancy_at_birth_x_pct_urban_population,Interaction: life_expectancy_at_birth × pct_urban_population,Computed interaction,noise
+life_expectancy_at_birth_x_secondary_enrollment_gross,Interaction: life_expectancy_at_birth × secondary_enrollment_gross,Computed interaction,noise
+life_expectancy_at_birth_x_gross_capital_formation_pct_gdp,Interaction: life_expectancy_at_birth × gross_capital_formation_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_fdi_net_inflows_pct_gdp,Interaction: life_expectancy_at_birth × fdi_net_inflows_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_gross_savings_pct_gdp,Interaction: life_expectancy_at_birth × gross_savings_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_trade_pct_gdp,Interaction: life_expectancy_at_birth × trade_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_exports_pct_gdp,Interaction: life_expectancy_at_birth × exports_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_pct_internet_users,Interaction: life_expectancy_at_birth × pct_internet_users,Computed interaction,noise
+life_expectancy_at_birth_x_mobile_subscriptions_per_100,Interaction: life_expectancy_at_birth × mobile_subscriptions_per_100,Computed interaction,noise
+life_expectancy_at_birth_x_electric_power_consumption_kwh_pc,Interaction: life_expectancy_at_birth × electric_power_consumption_kwh_pc,Computed interaction,noise
+life_expectancy_at_birth_x_inflation_consumer_prices_annual,Interaction: life_expectancy_at_birth × inflation_consumer_prices_annual,Computed interaction,noise
+life_expectancy_at_birth_x_govt_consumption_pct_gdp,Interaction: life_expectancy_at_birth × govt_consumption_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_total_natural_resources_rent_pct_gdp,Interaction: life_expectancy_at_birth × total_natural_resources_rent_pct_gdp,Computed interaction,noise
+life_expectancy_at_birth_x_rule_of_law_index,Interaction: life_expectancy_at_birth × rule_of_law_index,Computed interaction,noise
+life_expectancy_at_birth_x_control_of_corruption_index,Interaction: life_expectancy_at_birth × control_of_corruption_index,Computed interaction,noise
+life_expectancy_at_birth_x_regulatory_quality_index,Interaction: life_expectancy_at_birth × regulatory_quality_index,Computed interaction,noise
+life_expectancy_at_birth_x_government_effectiveness_index,Interaction: life_expectancy_at_birth × government_effectiveness_index,Computed interaction,noise
+fertility_rate_x_infant_mortality_per_1000,Interaction: fertility_rate × infant_mortality_per_1000,Computed interaction,noise
+fertility_rate_x_pct_urban_population,Interaction: fertility_rate × pct_urban_population,Computed interaction,noise
+fertility_rate_x_secondary_enrollment_gross,Interaction: fertility_rate × secondary_enrollment_gross,Computed interaction,noise
+fertility_rate_x_gross_capital_formation_pct_gdp,Interaction: fertility_rate × gross_capital_formation_pct_gdp,Computed interaction,noise
+fertility_rate_x_fdi_net_inflows_pct_gdp,Interaction: fertility_rate × fdi_net_inflows_pct_gdp,Computed interaction,noise
+fertility_rate_x_gross_savings_pct_gdp,Interaction: fertility_rate × gross_savings_pct_gdp,Computed interaction,noise
+fertility_rate_x_trade_pct_gdp,Interaction: fertility_rate × trade_pct_gdp,Computed interaction,noise
+fertility_rate_x_exports_pct_gdp,Interaction: fertility_rate × exports_pct_gdp,Computed interaction,noise
+fertility_rate_x_pct_internet_users,Interaction: fertility_rate × pct_internet_users,Computed interaction,noise
+fertility_rate_x_mobile_subscriptions_per_100,Interaction: fertility_rate × mobile_subscriptions_per_100,Computed interaction,noise
+fertility_rate_x_electric_power_consumption_kwh_pc,Interaction: fertility_rate × electric_power_consumption_kwh_pc,Computed interaction,noise
+fertility_rate_x_inflation_consumer_prices_annual,Interaction: fertility_rate × inflation_consumer_prices_annual,Computed interaction,noise
+fertility_rate_x_govt_consumption_pct_gdp,Interaction: fertility_rate × govt_consumption_pct_gdp,Computed interaction,noise
+fertility_rate_x_total_natural_resources_rent_pct_gdp,Interaction: fertility_rate × total_natural_resources_rent_pct_gdp,Computed interaction,noise
+fertility_rate_x_rule_of_law_index,Interaction: fertility_rate × rule_of_law_index,Computed interaction,noise
+fertility_rate_x_control_of_corruption_index,Interaction: fertility_rate × control_of_corruption_index,Computed interaction,noise
+fertility_rate_x_regulatory_quality_index,Interaction: fertility_rate × regulatory_quality_index,Computed interaction,noise
+fertility_rate_x_government_effectiveness_index,Interaction: fertility_rate × government_effectiveness_index,Computed interaction,noise
+infant_mortality_per_1000_x_pct_urban_population,Interaction: infant_mortality_per_1000 × pct_urban_population,Computed interaction,noise
+infant_mortality_per_1000_x_secondary_enrollment_gross,Interaction: infant_mortality_per_1000 × secondary_enrollment_gross,Computed interaction,noise
+infant_mortality_per_1000_x_gross_capital_formation_pct_gdp,Interaction: infant_mortality_per_1000 × gross_capital_formation_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_fdi_net_inflows_pct_gdp,Interaction: infant_mortality_per_1000 × fdi_net_inflows_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_gross_savings_pct_gdp,Interaction: infant_mortality_per_1000 × gross_savings_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_trade_pct_gdp,Interaction: infant_mortality_per_1000 × trade_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_exports_pct_gdp,Interaction: infant_mortality_per_1000 × exports_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_pct_internet_users,Interaction: infant_mortality_per_1000 × pct_internet_users,Computed interaction,noise
+infant_mortality_per_1000_x_mobile_subscriptions_per_100,Interaction: infant_mortality_per_1000 × mobile_subscriptions_per_100,Computed interaction,noise
+infant_mortality_per_1000_x_electric_power_consumption_kwh_pc,Interaction: infant_mortality_per_1000 × electric_power_consumption_kwh_pc,Computed interaction,noise
+infant_mortality_per_1000_x_inflation_consumer_prices_annual,Interaction: infant_mortality_per_1000 × inflation_consumer_prices_annual,Computed interaction,noise
+infant_mortality_per_1000_x_govt_consumption_pct_gdp,Interaction: infant_mortality_per_1000 × govt_consumption_pct_gdp,Computed interaction,noise
+infant_mortality_per_1000_x_total_natural_resources_rent_pct_gdp,Interaction: infant_mortality_per_1000 × total_natural_resources_rent_pct_gdp,Computed interaction,noise
+synthetic_noise_gaussian_0,Synthetic Gaussian noise feature 0,Synthetic (random),noise
+synthetic_noise_uniform_1,Synthetic uniform noise feature 1,Synthetic (random),noise
+synthetic_noise_exponential_2,Synthetic exponential noise feature 2,Synthetic (random),noise
+synthetic_noise_gaussian_3,Synthetic Gaussian noise feature 3,Synthetic (random),noise
+synthetic_noise_uniform_4,Synthetic uniform noise feature 4,Synthetic (random),noise
+synthetic_noise_exponential_5,Synthetic exponential noise feature 5,Synthetic (random),noise
+synthetic_noise_gaussian_6,Synthetic Gaussian noise feature 6,Synthetic (random),noise
+synthetic_noise_0,Synthetic noise feature 0,Synthetic (random),noise
+synthetic_noise_1,Synthetic noise feature 1,Synthetic (random),noise
+synthetic_noise_2,Synthetic noise feature 2,Synthetic (random),noise
+synthetic_noise_3,Synthetic noise feature 3,Synthetic (random),noise
+synthetic_noise_4,Synthetic noise feature 4,Synthetic (random),noise
+synthetic_noise_5,Synthetic noise feature 5,Synthetic (random),noise
+synthetic_noise_6,Synthetic noise feature 6,Synthetic (random),noise
+synthetic_noise_7,Synthetic noise feature 7,Synthetic (random),noise
+synthetic_noise_8,Synthetic noise feature 8,Synthetic (random),noise
+synthetic_noise_9,Synthetic noise feature 9,Synthetic (random),noise
+synthetic_noise_10,Synthetic noise feature 10,Synthetic (random),noise
+synthetic_noise_11,Synthetic noise feature 11,Synthetic (random),noise
+synthetic_noise_12,Synthetic noise feature 12,Synthetic (random),noise
+synthetic_noise_13,Synthetic noise feature 13,Synthetic (random),noise
+synthetic_noise_14,Synthetic noise feature 14,Synthetic (random),noise
+synthetic_noise_15,Synthetic noise feature 15,Synthetic (random),noise
+synthetic_noise_16,Synthetic noise feature 16,Synthetic (random),noise
+synthetic_noise_17,Synthetic noise feature 17,Synthetic (random),noise
+synthetic_noise_18,Synthetic noise feature 18,Synthetic (random),noise
+synthetic_noise_19,Synthetic noise feature 19,Synthetic (random),noise
+synthetic_noise_20,Synthetic noise feature 20,Synthetic (random),noise
+synthetic_noise_21,Synthetic noise feature 21,Synthetic (random),noise
+synthetic_noise_22,Synthetic noise feature 22,Synthetic (random),noise
+synthetic_noise_23,Synthetic noise feature 23,Synthetic (random),noise
+synthetic_noise_24,Synthetic noise feature 24,Synthetic (random),noise
+synthetic_noise_25,Synthetic noise feature 25,Synthetic (random),noise
+synthetic_noise_26,Synthetic noise feature 26,Synthetic (random),noise
+synthetic_noise_27,Synthetic noise feature 27,Synthetic (random),noise
+synthetic_noise_28,Synthetic noise feature 28,Synthetic (random),noise
+synthetic_noise_29,Synthetic noise feature 29,Synthetic (random),noise
+synthetic_noise_30,Synthetic noise feature 30,Synthetic (random),noise
+synthetic_noise_31,Synthetic noise feature 31,Synthetic (random),noise
+synthetic_noise_32,Synthetic noise feature 32,Synthetic (random),noise
+synthetic_noise_33,Synthetic noise feature 33,Synthetic (random),noise
+synthetic_noise_34,Synthetic noise feature 34,Synthetic (random),noise
+synthetic_noise_35,Synthetic noise feature 35,Synthetic (random),noise
+synthetic_noise_36,Synthetic noise feature 36,Synthetic (random),noise
+synthetic_noise_37,Synthetic noise feature 37,Synthetic (random),noise
+synthetic_noise_38,Synthetic noise feature 38,Synthetic (random),noise
+synthetic_noise_39,Synthetic noise feature 39,Synthetic (random),noise
+synthetic_noise_40,Synthetic noise feature 40,Synthetic (random),noise
+synthetic_noise_41,Synthetic noise feature 41,Synthetic (random),noise
+synthetic_noise_42,Synthetic noise feature 42,Synthetic (random),noise
+synthetic_noise_43,Synthetic noise feature 43,Synthetic (random),noise
+synthetic_noise_44,Synthetic noise feature 44,Synthetic (random),noise
+synthetic_noise_45,Synthetic noise feature 45,Synthetic (random),noise
+synthetic_noise_46,Synthetic noise feature 46,Synthetic (random),noise
+synthetic_noise_47,Synthetic noise feature 47,Synthetic (random),noise
+synthetic_noise_48,Synthetic noise feature 48,Synthetic (random),noise
+synthetic_noise_49,Synthetic noise feature 49,Synthetic (random),noise
+synthetic_noise_50,Synthetic noise feature 50,Synthetic (random),noise
+synthetic_noise_51,Synthetic noise feature 51,Synthetic (random),noise
+synthetic_noise_52,Synthetic noise feature 52,Synthetic (random),noise
+synthetic_noise_53,Synthetic noise feature 53,Synthetic (random),noise
+synthetic_noise_54,Synthetic noise feature 54,Synthetic (random),noise
+synthetic_noise_55,Synthetic noise feature 55,Synthetic (random),noise
+synthetic_noise_56,Synthetic noise feature 56,Synthetic (random),noise
+synthetic_noise_57,Synthetic noise feature 57,Synthetic (random),noise
+synthetic_noise_58,Synthetic noise feature 58,Synthetic (random),noise
+synthetic_noise_59,Synthetic noise feature 59,Synthetic (random),noise
+synthetic_noise_60,Synthetic noise feature 60,Synthetic (random),noise
+synthetic_noise_61,Synthetic noise feature 61,Synthetic (random),noise
+synthetic_noise_62,Synthetic noise feature 62,Synthetic (random),noise
+synthetic_noise_63,Synthetic noise feature 63,Synthetic (random),noise
+synthetic_noise_64,Synthetic noise feature 64,Synthetic (random),noise
+synthetic_noise_65,Synthetic noise feature 65,Synthetic (random),noise
+synthetic_noise_66,Synthetic noise feature 66,Synthetic (random),noise
+synthetic_noise_67,Synthetic noise feature 67,Synthetic (random),noise
+synthetic_noise_68,Synthetic noise feature 68,Synthetic (random),noise
+synthetic_noise_69,Synthetic noise feature 69,Synthetic (random),noise
+synthetic_noise_70,Synthetic noise feature 70,Synthetic (random),noise
+synthetic_noise_71,Synthetic noise feature 71,Synthetic (random),noise
+synthetic_noise_72,Synthetic noise feature 72,Synthetic (random),noise
+synthetic_noise_73,Synthetic noise feature 73,Synthetic (random),noise
+synthetic_noise_74,Synthetic noise feature 74,Synthetic (random),noise
+synthetic_noise_75,Synthetic noise feature 75,Synthetic (random),noise
+synthetic_noise_76,Synthetic noise feature 76,Synthetic (random),noise
+synthetic_noise_77,Synthetic noise feature 77,Synthetic (random),noise
+synthetic_noise_78,Synthetic noise feature 78,Synthetic (random),noise
+synthetic_noise_79,Synthetic noise feature 79,Synthetic (random),noise
+synthetic_noise_80,Synthetic noise feature 80,Synthetic (random),noise
+synthetic_noise_81,Synthetic noise feature 81,Synthetic (random),noise
+synthetic_noise_82,Synthetic noise feature 82,Synthetic (random),noise
+synthetic_noise_83,Synthetic noise feature 83,Synthetic (random),noise
+synthetic_noise_84,Synthetic noise feature 84,Synthetic (random),noise
+synthetic_noise_85,Synthetic noise feature 85,Synthetic (random),noise
+synthetic_noise_86,Synthetic noise feature 86,Synthetic (random),noise
+synthetic_noise_87,Synthetic noise feature 87,Synthetic (random),noise
+synthetic_noise_88,Synthetic noise feature 88,Synthetic (random),noise
+synthetic_noise_89,Synthetic noise feature 89,Synthetic (random),noise
+synthetic_noise_90,Synthetic noise feature 90,Synthetic (random),noise
+synthetic_noise_91,Synthetic noise feature 91,Synthetic (random),noise
+synthetic_noise_92,Synthetic noise feature 92,Synthetic (random),noise
+synthetic_noise_93,Synthetic noise feature 93,Synthetic (random),noise
+synthetic_noise_94,Synthetic noise feature 94,Synthetic (random),noise
+synthetic_noise_95,Synthetic noise feature 95,Synthetic (random),noise
+synthetic_noise_96,Synthetic noise feature 96,Synthetic (random),noise
+synthetic_noise_97,Synthetic noise feature 97,Synthetic (random),noise
+synthetic_noise_98,Synthetic noise feature 98,Synthetic (random),noise
+synthetic_noise_99,Synthetic noise feature 99,Synthetic (random),noise
+synthetic_noise_100,Synthetic noise feature 100,Synthetic (random),noise
+synthetic_noise_101,Synthetic noise feature 101,Synthetic (random),noise
+synthetic_noise_102,Synthetic noise feature 102,Synthetic (random),noise
+synthetic_noise_103,Synthetic noise feature 103,Synthetic (random),noise
+synthetic_noise_104,Synthetic noise feature 104,Synthetic (random),noise
+synthetic_noise_105,Synthetic noise feature 105,Synthetic (random),noise
+synthetic_noise_106,Synthetic noise feature 106,Synthetic (random),noise
+synthetic_noise_107,Synthetic noise feature 107,Synthetic (random),noise
+synthetic_noise_108,Synthetic noise feature 108,Synthetic (random),noise
+synthetic_noise_109,Synthetic noise feature 109,Synthetic (random),noise
+synthetic_noise_110,Synthetic noise feature 110,Synthetic (random),noise
+synthetic_noise_111,Synthetic noise feature 111,Synthetic (random),noise
+synthetic_noise_112,Synthetic noise feature 112,Synthetic (random),noise
+synthetic_noise_113,Synthetic noise feature 113,Synthetic (random),noise
+synthetic_noise_114,Synthetic noise feature 114,Synthetic (random),noise
+synthetic_noise_115,Synthetic noise feature 115,Synthetic (random),noise
+synthetic_noise_116,Synthetic noise feature 116,Synthetic (random),noise
+synthetic_noise_117,Synthetic noise feature 117,Synthetic (random),noise
+synthetic_noise_118,Synthetic noise feature 118,Synthetic (random),noise
+synthetic_noise_119,Synthetic noise feature 119,Synthetic (random),noise

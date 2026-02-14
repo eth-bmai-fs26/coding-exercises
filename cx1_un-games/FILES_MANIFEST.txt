@@ -1,0 +1,130 @@
+GDP SPURIOUS REGRESSION DATASET - FILES MANIFEST
+=================================================
+
+Generated: February 14, 2026
+Location: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/cx1_un-games/
+
+PRIMARY DATA FILES
+------------------
+✓ gdp_spurious_regression_dataset.csv  (1.4 MB)
+  - Main dataset: 254 countries × 356 features
+  - Target: gdp_per_capita_usd (2020)
+  - All numeric, no missing values
+  - ISO 3166-1 alpha-3 country codes as index
+
+✓ codebook.csv  (31 KB)
+  - Feature documentation: 356 rows
+  - Columns: column_name, description, source, role
+  - Roles: target (1), causal (22), bizarre (13), noise (320)
+
+DOCUMENTATION
+-------------
+✓ README.md  (8.1 KB)
+  - Complete dataset documentation
+  - Data sources and feature descriptions
+  - Usage examples and code snippets
+  - Intended learning outcomes
+  - Limitations and caveats
+
+✓ DATASET_SUMMARY.md  (7.5 KB)
+  - Build process summary
+  - Data source status (successful/failed)
+  - Feature engineering details
+  - Quality checks and validation
+  - Reproducibility information
+
+✓ FILES_MANIFEST.txt  (this file)
+  - Complete list of deliverables
+
+CODE
+----
+✓ build_gdp_dataset.py
+  - Part 1: Download base features from WDI, WGI, FAOSTAT
+  - Creates intermediate dataset with ~28 columns
+
+✓ build_complete_gdp_dataset.py
+  - Part 2: Add more WDI indicators and bizarre features
+  - Expands to ~76 columns before cleaning
+
+✓ expand_dataset_with_noise.py
+  - Part 3: Download 115+ additional WDI indicators
+  - Create transformations and interactions
+  - Add synthetic noise features
+  - Reaches 300+ features
+
+✓ example_analysis.py
+  - Complete ML workflow demonstration
+  - Model comparison (OLS, Ridge, Lasso, Elastic Net)
+  - Feature selection analysis
+  - Cross-validation
+  - Demonstrates overfitting and regularization benefits
+
+INTERMEDIATE FILES (can be ignored or deleted)
+----------------------------------------------
+○ gdp_dataset_intermediate.csv
+  - Checkpoint after Part 1
+
+○ codebook_intermediate.csv
+  - Codebook after Part 1
+
+○ save_codebook_part1.py
+  - Helper script for codebook generation
+
+○ gdp_dataset_downloads/
+  - Cached downloads from FAOSTAT, WDI
+  - Can be deleted to force re-download
+
+○ build_*.log, expansion_log.txt
+  - Build process logs
+
+USAGE QUICK START
+-----------------
+1. Explore the data:
+   >>> import pandas as pd
+   >>> df = pd.read_csv('gdp_spurious_regression_dataset.csv', index_col=0)
+   >>> codebook = pd.read_csv('codebook.csv')
+   >>> print(df.shape)
+   (254, 356)
+
+2. Run example analysis:
+   $ python3 example_analysis.py
+
+3. Try your own models:
+   - See README.md for complete examples
+   - Use codebook.csv to identify feature types
+   - Compare regularization methods
+
+DEPENDENCIES
+------------
+Required Python packages:
+- pandas
+- numpy
+- scikit-learn (for example_analysis.py)
+- matplotlib (optional, for visualizations)
+
+Install with:
+$ pip install pandas numpy scikit-learn matplotlib
+
+REPRODUCIBILITY
+---------------
+- All random operations use seed=42
+- Data sources are versioned (2020/2019)
+- Scripts can be re-run to rebuild dataset
+- Total build time: ~10-15 minutes
+
+CONTACT & ISSUES
+----------------
+For questions about:
+- Data sources → See README.md citations
+- Dataset issues → Check DATASET_SUMMARY.md
+- Code bugs → Review build scripts
+
+CITATION
+--------
+If using this dataset, please cite:
+- World Bank World Development Indicators (CC BY 4.0)
+- World Bank Worldwide Governance Indicators
+- Nobel Prize API (CC0 1.0)
+
+---
+End of manifest.

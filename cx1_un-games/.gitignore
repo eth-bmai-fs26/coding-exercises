@@ -1,0 +1,34 @@
+# Python virtual environments
+gdp_env/
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Data downloads cache (can be re-downloaded)
+gdp_dataset_downloads/
+
+# Intermediate build files
+gdp_dataset_intermediate.csv
+codebook_intermediate.csv
+codebook_before_cleaning.csv
+gdp_dataset_before_cleaning.csv
+save_codebook_part1.py
+*_log.txt
+*.output
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
