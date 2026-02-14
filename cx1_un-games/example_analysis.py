@@ -8,11 +8,9 @@ to showcase overfitting and regularization benefits.
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_squared_error
 
@@ -71,17 +69,10 @@ print("=" * 80)
 
 models = {
     'OLS (No Regularization)': LinearRegression(),
-    'Ridge (α=1)': Ridge(alpha=1),
-    'Ridge (α=10)': Ridge(alpha=10),
     'Ridge (α=100)': Ridge(alpha=100),
-    'Lasso (α=1)': Lasso(alpha=1, max_iter=5000),
-    'Lasso (α=10)': Lasso(alpha=10, max_iter=5000),
     'Lasso (α=100)': Lasso(alpha=100, max_iter=5000),
     'Elastic Net (α=10)': ElasticNet(alpha=10, max_iter=5000),
-    'Random Forest (100 trees)': RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1),
     'Random Forest (500 trees)': RandomForestRegressor(n_estimators=500, max_depth=15, random_state=42, n_jobs=-1),
-    'Neural Network (100,50)': MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=1000, random_state=42, early_stopping=True, validation_fraction=0.1),
-    'Neural Network (200,100,50)': MLPRegressor(hidden_layer_sizes=(200, 100, 50), max_iter=1000, random_state=42, early_stopping=True, validation_fraction=0.1),
 }
 
 results = []
@@ -175,6 +166,38 @@ if len(bizarre_selected) > 0:
 else:
     print(f"\n✓ No bizarre features selected (good!)")
 
+# Feature importance analysis (Random Forest)
+print("\n" + "=" * 80)
+print("FEATURE IMPORTANCE: RANDOM FOREST (500 trees)")
+print("=" * 80)
+
+rf_model = models['Random Forest (500 trees)']
+rf_importance_df = pd.DataFrame({
+    'feature': X.columns,
+    'importance': rf_model.feature_importances_,
+}).sort_values('importance', ascending=False)
+
+rf_importance_df['role'] = rf_importance_df['feature'].map(
+    dict(zip(codebook['column_name'], codebook['role']))
+)
+
+print(f"\nTop 20 features by importance:")
+print(rf_importance_df.head(20)[['feature', 'importance', 'role']].to_string(index=False))
+
+# Aggregate importance by role
+print(f"\nTotal importance by category:")
+for role in ['causal', 'bizarre', 'noise']:
+    total_imp = rf_importance_df[rf_importance_df['role'] == role]['importance'].sum()
+    count = len(rf_importance_df[rf_importance_df['role'] == role])
+    print(f"  {role.capitalize():<10} {total_imp:.4f} (avg {total_imp/count:.4f} per feature, {count} features)")
+
+# Bizarre features in RF top features
+rf_bizarre_top = rf_importance_df[rf_importance_df['role'] == 'bizarre'].head(10)
+if len(rf_bizarre_top) > 0:
+    print(f"\n⚠️  TOP 10 BIZARRE FEATURES BY RF IMPORTANCE:")
+    for _, row in rf_bizarre_top.iterrows():
+        print(f"    - {row['feature']:<40} (importance: {row['importance']:.4f})")
+
 # Key insights
 print("\n" + "=" * 80)
 print("KEY INSIGHTS")
@@ -209,12 +232,14 @@ print("\n" + "=" * 80)
 print("CONCLUSIONS")
 print("=" * 80)
 
-print("""
+n_features = X.shape[1]
+n_samples = X.shape[0]
+print(f"""
 This dataset demonstrates classic machine learning lessons:
 
-1. **High-dimensional data (p >> n) leads to overfitting**
-   - With 355 features and only 254 observations, OLS can fit
-     training data nearly perfectly but fails on test data
+1. **High-dimensional data (p > n) leads to overfitting**
+   - With {n_features} features and only {n_samples} observations, OLS can fit
+     training data perfectly (R²=1.0) but fails catastrophically on test data
 
 2. **Regularization prevents overfitting**
    - Ridge/Lasso constrain coefficients
@@ -224,17 +249,17 @@ This dataset demonstrates classic machine learning lessons:
    - Shrinks many coefficients to exactly zero
    - Keeps only the most predictive features
 
-4. **Spurious correlations exist**
-   - Some bizarre features (UFO sightings, McDonald's locations)
-     may appear predictive due to correlation with wealth
-   - True causal features generally have stronger, more stable effects
+4. **Spurious correlations are everywhere**
+   - Bizarre features like flag colors, Scrabble scores, and numerology
+     appear predictive due to accidental correlation with wealth
+   - A model cannot distinguish causation from correlation
 
 5. **Cross-validation is essential**
    - Single train/test split can be misleading
    - CV gives better estimate of generalization
 
-For teaching: Have students plot learning curves, vary alpha values,
-compare feature importances, and discuss which features make economic sense!
+For teaching: Have students vary alpha values, compare feature importances,
+and discuss which features make economic sense vs. which are spurious!
 """)
 
 print("=" * 80)
