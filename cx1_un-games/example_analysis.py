@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_squared_error
 
@@ -76,6 +78,10 @@ models = {
     'Lasso (α=10)': Lasso(alpha=10, max_iter=5000),
     'Lasso (α=100)': Lasso(alpha=100, max_iter=5000),
     'Elastic Net (α=10)': ElasticNet(alpha=10, max_iter=5000),
+    'Random Forest (100 trees)': RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1),
+    'Random Forest (500 trees)': RandomForestRegressor(n_estimators=500, max_depth=15, random_state=42, n_jobs=-1),
+    'Neural Network (100,50)': MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=1000, random_state=42, early_stopping=True, validation_fraction=0.1),
+    'Neural Network (200,100,50)': MLPRegressor(hidden_layer_sizes=(200, 100, 50), max_iter=1000, random_state=42, early_stopping=True, validation_fraction=0.1),
 }
 
 results = []

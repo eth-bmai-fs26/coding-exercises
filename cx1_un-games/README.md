@@ -7,7 +7,7 @@ This dataset is designed for teaching machine learning concepts related to **spu
 ## Dataset Specifications
 
 - **Countries**: 254
-- **Total Features**: 356
+- **Total Features**: 273
 - **Target Variable**: `gdp_per_capita_usd` (GDP per capita, current US$, year 2020)
 - **Reference Year**: 2020 (with 2019 fallback for some indicators)
 
@@ -22,18 +22,46 @@ Features with genuine economic theory behind their relationship to GDP:
 - **Infrastructure**: Internet penetration, mobile subscriptions, electricity consumption
 - **Demographics**: Urban population, fertility rate, infant mortality
 
-### 2. Bizarre Covariates (~13 features)
+### 2. Bizarre Covariates (~27 features)
 Features with absurd or spurious correlations to GDP:
-- Nobel Prize winners (total and per capita)
-- Miss Universe competition wins
-- IKEA stores (total and per capita)
-- McDonald's restaurants (total and per capita)
-- UNESCO World Heritage Sites
+
+**Competitions & Awards:**
+- Eurovision Song Contest wins
+- FIFA World Cup wins (men's and women's)
 - Olympic medals (total and per capita)
+- Nobel Prize winners (total and per capita)
+- Miss Universe wins
+- Michelin stars
+
+**Retail & Consumer Culture:**
+- IKEA stores
+- McDonald's restaurants
+- Starbucks locations
+
+**Lifestyle & Consumption:**
+- Beer consumption per capita
+- Wine consumption per capita
+- Coffee consumption per capita
+
+**Infrastructure & Entertainment:**
+- Casinos
+- Airports
+- Skyscrapers over 150m
+- Theme parks
+- Golf courses
+- Cryptocurrency ATMs
+
+**Cultural & Natural:**
+- UNESCO World Heritage Sites
 - Active volcanoes
+
+**Geographic Oddities:**
 - Number of time zones
-- Number of border countries
-- Country name features (letters, vowels, consonants, word count)
+- Number of land border countries
+
+**Country Name Features:**
+- Letters, vowels, consonants in country name
+- Number of words in country name
 - Whether country name starts with a vowel
 
 ### 3. Noise Covariates (~320 features)
