@@ -219,3 +219,66 @@ coffee_consumption_rank,Ranking by coffee consumption per capita (1=highest cons
 eurovision_rank,Ranking by Eurovision Song Contest wins (1=most wins),Derived from Eurovision data,bizarre
 olympic_medals_rank,Ranking by total Olympic medals (1=most medals),Derived from Olympic data,bizarre
 historical_age_rank,Ranking by documented history length (1=oldest documented history),Derived from documented history data,bizarre
+rail_lines_total_km,Total railway line length in km,World Bank WDI (IS.RRS.TOTL.KM),noise
+air_freight_million_ton_km,Air freight in million ton-km,World Bank WDI (IS.AIR.GOOD.MT.K1),noise
+container_port_traffic,Container port traffic (TEU),World Bank WDI (IS.SHP.GOOD.TU),noise
+forest_area_sq_km,Forest area in sq km,World Bank WDI (AG.LND.FRST.K2),noise
+marine_protected_areas_pct,Marine protected areas as % of territorial waters,World Bank WDI (ER.MRN.PTMR.ZS),noise
+terrestrial_protected_areas_pct,Terrestrial protected areas as % of total land,World Bank WDI (ER.LND.PTLD.ZS),noise
+atms_per_100k_adults,"ATMs per 100,000 adults",World Bank WDI (FB.ATM.TOTL.P5),noise
+bank_branches_per_100k,"Commercial bank branches per 100,000 adults",World Bank WDI (FB.CBK.BRCH.P5),noise
+stock_market_cap_pct_gdp,Market capitalization of listed companies % GDP,World Bank WDI (CM.MKT.LCAP.GD.ZS),noise
+listed_domestic_companies,Number of listed domestic companies,World Bank WDI (CM.MKT.LDOM.NO),noise
+remittances_received_usd,Personal remittances received in USD,World Bank WDI (BX.TRF.PWKR.CD.DT),noise
+tax_revenue_pct_gdp,Tax revenue as % of GDP,World Bank WDI (GC.TAX.TOTL.GD.ZS),noise
+govt_debt_pct_gdp,Central government debt as % of GDP,World Bank WDI (GC.DOD.TOTL.GD.ZS),noise
+internet_users_pct,Individuals using the Internet %,World Bank WDI (IT.NET.USER.ZS),noise
+patent_applications_residents,Patent applications by residents,World Bank WDI (IP.PAT.RESD),noise
+patent_applications_nonresidents,Patent applications by non-residents,World Bank WDI (IP.PAT.NRES),noise
+research_development_pct_gdp,Research and development expenditure % GDP,World Bank WDI (GB.XPD.RSDV.GD.ZS),noise
+life_expectancy_male,Life expectancy at birth male,World Bank WDI (SP.DYN.LE00.MA.IN),noise
+life_expectancy_female,Life expectancy at birth female,World Bank WDI (SP.DYN.LE00.FE.IN),noise
+dependency_ratio_total,Age dependency ratio total,World Bank WDI (SP.POP.DPND),noise
+suicide_rate_per_100k,"Suicide mortality rate per 100,000",World Bank WDI (SH.STA.SUIC.P5),noise
+alcohol_consumption_liters_pc,Total alcohol consumption per capita liters,World Bank WDI (SH.ALC.PCAP.LI),noise
+smoking_prevalence_male,Smoking prevalence males %,World Bank WDI (SH.PRV.SMOK.MA),noise
+smoking_prevalence_female,Smoking prevalence females %,World Bank WDI (SH.PRV.SMOK.FE),noise
+urban_population_pct,Urban population %,World Bank WDI (SP.URB.TOTL.IN.ZS),noise
+population_total,Total population,World Bank WDI (SP.POP.TOTL),noise
+education_expenditure_total_pct_gdp,Government expenditure on education % GDP,World Bank WDI (SE.XPD.TOTL.GD.ZS),noise
+tertiary_enrollment_gross,Gross enrollment ratio tertiary education,World Bank WDI (SE.TER.ENRR),noise
+literacy_rate_adult,Literacy rate adult %,World Bank WDI (SE.ADT.LITR.ZS),noise
+international_tourist_arrivals,International tourism number of arrivals,World Bank WDI (ST.INT.ARVL),noise
+tourism_receipts_usd,International tourism receipts in USD,World Bank WDI (ST.INT.RCPT.CD),noise
+international_tourist_departures,International tourism number of departures,World Bank WDI (ST.INT.DPRT),noise
+tourism_expenditure_usd,International tourism expenditures in USD,World Bank WDI (ST.INT.XPND.CD),noise
+scrabble_score_country_name,Scrabble score of country name (English letter values),Derived from country name,bizarre
+letters_shared_with_usa,"Number of unique letters shared with ""United States""",Derived from country name,bizarre
+letters_shared_with_switzerland,"Number of unique letters shared with ""Switzerland""",Derived from country name,bizarre
+fibonacci_name_distance,Distance of letter count to nearest Fibonacci number,Derived from country name (pseudoscience),bizarre
+prime_name_distance,Distance of letter count to nearest prime number,Derived from country name (pseudoscience),bizarre
+golden_ratio_name_distance,Distance of vowel/consonant ratio to golden ratio (0.618),Derived from country name (pseudoscience),bizarre
+reverse_alphabetical_rank,"Reverse alphabetical ranking (254=first alphabetically, 1=last)",Derived from country name,bizarre
+double_letter_count,"Number of consecutive double letters (e.g., ""oo"" in Cameroon)",Derived from country name,bizarre
+name_rhythmic_score,Fraction of consecutive letter pairs that alternate vowel/consonant,Derived from country name,bizarre
+iso_numeric_code,ISO 3166-1 numeric country code (arbitrary number assigned by ISO),ISO 3166-1,bizarre
+country_calling_code,"International telephone calling code (e.g., +1 for USA, +44 for UK)",ITU,bizarre
+capital_name_length,Number of characters in capital city name,Derived from capital city name,bizarre
+capital_scrabble_score,Scrabble score of capital city name,Derived from capital city name,bizarre
+capital_numerology_score,Numerology score of capital city name (sum of letter positions),Derived from capital city name (pseudoscience),bizarre
+capital_vowel_count,Number of vowels in capital city name,Derived from capital city name,bizarre
+capital_syllable_count,Approximate syllable count of capital city name,Derived from capital city name,bizarre
+country_plus_capital_length,Total letter count of country name + capital city name,Derived from country and capital names,bizarre
+flag_colors_count,Number of distinct colors in national flag,Vexillology data,bizarre
+flag_stars_count,Number of stars on national flag,Vexillology data,bizarre
+nobel_prize_winners,Total Nobel Prize laureates by country,Nobel Prize Committee data,bizarre
+nuclear_reactors,Number of operational nuclear power reactors,IAEA PRIS database,bizarre
+passport_visa_free_destinations,Number of destinations accessible visa-free or visa-on-arrival,Henley Passport Index 2023,bizarre
+average_male_height_cm,Average adult male height in centimeters,NCD Risk Factor Collaboration / WHO,bizarre
+national_holidays_per_year,Number of official national public holidays per year,Various government sources,bizarre
+highest_peak_meters,Height of highest mountain peak in meters,Various geographic sources,bizarre
+football_association_founded,Year the national football (soccer) association was founded,FIFA,bizarre
+embassies_abroad,Number of diplomatic embassies/missions maintained abroad,Various diplomatic sources,bizarre
+metro_systems_count,Number of urban metro/subway systems in the country,International Association of Public Transport,bizarre
+national_anthem_duration_sec,Duration of national anthem in seconds,Various musicological sources,bizarre
+national_parks_count,Number of designated national parks,Various government and IUCN sources,bizarre
