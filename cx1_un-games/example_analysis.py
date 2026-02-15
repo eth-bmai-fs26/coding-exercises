@@ -39,12 +39,12 @@ print(f"    Features: {X.shape[1]}")
 # Feature categories
 causal = codebook[codebook['role'] == 'causal']['column_name'].tolist()
 bizarre = codebook[codebook['role'] == 'bizarre']['column_name'].tolist()
-noise = codebook[codebook['role'] == 'noise']['column_name'].tolist()
+incidental = codebook[codebook['role'] == 'incidental']['column_name'].tolist()
 
 print(f"\n    Feature breakdown:")
-print(f"      - Causal:  {len(causal)}")
-print(f"      - Bizarre: {len(bizarre)}")
-print(f"      - Noise:   {len(noise)}")
+print(f"      - Causal:     {len(causal)}")
+print(f"      - Bizarre:    {len(bizarre)}")
+print(f"      - Incidental: {len(incidental)}")
 
 # Train/test split
 print("\n[2] Splitting data (80/20 train/test)...")
@@ -152,7 +152,7 @@ print(nonzero.head(20)[['feature', 'coefficient', 'role']].to_string(index=False
 
 # Count by role
 print(f"\nSelected features by category:")
-for role in ['causal', 'bizarre', 'noise']:
+for role in ['causal', 'bizarre', 'incidental']:
     count = len(nonzero[nonzero['role'] == role])
     total = len(codebook[codebook['role'] == role])
     print(f"  {role.capitalize():<10} {count:3} / {total:3} ({count/total*100:.1f}% selected)")
@@ -186,7 +186,7 @@ print(rf_importance_df.head(20)[['feature', 'importance', 'role']].to_string(ind
 
 # Aggregate importance by role
 print(f"\nTotal importance by category:")
-for role in ['causal', 'bizarre', 'noise']:
+for role in ['causal', 'bizarre', 'incidental']:
     total_imp = rf_importance_df[rf_importance_df['role'] == role]['importance'].sum()
     count = len(rf_importance_df[rf_importance_df['role'] == role])
     print(f"  {role.capitalize():<10} {total_imp:.4f} (avg {total_imp/count:.4f} per feature, {count} features)")
