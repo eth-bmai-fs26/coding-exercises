@@ -38,12 +38,12 @@ print(f"    Features: {X.shape[1]}")
 
 # Feature categories
 causal = codebook[codebook['role'] == 'causal']['column_name'].tolist()
-bizarre = codebook[codebook['role'] == 'bizarre']['column_name'].tolist()
+spurious = codebook[codebook['role'] == 'spurious']['column_name'].tolist()
 incidental = codebook[codebook['role'] == 'incidental']['column_name'].tolist()
 
 print(f"\n    Feature breakdown:")
 print(f"      - Causal:     {len(causal)}")
-print(f"      - Bizarre:    {len(bizarre)}")
+print(f"      - Spurious:   {len(spurious)}")
 print(f"      - Incidental: {len(incidental)}")
 
 # Train/test split
@@ -152,19 +152,19 @@ print(nonzero.head(20)[['feature', 'coefficient', 'role']].to_string(index=False
 
 # Count by role
 print(f"\nSelected features by category:")
-for role in ['causal', 'bizarre', 'incidental']:
+for role in ['causal', 'spurious', 'incidental']:
     count = len(nonzero[nonzero['role'] == role])
     total = len(codebook[codebook['role'] == role])
     print(f"  {role.capitalize():<10} {count:3} / {total:3} ({count/total*100:.1f}% selected)")
 
 # Bizarre features that made it through
-bizarre_selected = nonzero[nonzero['role'] == 'bizarre']
-if len(bizarre_selected) > 0:
-    print(f"\n⚠️  BIZARRE FEATURES SELECTED BY LASSO:")
-    for _, row in bizarre_selected.iterrows():
+spurious_selected = nonzero[nonzero['role'] == 'spurious']
+if len(spurious_selected) > 0:
+    print(f"\n⚠️  SPURIOUS FEATURES SELECTED BY LASSO:")
+    for _, row in spurious_selected.iterrows():
         print(f"    - {row['feature']:<40} (coef: {row['coefficient']:+.2f})")
 else:
-    print(f"\n✓ No bizarre features selected (good!)")
+    print(f"\n✓ No spurious features selected (good!)")
 
 # Feature importance analysis (Random Forest)
 print("\n" + "=" * 80)
@@ -186,16 +186,16 @@ print(rf_importance_df.head(20)[['feature', 'importance', 'role']].to_string(ind
 
 # Aggregate importance by role
 print(f"\nTotal importance by category:")
-for role in ['causal', 'bizarre', 'incidental']:
+for role in ['causal', 'spurious', 'incidental']:
     total_imp = rf_importance_df[rf_importance_df['role'] == role]['importance'].sum()
     count = len(rf_importance_df[rf_importance_df['role'] == role])
     print(f"  {role.capitalize():<10} {total_imp:.4f} (avg {total_imp/count:.4f} per feature, {count} features)")
 
 # Bizarre features in RF top features
-rf_bizarre_top = rf_importance_df[rf_importance_df['role'] == 'bizarre'].head(10)
-if len(rf_bizarre_top) > 0:
-    print(f"\n⚠️  TOP 10 BIZARRE FEATURES BY RF IMPORTANCE:")
-    for _, row in rf_bizarre_top.iterrows():
+rf_spurious_top = rf_importance_df[rf_importance_df['role'] == 'spurious'].head(10)
+if len(rf_spurious_top) > 0:
+    print(f"\n⚠️  TOP 10 SPURIOUS FEATURES BY RF IMPORTANCE:")
+    for _, row in rf_spurious_top.iterrows():
         print(f"    - {row['feature']:<40} (importance: {row['importance']:.4f})")
 
 # Key insights
@@ -250,7 +250,7 @@ This dataset demonstrates classic machine learning lessons:
    - Keeps only the most predictive features
 
 4. **Spurious correlations are everywhere**
-   - Bizarre features like flag colors, Scrabble scores, and numerology
+   - Spurious features like flag colors, Scrabble scores, and numerology
      appear predictive due to accidental correlation with wealth
    - A model cannot distinguish causation from correlation
 

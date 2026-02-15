@@ -15,7 +15,7 @@ MUTED_TEXT = '#a5b4fc'
 # Role colors
 ROLE_COLORS = {
     'causal': '#22c55e',
-    'bizarre': '#ef4444',
+    'spurious': '#ef4444',
     'incidental': '#94a3b8',
     'target': '#3b82f6',
 }
@@ -77,7 +77,7 @@ def role_legend_html():
     return widgets.HTML("""
     <div style='display: flex; gap: 20px; margin: 10px 0; align-items: center;'>
         <span style='color: #22c55e; font-weight: bold;'>&#9679; Causal</span>
-        <span style='color: #ef4444; font-weight: bold;'>&#9679; Bizarre</span>
+        <span style='color: #ef4444; font-weight: bold;'>&#9679; Spurious</span>
         <span style='color: #94a3b8; font-weight: bold;'>&#9679; Incidental</span>
     </div>
     """)
