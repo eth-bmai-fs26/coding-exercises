@@ -52,7 +52,6 @@ letters_in_country_name,Letters in country name,Computed,spurious
 vowels_in_country_name,Vowels in country name,Computed,spurious
 consonants_in_country_name,Consonants in country name,Computed,spurious
 words_in_country_name,Words in country name,Computed,spurious
-num_time_zones,Number of time zones,Wikipedia,spurious
 num_border_countries,Number of land borders,Wikipedia,spurious
 access_to_electricity_pct,Access To Electricity Pct,World Bank WDI,incidental
 energy_use_kg_oil_equiv_pc,Energy Use Kg Oil Equiv Pc,World Bank WDI,incidental
@@ -119,36 +118,36 @@ secure_internet_servers_per_million,Secure Internet Servers Per Million,World Ba
 immunization_dpt_pct_children,Immunization Dpt Pct Children,World Bank WDI,incidental
 immunization_measles_pct_children,Immunization Measles Pct Children,World Bank WDI,incidental
 school_enrollment_primary_gross,School Enrollment Primary Gross,World Bank WDI,incidental
-synthetic_noise_90,Synthetic noise feature 90,Synthetic (random),incidental
-synthetic_noise_91,Synthetic noise feature 91,Synthetic (random),incidental
-synthetic_noise_92,Synthetic noise feature 92,Synthetic (random),incidental
-synthetic_noise_93,Synthetic noise feature 93,Synthetic (random),incidental
-synthetic_noise_94,Synthetic noise feature 94,Synthetic (random),incidental
-synthetic_noise_95,Synthetic noise feature 95,Synthetic (random),incidental
-synthetic_noise_96,Synthetic noise feature 96,Synthetic (random),incidental
-synthetic_noise_97,Synthetic noise feature 97,Synthetic (random),incidental
-synthetic_noise_98,Synthetic noise feature 98,Synthetic (random),incidental
-synthetic_noise_99,Synthetic noise feature 99,Synthetic (random),incidental
-synthetic_noise_100,Synthetic noise feature 100,Synthetic (random),incidental
-synthetic_noise_101,Synthetic noise feature 101,Synthetic (random),incidental
-synthetic_noise_102,Synthetic noise feature 102,Synthetic (random),incidental
-synthetic_noise_103,Synthetic noise feature 103,Synthetic (random),incidental
-synthetic_noise_104,Synthetic noise feature 104,Synthetic (random),incidental
-synthetic_noise_105,Synthetic noise feature 105,Synthetic (random),incidental
-synthetic_noise_106,Synthetic noise feature 106,Synthetic (random),incidental
-synthetic_noise_107,Synthetic noise feature 107,Synthetic (random),incidental
-synthetic_noise_108,Synthetic noise feature 108,Synthetic (random),incidental
-synthetic_noise_109,Synthetic noise feature 109,Synthetic (random),incidental
-synthetic_noise_110,Synthetic noise feature 110,Synthetic (random),incidental
-synthetic_noise_111,Synthetic noise feature 111,Synthetic (random),incidental
-synthetic_noise_112,Synthetic noise feature 112,Synthetic (random),incidental
-synthetic_noise_113,Synthetic noise feature 113,Synthetic (random),incidental
-synthetic_noise_114,Synthetic noise feature 114,Synthetic (random),incidental
-synthetic_noise_115,Synthetic noise feature 115,Synthetic (random),incidental
-synthetic_noise_116,Synthetic noise feature 116,Synthetic (random),incidental
-synthetic_noise_117,Synthetic noise feature 117,Synthetic (random),incidental
-synthetic_noise_118,Synthetic noise feature 118,Synthetic (random),incidental
-synthetic_noise_119,Synthetic noise feature 119,Synthetic (random),incidental
+synthetic_noise_90,Synthetic noise feature 90,Synthetic (random),spurious
+synthetic_noise_91,Synthetic noise feature 91,Synthetic (random),spurious
+synthetic_noise_92,Synthetic noise feature 92,Synthetic (random),spurious
+synthetic_noise_93,Synthetic noise feature 93,Synthetic (random),spurious
+synthetic_noise_94,Synthetic noise feature 94,Synthetic (random),spurious
+synthetic_noise_95,Synthetic noise feature 95,Synthetic (random),spurious
+synthetic_noise_96,Synthetic noise feature 96,Synthetic (random),spurious
+synthetic_noise_97,Synthetic noise feature 97,Synthetic (random),spurious
+synthetic_noise_98,Synthetic noise feature 98,Synthetic (random),spurious
+synthetic_noise_99,Synthetic noise feature 99,Synthetic (random),spurious
+synthetic_noise_100,Synthetic noise feature 100,Synthetic (random),spurious
+synthetic_noise_101,Synthetic noise feature 101,Synthetic (random),spurious
+synthetic_noise_102,Synthetic noise feature 102,Synthetic (random),spurious
+synthetic_noise_103,Synthetic noise feature 103,Synthetic (random),spurious
+synthetic_noise_104,Synthetic noise feature 104,Synthetic (random),spurious
+synthetic_noise_105,Synthetic noise feature 105,Synthetic (random),spurious
+synthetic_noise_106,Synthetic noise feature 106,Synthetic (random),spurious
+synthetic_noise_107,Synthetic noise feature 107,Synthetic (random),spurious
+synthetic_noise_108,Synthetic noise feature 108,Synthetic (random),spurious
+synthetic_noise_109,Synthetic noise feature 109,Synthetic (random),spurious
+synthetic_noise_110,Synthetic noise feature 110,Synthetic (random),spurious
+synthetic_noise_111,Synthetic noise feature 111,Synthetic (random),spurious
+synthetic_noise_112,Synthetic noise feature 112,Synthetic (random),spurious
+synthetic_noise_113,Synthetic noise feature 113,Synthetic (random),spurious
+synthetic_noise_114,Synthetic noise feature 114,Synthetic (random),spurious
+synthetic_noise_115,Synthetic noise feature 115,Synthetic (random),spurious
+synthetic_noise_116,Synthetic noise feature 116,Synthetic (random),spurious
+synthetic_noise_117,Synthetic noise feature 117,Synthetic (random),spurious
+synthetic_noise_118,Synthetic noise feature 118,Synthetic (random),spurious
+synthetic_noise_119,Synthetic noise feature 119,Synthetic (random),spurious
 airports_total,Total number of airports,CIA World Factbook/Wikipedia,spurious
 latitude_abs,Absolute latitude (distance from equator),Geographic,incidental
 average_elevation_m,Average elevation above sea level (meters),Geographic,incidental
@@ -178,12 +177,6 @@ country_name_alphabetical_rank,"Alphabetical ranking of country name (1=first, 2
 prestige_score,Combined prestige score: UNESCO sites + Michelin stars + Olympic medals,Derived from cultural and sporting achievement data,spurious
 airports_per_1000_sqkm,Number of airports per 1000 km² of land area,Derived from airport count and area data,spurious
 unesco_sites_per_1000_sqkm,UNESCO World Heritage Sites per 1000 km² of land area,Derived from UNESCO data and area data,spurious
-beer_consumption_rank,Ranking by beer consumption per capita (1=highest consumer),Derived from beer consumption data,spurious
-wine_consumption_rank,Ranking by wine consumption per capita (1=highest consumer),Derived from wine consumption data,spurious
-coffee_consumption_rank,Ranking by coffee consumption per capita (1=highest consumer),Derived from coffee consumption data,spurious
-eurovision_rank,Ranking by Eurovision Song Contest wins (1=most wins),Derived from Eurovision data,spurious
-olympic_medals_rank,Ranking by total Olympic medals (1=most medals),Derived from Olympic data,spurious
-historical_age_rank,Ranking by documented history length (1=oldest documented history),Derived from documented history data,spurious
 rail_lines_total_km,Total railway line length in km,World Bank WDI (IS.RRS.TOTL.KM),incidental
 air_freight_million_ton_km,Air freight in million ton-km,World Bank WDI (IS.AIR.GOOD.MT.K1),incidental
 container_port_traffic,Container port traffic (TEU),World Bank WDI (IS.SHP.GOOD.TU),incidental
