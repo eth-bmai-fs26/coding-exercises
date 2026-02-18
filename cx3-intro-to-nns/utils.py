@@ -63,6 +63,64 @@ def load_dataset():
     return df
 
 
+def generate_car_dataset(n=3000):
+    """
+    Generate a synthetic car fuel efficiency dataset with n cars.
+
+    Each row represents a car described by 8 features:
+      cylinders, displacement_L, horsepower, weight_kg,
+      acceleration, model_year, is_hybrid, drag_coeff
+
+    The target column 'mpg' (miles per gallon) is generated with a
+    realistic formula: fewer cylinders, lighter weight, newer model,
+    hybrid engine, and better aerodynamics all increase fuel efficiency.
+    Gaussian noise is added to make it a genuine learning problem.
+
+    Returns a pandas DataFrame ready for the next preprocessing steps.
+    """
+    np.random.seed(42)
+
+    cylinders      = np.random.choice([4, 6, 8], n, p=[0.50, 0.30, 0.20]).astype(float)
+    displacement_L = cylinders * np.random.uniform(0.25, 0.75, n)
+    horsepower     = displacement_L * np.random.uniform(40, 80, n) + np.random.normal(0, 10, n)
+    horsepower     = np.maximum(horsepower, 50)
+    weight_kg      = np.random.uniform(800, 2500, n)
+    acceleration   = np.random.uniform(6, 22, n)            # seconds to 100 km/h
+    model_year     = np.random.randint(1970, 2024, n).astype(float)
+    is_hybrid      = np.random.choice([0, 1], n, p=[0.75, 0.25]).astype(float)
+    drag_coeff     = np.random.uniform(0.25, 0.55, n)
+
+    mpg = (
+        50.0
+        - 2.0  * cylinders
+        - 1.5  * displacement_L
+        - 0.03 * horsepower
+        - 0.006 * weight_kg
+        + 0.15 * acceleration
+        + 0.15 * (model_year - 1970)
+        + 6.0  * is_hybrid
+        - 12.0 * drag_coeff
+        + np.random.normal(0, 2, n)
+    )
+    mpg = np.maximum(mpg, 10)
+
+    df = pd.DataFrame({
+        'cylinders':      cylinders,
+        'displacement_L': displacement_L,
+        'horsepower':     horsepower,
+        'weight_kg':      weight_kg,
+        'acceleration':   acceleration,
+        'model_year':     model_year,
+        'is_hybrid':      is_hybrid,
+        'drag_coeff':     drag_coeff,
+        'mpg':            mpg,
+    })
+
+    print(f"Dataset generated: {len(df)} cars, {len(df.columns)} columns")
+    print(f"MPG range: {mpg.min():.1f} – {mpg.max():.1f}  |  Mean: {mpg.mean():.1f}")
+    return df
+
+
 # ============================================================
 # 2. DATA VISUALIZATION
 # ============================================================
@@ -108,6 +166,50 @@ def plot_dataset(df):
     axes[1, 1].set_xlabel('Age (years)')
     axes[1, 1].set_ylabel('Price ($)')
     axes[1, 1].set_title('House Age vs Price')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_car_dataset(df):
+    """
+    Show 4 charts to explore the car fuel efficiency dataset:
+      1. Distribution of MPG
+      2. Which features are most correlated with MPG
+      3. Car weight vs MPG
+      4. Horsepower vs MPG
+    """
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+    # 1. Distribution of MPG
+    axes[0, 0].hist(df['mpg'], bins=50, color='steelblue', edgecolor='white', alpha=0.8)
+    axes[0, 0].axvline(df['mpg'].mean(), color='red', linestyle='--',
+                       label=f'Mean: {df["mpg"].mean():.1f} MPG')
+    axes[0, 0].set_xlabel('Fuel Efficiency (MPG)')
+    axes[0, 0].set_ylabel('Frequency')
+    axes[0, 0].set_title('Distribution of Fuel Efficiency')
+    axes[0, 0].legend()
+
+    # 2. Feature correlations with MPG
+    feature_cols = [c for c in df.columns if c != 'mpg']
+    correlations = [df[c].corr(df['mpg']) for c in feature_cols]
+    colors = ['seagreen' if c > 0 else 'tomato' for c in correlations]
+    axes[0, 1].barh(feature_cols, correlations, color=colors, alpha=0.8)
+    axes[0, 1].axvline(0, color='black', linewidth=0.8)
+    axes[0, 1].set_xlabel('Correlation with MPG')
+    axes[0, 1].set_title('Feature Correlation with Fuel Efficiency')
+
+    # 3. Weight vs MPG
+    axes[1, 0].scatter(df['weight_kg'], df['mpg'], alpha=0.3, s=8, c='steelblue')
+    axes[1, 0].set_xlabel('Weight (kg)')
+    axes[1, 0].set_ylabel('Fuel Efficiency (MPG)')
+    axes[1, 0].set_title('Car Weight vs Fuel Efficiency')
+
+    # 4. Horsepower vs MPG
+    axes[1, 1].scatter(df['horsepower'], df['mpg'], alpha=0.3, s=8, c='darkorange')
+    axes[1, 1].set_xlabel('Horsepower (HP)')
+    axes[1, 1].set_ylabel('Fuel Efficiency (MPG)')
+    axes[1, 1].set_title('Horsepower vs Fuel Efficiency')
 
     plt.tight_layout()
     plt.show()
@@ -385,35 +487,49 @@ def get_predictions_log(model, test_features_t):
 # 8. EVALUATION METRICS
 # ============================================================
 
-def print_performance_metrics(actual_prices, predicted_prices, show_r2=False):
+def print_performance_metrics(actual_prices, predicted_prices, show_r2=False, unit='$'):
     """
     Print how well the model performed on the test set.
 
     Shows:
-      - MAE  (Mean Absolute Error): average error in dollars
+      - MAE  (Mean Absolute Error): average error in the target unit
       - RMSE (Root Mean Squared Error): penalises large errors more
-      - MAPE (Mean Absolute Percentage Error): error as a % of the real price
+      - MAPE (Mean Absolute Percentage Error): error as a % of the actual value
       - R²   (Coefficient of Determination): optional, pass show_r2=True
 
-    Also breaks down performance by price range (quartiles).
+    Also breaks down performance by value range (quartiles).
+
+    Parameters
+    ----------
+    unit : str
+        Unit label for printed values. Use '$' for dollar amounts (prefix)
+        or a string like 'MPG' for other units (suffix). Default: '$'.
     """
     actual = actual_prices.flatten()
     pred   = predicted_prices.flatten()
 
-    mae  = np.mean(np.abs(pred - actual))
-    rmse = np.sqrt(np.mean((pred - actual) ** 2))
-    mape = np.mean(np.abs((pred - actual) / actual)) * 100
+    difference = pred - actual
+
+    mae  = np.mean(np.abs(difference))
+    rmse = np.sqrt(np.mean(difference ** 2))
+    mape = np.mean(np.abs(difference / actual)) * 100
+
+    # Format a scalar value with the appropriate unit notation
+    def _fmt(v, decimals=2):
+        if unit == '$':
+            return f"${v:,.{decimals}f}"
+        return f"{v:.{decimals}f} {unit}"
 
     print("=" * 55)
     print("           OVERALL TEST SET PERFORMANCE")
     print("=" * 55)
     print()
-    print(f"   MAE  (Mean Absolute Error):      ${mae:,.2f}")
-    print(f"   RMSE (Root Mean Squared Error):  ${rmse:,.2f}")
+    print(f"   MAE  (Mean Absolute Error):      {_fmt(mae)}")
+    print(f"   RMSE (Root Mean Squared Error):  {_fmt(rmse)}")
     print(f"   MAPE (Mean Absolute % Error):    {mape:.2f}%")
 
     if show_r2:
-        ss_res   = np.sum((actual - pred) ** 2)
+        ss_res   = np.sum(difference ** 2)
         ss_tot   = np.sum((actual - np.mean(actual)) ** 2)
         r2_score = 1 - (ss_res / ss_tot)
         print(f"   R²   (Coefficient of Determination): {r2_score:.4f}")
@@ -421,11 +537,11 @@ def print_performance_metrics(actual_prices, predicted_prices, show_r2=False):
     print()
     print("=" * 55)
 
-    # Performance by price range
+    # Performance by value range (quartiles)
     quartiles = np.quantile(actual, [0, 0.25, 0.5, 0.75, 1.0])
 
     print()
-    print("        PERFORMANCE BY PRICE RANGE (QUARTILES)")
+    print("           PERFORMANCE BY QUARTILE")
     print("=" * 55)
 
     for i in range(4):
@@ -436,20 +552,64 @@ def print_performance_metrics(actual_prices, predicted_prices, show_r2=False):
         mape_q = np.mean(np.abs((p - a) / a)) * 100
 
         print()
-        print(f"  Range {i + 1}: ${quartiles[i]:,.0f} → ${quartiles[i + 1]:,.0f}")
-        print(f"     MAE:  ${mae_q:,.2f}   RMSE: ${rmse_q:,.2f}   MAPE: {mape_q:.2f}%")
+        print(f"  Range {i + 1}: {_fmt(quartiles[i], 0)} → {_fmt(quartiles[i + 1], 0)}")
+        print(f"     MAE:  {_fmt(mae_q)}   RMSE: {_fmt(rmse_q)}   MAPE: {mape_q:.2f}%")
+
+
+def print_new_performance_metrics(actual_prices, predicted_prices, show_r2=False, unit='$'):
+    """
+    Print a compact summary of model performance on the test set.
+
+    Shows only global metrics (no quartile breakdown):
+      - MAE  (Mean Absolute Error)
+      - RMSE (Root Mean Squared Error)
+      - MAPE (Mean Absolute Percentage Error)
+      - R²   (Coefficient of Determination): optional, pass show_r2=True
+    """
+    actual = actual_prices.flatten()
+    pred   = predicted_prices.flatten()
+
+    difference = pred - actual
+
+    mae  = np.mean(np.abs(difference))
+    rmse = np.sqrt(np.mean(difference ** 2))
+    mape = np.mean(np.abs(difference / actual)) * 100
+
+    def _fmt(v, decimals=2):
+        if unit == '$':
+            return f"${v:,.{decimals}f}"
+        return f"{v:.{decimals}f} {unit}"
+
+    print(f"  MAE:  {_fmt(mae)}   RMSE: {_fmt(rmse)}   MAPE: {mape:.2f}%", end='')
+
+    if show_r2:
+        ss_res   = np.sum(difference ** 2)
+        ss_tot   = np.sum((actual - np.mean(actual)) ** 2)
+        r2_score = 1 - (ss_res / ss_tot)
+        print(f"   R²: {r2_score:.4f}", end='')
+
+    print()
 
 
 # ============================================================
 # 9. PREDICTION VISUALIZATIONS
 # ============================================================
 
-def plot_predictions(actual_prices, predicted_prices):
+def plot_predictions(actual_prices, predicted_prices, target_name='Price', unit='($)'):
     """
-    Show 3 charts comparing what the model predicted vs the actual prices:
+    Show 3 charts comparing what the model predicted vs the actual values:
       1. Scatter plot: predicted vs actual (perfect model = diagonal line)
       2. Histogram of errors (perfect model = narrow spike at 0)
-      3. Bar chart comparing 20 random houses side-by-side
+      3. Bar chart comparing 20 random samples side-by-side
+
+    Parameters
+    ----------
+    target_name : str
+        Human-readable name of the target variable (e.g. 'Price', 'Fuel Efficiency').
+        Used in axis labels and the chart title. Default: 'Price'.
+    unit : str
+        Unit label shown in parentheses on axis labels (e.g. '($)', '(MPG)').
+        Default: '($)'.
     """
     actual = np.array(actual_prices).flatten()
     pred   = np.array(predicted_prices).flatten()
@@ -461,27 +621,27 @@ def plot_predictions(actual_prices, predicted_prices):
     lo = min(actual.min(), pred.min())
     hi = max(actual.max(), pred.max())
     axes[0].plot([lo, hi], [lo, hi], 'r--', linewidth=2, label='Perfect prediction')
-    axes[0].set_xlabel('Actual Price ($)')
-    axes[0].set_ylabel('Predicted Price ($)')
-    axes[0].set_title('Predicted vs Actual Prices')
+    axes[0].set_xlabel(f'Actual {target_name} {unit}')
+    axes[0].set_ylabel(f'Predicted {target_name} {unit}')
+    axes[0].set_title(f'Predicted vs Actual {target_name}')
     axes[0].legend()
 
     # 2. Residuals histogram
     residuals = pred - actual
     axes[1].hist(residuals, bins=50, color='steelblue', edgecolor='white', alpha=0.7)
     axes[1].axvline(0, color='red', linestyle='--', linewidth=2)
-    axes[1].set_xlabel('Prediction Error ($)')
+    axes[1].set_xlabel(f'Prediction Error {unit}')
     axes[1].set_ylabel('Frequency')
     axes[1].set_title('Distribution of Prediction Errors')
 
-    # 3. Sample comparison bar chart (20 random houses)
+    # 3. Sample comparison bar chart (20 random samples)
     np.random.seed(42)
     sample_idx = np.random.choice(len(actual), 20, replace=False)
     x_pos, width = np.arange(20), 0.35
     axes[2].bar(x_pos - width / 2, actual[sample_idx], width, label='Actual',    alpha=0.8)
     axes[2].bar(x_pos + width / 2, pred[sample_idx],   width, label='Predicted', alpha=0.8)
     axes[2].set_xlabel('Sample Index')
-    axes[2].set_ylabel('Price ($)')
+    axes[2].set_ylabel(f'{target_name} {unit}')
     axes[2].set_title('Sample Predictions vs Actual')
     axes[2].legend()
     axes[2].set_xticks(x_pos)
