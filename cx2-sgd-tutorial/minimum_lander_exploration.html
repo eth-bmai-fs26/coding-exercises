@@ -712,9 +712,9 @@ function showNextButton(stageIndex) {
   const newBtn = document.getElementById("g2_newBtn");
   const errLbl = document.getElementById("g2_errLbl");
   const msg = document.getElementById("g2_msg");
-  const xMin = -20, xMax = 20, REVEAL_RADIUS = 0.5, TRUE_MINIMUM_X = -3;
+  const xMin = -20, xMax = 20, REVEAL_RADIUS = 0.5, TRUE_MINIMUM_X = 4;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-  function surfaceY(x) { return x * x + 6 * x + 10; }
+  function surfaceY(x) { return x * x - 8 * x + 20; }
   function X(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
   function Y(y01) { return 24 + (1 - y01) * (canvas.height - 58); }
   function findVisibleScale() {
