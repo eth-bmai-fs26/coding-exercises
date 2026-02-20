@@ -43,9 +43,21 @@
       flex: 1; height: 6px; border-radius: 3px;
       background: rgba(255,255,255,0.1);
       transition: background 0.4s;
+      cursor: pointer;
     }
+    .progress-dot:hover { background: rgba(255,255,255,0.25); }
     .progress-dot.done { background: var(--ok); }
+    .progress-dot.done:hover { background: rgba(52,211,153,0.7); }
     .progress-dot.active { background: var(--accent); }
+    .nav-btn {
+      padding: 4px 10px; border-radius: 8px; font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(125,211,252,0.10);
+      color: var(--text); cursor: pointer; white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-btn:hover { border-color: rgba(125,211,252,0.50); }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .progress-label {
       font-size: 12px; color: var(--muted); white-space: nowrap;
     }
@@ -211,15 +223,17 @@
 <!-- ═══════════════════ PROGRESS BAR ═══════════════════ -->
 <div class="progress-bar">
   <span class="progress-title">Minimum Lander Exploration</span>
+  <button class="nav-btn" id="prevBtn" onclick="prevStage()" disabled>&#8592; Prev</button>
   <div class="progress-steps">
-    <div class="progress-dot active" id="dot0"></div>
-    <div class="progress-dot" id="dot1"></div>
-    <div class="progress-dot" id="dot2"></div>
-    <div class="progress-dot" id="dot3"></div>
-    <div class="progress-dot" id="dot4"></div>
-    <div class="progress-dot" id="dot5"></div>
-    <div class="progress-dot" id="dot6"></div>
+    <div class="progress-dot active" id="dot0" onclick="goToStage(0)" title="Mission 1"></div>
+    <div class="progress-dot" id="dot1" onclick="goToStage(1)" title="Mission 2"></div>
+    <div class="progress-dot" id="dot2" onclick="goToStage(2)" title="Mission 3"></div>
+    <div class="progress-dot" id="dot3" onclick="goToStage(3)" title="Mission 4"></div>
+    <div class="progress-dot" id="dot4" onclick="goToStage(4)" title="Mission 5"></div>
+    <div class="progress-dot" id="dot5" onclick="goToStage(5)" title="Mission 6"></div>
+    <div class="progress-dot" id="dot6" onclick="goToStage(6)" title="Mission 7"></div>
   </div>
+  <button class="nav-btn" id="nextBtn" onclick="nextStage()">Next &#8594;</button>
   <span class="progress-label" id="progressLabel">Mission 1 / 7</span>
 </div>
 
@@ -528,6 +542,16 @@ function updateProgress() {
   const label = document.getElementById('progressLabel');
   if (currentStage < TOTAL_STAGES) label.textContent = `Mission ${currentStage + 1} / ${TOTAL_STAGES}`;
   else label.textContent = 'All Complete!';
+  document.getElementById('prevBtn').disabled = currentStage <= 0;
+  document.getElementById('nextBtn').disabled = currentStage >= TOTAL_STAGES;
+}
+
+function prevStage() {
+  if (currentStage > 0) goToStage(currentStage - 1);
+}
+
+function nextStage() {
+  if (currentStage <= TOTAL_STAGES) goToStage(currentStage + 1);
 }
 
 const missionMessages = [
