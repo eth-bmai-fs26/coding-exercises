@@ -3,6 +3,17 @@
 import os
 import pandas as pd
 
+
+def _find_file(filename):
+    # 1. Check current working directory (works in Colab after download)
+    cwd_path = os.path.join(os.getcwd(), filename)
+    if os.path.exists(cwd_path):
+        return cwd_path
+    # 2. Fall back to relative path from __file__ (local dev layout)
+    base_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    return os.path.join(base_dir, filename)
+
+
 def load_dataset():
     """Load the GDP dataset and codebook.
 
@@ -12,9 +23,8 @@ def load_dataset():
         codebook: Full codebook DataFrame
         role_map: dict mapping column_name -> role
     """
-    base_dir = os.path.join(os.path.dirname(__file__), '..', '..')
-    df = pd.read_csv(os.path.join(base_dir, 'gdp_spurious_regression_dataset.csv'), index_col=0)
-    codebook = pd.read_csv(os.path.join(base_dir, 'codebook.csv'))
+    df = pd.read_csv(_find_file('gdp_spurious_regression_dataset.csv'), index_col=0)
+    codebook = pd.read_csv(_find_file('codebook.csv'))
 
     y = df['gdp_per_capita_usd']
     X = df.drop(columns=['gdp_per_capita_usd'])

@@ -1,5 +1,21 @@
 # GDP Spurious Regression Dataset
 
+## Notebooks
+
+Work through the five interactive modules in Google Colab — no local setup needed:
+
+| Module | Topic | Open in Colab |
+|--------|-------|---------------|
+| 01 | Explore the Data | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eth-bmai-fs26/coding-exercises/blob/week1/cx1_un-games/notebooks/01_explore_the_data.ipynb) |
+| 02 | Overfitting | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eth-bmai-fs26/coding-exercises/blob/week1/cx1_un-games/notebooks/02_overfitting.ipynb) |
+| 03 | Regularization | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eth-bmai-fs26/coding-exercises/blob/week1/cx1_un-games/notebooks/03_regularization.ipynb) |
+| 04 | Spurious Features & Random Forest | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eth-bmai-fs26/coding-exercises/blob/week1/cx1_un-games/notebooks/04_spurious_features.ipynb) |
+| 05 | Cross-Validation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eth-bmai-fs26/coding-exercises/blob/week1/cx1_un-games/notebooks/05_cross_validation.ipynb) |
+
+> **Getting started:** click any badge above, then run the first cell — it downloads the data and sets up all dependencies automatically.
+
+---
+
 ## Overview
 
 This dataset is designed for teaching machine learning concepts related to **spurious regression**, **overfitting**, and **regularization techniques**. It contains GDP per capita as the target variable along with a mix of genuinely predictive features, absurd correlates, and pure noise.
