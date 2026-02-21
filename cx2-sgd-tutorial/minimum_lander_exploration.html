@@ -849,6 +849,11 @@ function showNextButton(stageIndex) {
     ctx.save();ctx.beginPath();ctx.rect(winX,winY,winW,winH);ctx.clip();
     ctx.beginPath();for(let i=0;i<=100;i++){const x=xLo+(xHi-xLo)*(i/100),y=surfaceY(x),cx=Xw(x),cy=Yw(y);if(i===0)ctx.moveTo(cx,cy);else ctx.lineTo(cx,cy);}
     ctx.strokeStyle="rgba(52,211,153,0.9)";ctx.lineWidth=2.5;ctx.stroke();ctx.restore();
+    // Dotted vertical line from just above w-label up to where the curve is at w
+    const wCurveY=Yw(surfaceY(cX));
+    ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle="rgba(52,211,153,0.75)";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(winX+winW/2,winY+winH+36);ctx.lineTo(winX+winW/2,wCurveY);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
     ctx.font="bold 14px monospace";ctx.fillStyle="rgba(52,211,153,0.85)";ctx.textAlign="center";ctx.textBaseline="middle";
     ctx.fillText("a",winX-28,Yw(surfaceY(xLo)));ctx.fillText("b",winX+winW+28,Yw(surfaceY(xHi)));
     ctx.fillText("l",winX,winY+winH+32);ctx.fillText("r",winX+winW,winY+winH+32);
