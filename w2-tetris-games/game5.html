@@ -1,0 +1,1541 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNN Pipeline — Multi-Layer Deep Dive</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --border: #222222;
+      --text: #e0dff0;
+      --dim: #555566;
+      --accent: #00ffaa;
+      --pink: #ff6b9d;
+      --blue: #4fc3f7;
+      --yellow: #ffd166;
+      --red: #ff5c5c;
+      --cell: 30px;
+      --scell: 22px;
+      --xcell: 16px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 24px 40px;
+      min-height: 100vh;
+    }
+    header { text-align: center; margin-bottom: 14px; }
+    header h1 { font-size: 1.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    header p { color: var(--dim); font-size: 0.8rem; margin-top: 3px; }
+
+    .controls {
+      display: flex; gap: 10px; margin-bottom: 16px;
+      align-items: center; flex-wrap: wrap; justify-content: center;
+    }
+    .controls span { font-size: 0.72rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+    .btn {
+      font-family: 'Courier New', monospace; font-size: 0.72rem;
+      padding: 8px 18px; border: 1px solid var(--border); border-radius: 5px;
+      background: var(--surface); color: var(--text); cursor: pointer;
+      transition: all 0.18s; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+
+    .progress-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+    .dot.done { background: var(--accent); box-shadow: 0 0 6px rgba(0,255,170,0.4); }
+    .dot.current { background: var(--accent); transform: scale(1.4); box-shadow: 0 0 10px rgba(0,255,170,0.6); }
+    .progress-label { font-size: 0.68rem; color: var(--dim); margin-left: 6px; letter-spacing: 0.5px; }
+
+    .step-card {
+      width: 100%; max-width: 1280px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .step-label {
+      font-size: 0.7rem; letter-spacing: 2px; color: var(--accent);
+      text-transform: uppercase; margin-bottom: 18px;
+      border-bottom: 1px solid rgba(0,255,170,0.12); padding-bottom: 10px;
+    }
+
+    .repeat-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(79,195,247,0.06); border: 1px solid rgba(79,195,247,0.25);
+      border-radius: 7px; padding: 8px 14px; margin-bottom: 16px;
+      font-size: 0.72rem; color: var(--blue);
+    }
+    .repeat-banner strong { color: var(--blue); }
+    .repeat-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(79,195,247,0.12); border: 1px solid rgba(79,195,247,0.35);
+      border-radius: 4px; padding: 2px 8px; font-size: 0.65rem;
+      color: var(--blue); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    .explanation {
+      background: rgba(0,255,170,0.04); border: 1px solid rgba(0,255,170,0.18);
+      border-radius: 8px; padding: 14px 18px; margin-top: 20px;
+      font-size: 0.82rem; line-height: 1.65; color: var(--text);
+    }
+    .explanation strong { color: var(--accent); }
+    .explanation .highlight { color: var(--yellow); font-weight: 700; }
+
+    .nav-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 20px; width: 100%; max-width: 1280px;
+    }
+    .nav-btn {
+      font-family: 'Courier New', monospace; font-size: 0.78rem;
+      padding: 10px 24px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--dim); cursor: pointer;
+      transition: all 0.18s; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .nav-btn:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .nav-btn.next { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+    .nav-btn.next:hover { box-shadow: 0 0 20px rgba(0,255,170,0.3); transform: translateY(-1px); }
+    .nav-btn.recap { background: var(--yellow); color: var(--bg); border-color: var(--yellow); font-weight: 700; }
+    .nav-btn.recap:hover { box-shadow: 0 0 20px rgba(255,209,102,0.35); transform: translateY(-1px); }
+
+    /* ===== GRIDS ===== */
+    .grid { display: inline-grid; gap: 2px; }
+    .cell {
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 3px; font-size: 0.68rem; font-weight: 700; transition: all 0.2s;
+      width: var(--cell); height: var(--cell);
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.2);
+    }
+    .cell.c1  { background: rgba(0,255,170,0.18); border-color: rgba(0,255,170,0.4); color: var(--accent); }
+    .cell.c2  { background: rgba(0,255,170,0.35); border-color: rgba(0,255,170,0.6); color: #fff; }
+    .cell.c3  { background: rgba(0,255,170,0.55); border-color: rgba(0,255,170,0.8); color: #000; }
+    .cell.c4  { background: rgba(0,255,170,0.75); border-color: var(--accent); color: #000; }
+    .cell.c5  { background: var(--accent); border-color: var(--accent); color: #000; font-size: 0.75rem; }
+    .cell.zero { background: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.04); color: var(--dim); }
+    .cell.max-cell { outline: 2px solid var(--yellow); outline-offset: -1px; }
+    .cell.small { width: var(--scell); height: var(--scell); font-size: 0.58rem; }
+    .cell.xsmall { width: var(--xcell); height: var(--xcell); font-size: 0.5rem; }
+    .cell.src-highlight { outline: 2px solid var(--blue) !important; outline-offset: 1px; z-index: 2; position: relative; }
+    .cell.pool-hover { outline: 2px solid var(--yellow) !important; outline-offset: -1px; z-index: 2; position: relative; transform: scale(1.15); }
+
+    /* ===== FILTER CELLS ===== */
+    .kcell {
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 3px; font-size: 0.68rem; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+      color: var(--dim); cursor: default; position: relative;
+    }
+    .kcell.k1 { background: rgba(0,255,170,0.18); border-color: rgba(0,255,170,0.4); color: var(--accent); }
+
+    .section-lbl {
+      font-size: 0.62rem; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 8px; text-align: center;
+    }
+    .section-lbl.accent { color: var(--accent); }
+
+    .arrow { display: flex; align-items: center; padding: 0 12px; color: var(--accent); opacity: 0.7; }
+    .arrow svg { width: 36px; height: 18px; }
+    .arrow-line { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 3; animation: dash 0.8s linear infinite; }
+    .arrow-head { fill: var(--accent); }
+    @keyframes dash { to { stroke-dashoffset: -8; } }
+
+    .step-body { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+    .step-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    .filter-name { font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+    .filter-name.f1 { color: var(--accent); }
+    .filter-name.f2 { color: var(--pink); }
+    .filter-name.f3 { color: var(--blue); }
+    .filter-name.f4 { color: var(--yellow); }
+
+    /* ===== HOVERABLE FILTER CARDS (step 2) ===== */
+    .filter-card {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.18s;
+    }
+    .filter-card.fc1 { border-color: rgba(0,255,170,0.25); }
+    .filter-card.fc2 { border-color: rgba(255,107,157,0.25); }
+    .filter-card.fc3 { border-color: rgba(79,195,247,0.25); }
+    .filter-card.fc4 { border-color: rgba(255,209,102,0.25); }
+    .filter-card.active-filter { background: rgba(255,255,255,0.05); transform: translateX(3px); }
+    .filter-card.active-filter.fc1 { border-color: rgba(0,255,170,0.8); box-shadow: 0 0 14px rgba(0,255,170,0.15); }
+    .filter-card.active-filter.fc2 { border-color: rgba(255,107,157,0.8); box-shadow: 0 0 14px rgba(255,107,157,0.15); }
+    .filter-card.active-filter.fc3 { border-color: rgba(79,195,247,0.8);  box-shadow: 0 0 14px rgba(79,195,247,0.15); }
+    .filter-card.active-filter.fc4 { border-color: rgba(255,209,102,0.8); box-shadow: 0 0 14px rgba(255,209,102,0.15); }
+    .filter-hint { font-size: 0.58rem; color: var(--dim); text-align: center; margin-top: 4px; letter-spacing: 0.5px; }
+
+    /* ===== FEATURE MAP PANEL ===== */
+    .fm-panel {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 14px 16px; min-width: 200px; transition: border-color 0.2s;
+    }
+    .fm-panel.fc1 { border-color: rgba(0,255,170,0.4); }
+    .fm-panel.fc2 { border-color: rgba(255,107,157,0.4); }
+    .fm-panel.fc3 { border-color: rgba(79,195,247,0.4); }
+    .fm-panel.fc4 { border-color: rgba(255,209,102,0.4); }
+    .fm-panel-title { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+    .fm-panel-title.fc1 { color: var(--accent); }
+    .fm-panel-title.fc2 { color: var(--pink); }
+    .fm-panel-title.fc3 { color: var(--blue); }
+    .fm-panel-title.fc4 { color: var(--yellow); }
+    .fm-empty {
+      display: flex; align-items: center; justify-content: center;
+      width: 200px; height: 180px; font-size: 0.72rem; color: var(--dim); text-align: center;
+      border: 1px dashed rgba(255,255,255,0.08); border-radius: 6px; padding: 10px; line-height: 1.8;
+    }
+
+    .fm-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 8px 10px; }
+    .fm-box.fm1 { border-color: rgba(0,255,170,0.25); }
+    .fm-box.fm2 { border-color: rgba(255,107,157,0.25); }
+    .fm-box.fm3 { border-color: rgba(79,195,247,0.25); }
+    .fm-box.fm4 { border-color: rgba(255,209,102,0.25); }
+
+    /* ===== POOL TABS ===== */
+    .pool-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .pool-tab {
+      font-family: 'Courier New', monospace; font-size: 0.62rem; padding: 5px 12px;
+      border-radius: 5px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.02); color: var(--dim); cursor: pointer;
+      transition: all 0.18s; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .pool-tab:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .pool-tab.pt1.active { border-color: rgba(0,255,170,0.7); color: var(--accent); background: rgba(0,255,170,0.08); }
+    .pool-tab.pt2.active { border-color: rgba(255,107,157,0.7); color: var(--pink); background: rgba(255,107,157,0.08); }
+    .pool-tab.pt3.active { border-color: rgba(79,195,247,0.7); color: var(--blue); background: rgba(79,195,247,0.08); }
+    .pool-tab.pt4.active { border-color: rgba(255,209,102,0.7); color: var(--yellow); background: rgba(255,209,102,0.08); }
+
+    /* ===== VECTOR DISPLAY ===== */
+    .vector-box {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 16px; display: flex;
+      flex-direction: column; gap: 8px; align-items: center;
+    }
+    .vec-item { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+    .vec-label { color: var(--dim); font-size: 0.7rem; }
+    .vec-value {
+      width: 52px; height: 36px; border-radius: 6px;
+      background: rgba(0,255,170,0.12); border: 1px solid rgba(0,255,170,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700; color: var(--accent);
+    }
+
+    /* ===== OUTPUT ===== */
+    .output-big {
+      width: 100px; height: 100px; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 2.8rem; font-weight: 800; gap: 4px;
+    }
+    .output-big.yes { background: rgba(0,255,170,0.12); border: 2px solid var(--accent); color: var(--accent); box-shadow: 0 0 30px rgba(0,255,170,0.15); }
+    .output-big.no  { background: rgba(255,92,92,0.12);  border: 2px solid var(--red);    color: var(--red);    box-shadow: 0 0 30px rgba(255,92,92,0.1); }
+    .output-sublabel { font-size: 0.55rem; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ===== DECISION BOX ===== */
+    .decision-box {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 20px; font-size: 0.85rem; line-height: 2;
+    }
+    .decision-box .rule-line { display: flex; align-items: center; gap: 8px; }
+    .decision-box .pass { color: var(--accent); font-weight: 700; }
+    .decision-box .fail { color: var(--red); }
+    .decision-box .threshold { color: var(--yellow); font-weight: 700; }
+
+    /* ===== RECAP ===== */
+    #recap {
+      display: none; width: 100%; max-width: 1280px; background: var(--surface);
+      border: 1px solid rgba(0,255,170,0.2); border-radius: 12px; padding: 28px;
+      animation: fadeUp 0.4s ease both;
+    }
+    #recap h2 { color: var(--accent); font-size: 1.1rem; margin-bottom: 6px; letter-spacing: 1px; }
+    #recap .recap-sub { color: var(--dim); font-size: 0.75rem; margin-bottom: 22px; }
+    .pipeline-flow { display: flex; align-items: flex-start; gap: 0; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+    .pipe-stage { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .pipe-title { font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+    .pipe-size { font-size: 0.6rem; color: var(--dim); white-space: nowrap; }
+    .pipe-thumb { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 5px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+    .recap-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+    .recap-summary { font-size: 0.82rem; line-height: 1.7; color: var(--text); background: rgba(0,255,170,0.03); border: 1px solid rgba(0,255,170,0.12); border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; }
+    .recap-summary h3 { color: var(--accent); margin-bottom: 8px; font-size: 0.85rem; }
+
+    .size-badge { font-size: 0.6rem; color: var(--dim); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+
+    /* ===== CONV2 ANIMATION ===== */
+    .ch-anim-container {
+      display: flex; flex-direction: column; gap: 6px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; min-width: 300px;
+    }
+    .ch-anim-row {
+      display: flex; align-items: center; gap: 6px;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .ch-anim-row.visible { opacity: 1; transform: translateY(0); }
+    .ch-lbl { font-size: 0.6rem; color: var(--dim); width: 80px; text-align: right; flex-shrink: 0; }
+    .ch-w-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 3px; font-size: 0.62rem; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: var(--dim);
+      flex-shrink: 0;
+    }
+    .ch-w-badge.w2 { background: rgba(0,255,170,0.25); border-color: rgba(0,255,170,0.6); color: var(--accent); }
+    .ch-w-badge.w1 { background: rgba(0,255,170,0.08); border-color: rgba(0,255,170,0.3); color: rgba(0,255,170,0.7); }
+    .ch-w-badge.w0 { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); color: rgba(255,255,255,0.2); }
+    .ch-bar-wrap { flex: 1; height: 14px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+    .ch-bar {
+      height: 100%; border-radius: 3px; width: 0;
+      transition: width 0.5s ease;
+    }
+    .ch-sum-line {
+      display: flex; align-items: center; gap: 6px; margin-top: 4px;
+      padding-top: 6px; border-top: 1px solid var(--border);
+      opacity: 0; transition: opacity 0.4s ease 0.05s;
+    }
+    .ch-sum-line.visible { opacity: 1; }
+    .ch-sum-val {
+      font-size: 1.1rem; font-weight: 800; color: var(--yellow);
+      background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.4);
+      border-radius: 5px; padding: 2px 10px;
+    }
+    .conv2-filter-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .conv2-ftab {
+      font-family: 'Courier New', monospace; font-size: 0.62rem; padding: 5px 14px;
+      border-radius: 5px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.02); color: var(--dim); cursor: pointer;
+      transition: all 0.18s; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .conv2-ftab.active { border-color: rgba(0,255,170,0.7); color: var(--accent); background: rgba(0,255,170,0.08); }
+
+    /* ===== FC STEP VISUAL ===== */
+    .fc-verdict {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px;
+    }
+    .score-bar-row { display: flex; align-items: center; gap: 10px; width: 100%; }
+    .score-bar-label { font-size: 0.65rem; color: var(--dim); width: 80px; text-align: right; flex-shrink: 0; }
+    .score-bar-track { flex: 1; height: 22px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; position: relative; }
+    .score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .score-bar-num { font-size: 0.75rem; font-weight: 700; width: 34px; flex-shrink: 0; }
+    .threshold-marker {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: rgba(255,209,102,0.7);
+    }
+    .threshold-label {
+      position: absolute; top: -18px; font-size: 0.55rem; color: var(--yellow);
+      white-space: nowrap; transform: translateX(-50%);
+    }
+    .verdict-arrow { font-size: 2rem; color: var(--dim); }
+    .verdict-result {
+      font-size: 0.85rem; font-weight: 700; padding: 8px 20px;
+      border-radius: 6px; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .verdict-result.pass { background: rgba(0,255,170,0.12); color: var(--accent); border: 1px solid rgba(0,255,170,0.4); }
+    .verdict-result.fail { background: rgba(255,92,92,0.12); color: var(--red); border: 1px solid rgba(255,92,92,0.4); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>CNN Pipeline — Multi-Layer Deep Dive</h1>
+    <p>A CNN learns to recognize a house with a triangular roof — step by step</p>
+  </header>
+
+  <div class="controls">
+    <span>Example:</span>
+    <button class="btn active" id="ex1btn" onclick="loadExample(0)">▶ Normal house</button>
+    <button class="btn" id="ex2btn" onclick="loadExample(1)">Upside-down house</button>
+    <button class="btn" id="ex3btn" onclick="loadExample(2)">Flat-roof building</button>
+  </div>
+
+  <div class="progress-bar">
+    <div class="dot current" id="dot0"></div>
+    <div class="dot" id="dot1"></div>
+    <div class="dot" id="dot2"></div>
+    <div class="dot" id="dot3"></div>
+    <div class="dot" id="dot4"></div>
+    <div class="dot" id="dot5"></div>
+    <span class="progress-label" id="progress-label">INPUT (step 1 / 6)</span>
+  </div>
+
+  <div class="step-card" id="step-card">
+    <div class="step-label" id="step-label">STEP 1 / 6 — INPUT</div>
+    <div id="step-content"></div>
+  </div>
+
+  <div id="recap"></div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="prevStep()" disabled>← BACK</button>
+    <button class="nav-btn next" id="next-btn" onclick="nextStep()">NEXT STEP →</button>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const EXAMPLES = [
+  {
+    name: 'Normal house',
+    desc: 'House with triangular roof at the top, walls with windows and a door below',
+    output: 1,
+    input: [
+      [0,0,0,0,0,1,0,0,0,0,0,0],
+      [0,0,0,0,1,0,1,0,0,0,0,0],
+      [0,0,0,1,0,0,0,1,0,0,0,0],
+      [0,0,1,0,0,0,0,0,1,0,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+    ],
+    conv1: [
+      [[0,1,0,1,0,3,0,0,0,0],[1,0,1,0,1,0,3,0,0,0],[1,2,1,2,1,1,1,3,0,0],[1,1,2,1,1,1,1,2,2,0],[1,2,2,1,2,2,1,2,2,1],[1,2,2,1,1,2,1,1,1,1],[1,1,1,2,1,1,2,2,1,1],[1,1,1,2,2,0,1,2,1,1],[1,1,1,2,2,1,0,1,1,1],[2,2,1,2,3,3,2,1,1,1]],
+      [[0,0,0,3,0,1,0,1,0,0],[0,0,3,0,1,0,1,0,1,0],[0,3,1,1,1,2,1,2,1,1],[2,2,1,1,1,1,2,1,1,1],[2,2,1,2,2,1,2,2,1,1],[1,1,1,2,1,1,2,2,1,1],[1,2,2,1,1,2,1,1,1,1],[1,2,1,0,2,2,1,1,1,1],[1,1,0,1,2,2,1,1,1,1],[1,1,2,3,3,2,1,2,2,1]],
+      [[0,0,1,1,2,1,1,0,0,0],[0,1,1,1,0,1,1,1,0,0],[1,1,1,0,0,0,1,1,1,0],[2,3,3,3,3,3,3,3,2,1],[1,1,0,0,0,0,0,1,1,1],[1,2,2,2,2,2,2,2,1,1],[1,2,2,2,2,2,2,2,1,1],[1,1,0,0,0,0,0,1,1,1],[1,1,1,2,3,2,1,1,1,1],[1,1,1,2,3,2,1,1,1,1]],
+      [[0,0,1,1,1,1,1,0,0,0],[0,1,1,1,0,1,1,1,0,0],[1,2,2,1,1,1,2,2,1,0],[2,2,1,1,1,1,1,2,2,0],[3,1,2,2,1,2,2,1,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,1,2,1,2,1,0,3,0],[3,0,0,2,2,2,0,0,3,0],[3,1,1,3,3,3,1,1,3,0]],
+    ],
+    conv1_max: [{val:3,r:0,c:5},{val:3,r:0,c:3},{val:3,r:3,c:1},{val:3,r:4,c:0}],
+    pool1: [
+      [[1,1,3,3,0],[2,2,1,3,2],[2,2,2,2,2],[1,2,2,2,1],[2,2,3,2,1]],
+      [[0,3,1,1,1],[3,1,2,2,1],[2,2,2,2,1],[2,2,2,1,1],[1,3,3,2,2]],
+      [[1,1,2,1,0],[3,3,3,3,2],[2,2,2,2,1],[2,2,2,2,1],[1,2,3,1,1]],
+      [[1,1,1,1,0],[2,2,1,2,2],[3,2,2,2,3],[3,2,2,2,3],[3,3,3,1,3]],
+    ],
+    conv2: [
+      [[57,63,52],[75,74,71],[74,71,67]],
+      [[75,73,70],[73,70,65],[82,79,71]],
+    ],
+    conv3: [[221,213],[237,228]], pool3_scalar: 237,
+    vec: [75, 82],
+    margin: 5,
+  },
+  {
+    name: 'Upside-down house',
+    desc: 'Same house flipped: the triangle points downward',
+    output: 0,
+    input: [
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+      [0,0,1,0,0,0,0,0,1,0,0,0],
+      [0,0,0,1,0,0,0,1,0,0,0,0],
+      [0,0,0,0,1,0,1,0,0,0,0,0],
+      [0,0,0,0,0,1,0,0,0,0,0,0],
+    ],
+    conv1: [
+      [[1,1,2,3,3,2,1,2,2,1],[1,1,0,1,2,2,1,1,1,1],[1,2,1,0,2,2,1,1,1,1],[1,2,2,1,1,2,1,1,1,1],[1,1,1,2,1,1,2,2,1,1],[2,2,1,2,2,1,2,2,1,1],[2,2,1,1,1,1,2,1,1,1],[0,3,1,1,1,2,1,2,1,1],[0,0,3,0,1,0,1,0,1,0],[0,0,0,3,0,1,0,1,0,0]],
+      [[2,2,1,2,3,3,2,1,1,1],[1,1,1,2,2,1,0,1,1,1],[1,1,1,2,2,0,1,2,1,1],[1,1,1,2,1,1,2,2,1,1],[1,2,2,1,1,2,1,1,1,1],[1,2,2,1,2,2,1,2,2,1],[1,1,2,1,1,1,1,2,2,0],[1,2,1,2,1,1,1,3,0,0],[1,0,1,0,1,0,3,0,0,0],[0,1,0,1,0,3,0,0,0,0]],
+      [[1,1,1,2,3,2,1,1,1,1],[1,1,1,2,3,2,1,1,1,1],[1,1,0,0,0,0,0,1,1,1],[1,2,2,2,2,2,2,2,1,1],[1,2,2,2,2,2,2,2,1,1],[1,1,0,0,0,0,0,1,1,1],[2,3,3,3,3,3,3,3,2,1],[1,1,1,0,0,0,1,1,1,0],[0,1,1,1,0,1,1,1,0,0],[0,0,1,1,2,1,1,0,0,0]],
+      [[3,1,1,3,3,3,1,1,3,0],[3,0,0,2,2,2,0,0,3,0],[3,0,1,2,1,2,1,0,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,2,2,0,2,2,0,3,0],[3,1,2,2,1,2,2,1,3,0],[2,2,1,1,1,1,1,2,2,0],[1,2,2,1,1,1,2,2,1,0],[0,1,1,1,0,1,1,1,0,0],[0,0,1,1,1,1,1,0,0,0]],
+    ],
+    conv1_max: [{val:3,r:0,c:3},{val:3,r:0,c:4},{val:3,r:0,c:4},{val:3,r:0,c:0}],
+    pool1: [
+      [[1,3,3,2,2],[2,2,2,1,1],[2,2,2,2,2],[3,1,2,2,1],[0,3,1,1,1]],
+      [[2,2,3,2,1],[1,2,2,2,1],[2,2,2,2,2],[2,2,1,3,2],[1,1,3,3,0]],
+      [[1,2,3,1,1],[2,2,2,2,1],[2,2,2,2,1],[3,3,3,3,2],[1,1,2,1,0]],
+      [[3,3,3,1,3],[3,2,2,2,3],[3,2,2,2,3],[2,2,1,2,2],[1,1,1,1,0]],
+    ],
+    conv2: [
+      [[82,79,71],[73,70,65],[75,73,70]],
+      [[74,71,67],[75,74,71],[57,63,52]],
+    ],
+    conv3: [[224,219],[189,200]], pool3_scalar: 224,
+    vec: [82, 75],
+    margin: 5,
+  },
+  {
+    name: 'Flat-roof building',
+    desc: 'Rectangular building with a flat cornice — no diagonal triangle anywhere',
+    output: 0,
+    input: [
+      [0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,1,1,0,1,1,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,0,0,0,0,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,0,0,1,1,1,0,0,1,0,0],
+      [0,1,1,1,1,1,1,1,1,1,0,0],
+    ],
+    conv1: [
+      [[1,1,1,1,1,1,1,1,0,0],[1,1,0,0,0,0,1,1,1,0],[1,2,2,1,2,2,1,2,2,1],[1,2,2,1,1,2,1,1,1,1],[1,1,1,2,1,1,2,2,1,1],[1,1,1,2,2,0,1,2,1,1],[1,1,1,2,2,1,0,1,1,1],[2,2,1,2,3,3,2,1,1,1],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
+      [[1,1,1,1,1,1,1,1,1,1],[0,1,1,1,1,1,0,0,1,0],[2,2,1,2,2,1,2,2,1,1],[1,1,1,2,1,1,2,2,1,1],[1,2,2,1,1,2,1,1,1,1],[1,2,1,0,2,2,1,1,1,1],[1,1,0,1,2,2,1,1,1,1],[1,1,2,3,3,2,1,2,2,1],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
+      [[2,3,3,3,3,3,3,3,2,1],[1,1,0,0,0,0,0,1,1,1],[1,2,2,2,2,2,2,2,1,1],[1,2,2,2,2,2,2,2,1,1],[1,1,0,0,0,0,0,1,1,1],[1,1,0,0,0,0,0,1,1,1],[1,1,0,0,0,0,0,1,1,1],[1,1,1,2,3,2,1,1,1,1],[1,1,1,2,3,2,1,1,1,1],[0,0,0,0,0,0,0,0,0,0]],
+      [[1,1,1,1,1,1,1,1,1,0],[2,1,1,1,1,1,1,1,2,0],[3,1,2,2,1,2,2,1,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,2,2,0,2,2,0,3,0],[3,0,1,2,1,2,1,0,3,0],[3,0,0,2,2,2,0,0,3,0],[3,1,1,3,3,3,1,1,3,0],[0,0,0,0,0,0,0,0,0,0]],
+    ],
+    conv1_max: [{val:3,r:7,c:4},{val:3,r:7,c:3},{val:3,r:0,c:1},{val:3,r:2,c:0}],
+    pool1: [
+      [[1,1,1,1,0],[2,2,2,2,2],[1,2,2,2,1],[2,2,3,2,1],[0,0,0,0,0]],
+      [[1,1,1,1,1],[2,2,2,2,1],[2,2,2,2,1],[1,3,3,2,2],[0,0,0,0,0]],
+      [[3,3,3,3,2],[2,2,2,2,1],[3,2,2,2,1],[2,2,2,2,1],[1,2,3,1,1]],
+      [[2,1,1,1,2],[3,2,2,2,3],[3,2,2,2,3],[3,2,2,2,3],[3,3,3,1,3]],
+    ],
+    conv2: [
+      [[81,78,74],[63,59,58],[48,41,46]],
+      [[51,46,50],[57,49,50],[80,75,68]],
+    ],
+    conv3: [[165,144],[217,199]], pool3_scalar: 217,
+    vec: [81, 80],
+    margin: 5,
+  },
+];
+
+const FILTERS1 = [
+  { name:'Filter 1 — Diagonal \\', color:'f1', weights:[[1,0,0],[0,1,0],[0,0,1]], desc:'Detects ↘ diagonal lines (left roof edge)' },
+  { name:'Filter 2 — Diagonal /', color:'f2', weights:[[0,0,1],[0,1,0],[1,0,0]], desc:'Detects ↙ diagonal lines (right roof edge)' },
+  { name:'Filter 3 — Horizontal', color:'f3', weights:[[0,0,0],[1,1,1],[0,0,0]], desc:'Detects horizontal lines (eaves, base)' },
+  { name:'Filter 4 — Vertical',   color:'f4', weights:[[0,1,0],[0,1,0],[0,1,0]], desc:'Detects vertical lines (side walls)' },
+];
+const FM_TITLES  = ['FM1 — diagonal ↘','FM2 — diagonal ↙','FM3 — horizontal','FM4 — vertical'];
+const FM_DESCS   = ['Feature map 1: ↘ diagonals (left side of roof)','Feature map 2: ↙ diagonals (right side of roof)','Feature map 3: horizontal lines (eaves, base)','Feature map 4: vertical lines (side walls)'];
+const FM_FCOLORS = ['fc1','fc2','fc3','fc4'];
+const FM_FNAMES  = ['f1','f2','f3','f4'];
+
+const FILTERS2 = [
+  { name:'Filter A — Top-heavy', color:'f1', weights:[[2,2],[1,1]], desc:'2×2 top-heavy filter: top row ×2, bottom row ×1' },
+  { name:'Filter B — Bottom-heavy', color:'f2', weights:[[1,1],[2,2]], desc:'2×2 bottom-heavy filter: top row ×1, bottom row ×2' },
+];
+
+const CONV3_FILTER    = [[1,0],[2,0]]; // applied to Map B (conv2[1])
+let CONV3_THRESHOLD = 224;           // recomputed at runtime after conv2/conv3 dynamic outputs
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentExample = 0;
+let currentStep    = 0;
+const TOTAL_STEPS  = 6;
+recomputeThreshold();
+
+// ============================================================
+//  HELPERS
+// ============================================================
+const svgArrow = `<svg viewBox="0 0 36 18" xmlns="http://www.w3.org/2000/svg">
+  <line x1="0" y1="9" x2="26" y2="9" class="arrow-line"/>
+  <polygon points="26,4 36,9 26,14" class="arrow-head"/>
+</svg>`;
+
+function cellClass(val, maxVal) {
+  if (val === 0) return 'zero';
+  const r = val / maxVal;
+  if (r < 0.2)  return 'c1';
+  if (r < 0.4)  return 'c2';
+  if (r < 0.65) return 'c3';
+  if (r < 0.85) return 'c4';
+  return 'c5';
+}
+
+function makeGrid(data, size='normal', maxOverride=null) {
+  const rows = data.length, cols = data[0].length;
+  const maxVal = maxOverride !== null ? maxOverride : Math.max(...data.flat(), 1);
+  const dim = size==='small' ? 'var(--scell)' : size==='xsmall' ? 'var(--xcell)' : 'var(--cell)';
+  let h = `<div class="grid" style="grid-template-columns:repeat(${cols},${dim})">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=data[r][c], cls=v===0?'zero':cellClass(v,maxVal);
+    const sz=size==='small'?' small':size==='xsmall'?' xsmall':'';
+    h += `<div class="cell ${cls}${sz}">${v}</div>`;
+  }
+  return h + `</div>`;
+}
+
+function makeGridWithMax(data, maxR, maxC, size='normal') {
+  const rows=data.length, cols=data[0].length;
+  const maxVal=Math.max(...data.flat(),1);
+  const dim=size==='small'?'var(--scell)':'var(--cell)';
+  let h=`<div class="grid" style="grid-template-columns:repeat(${cols},${dim})">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=data[r][c], cls=v===0?'zero':cellClass(v,maxVal);
+    const isMax=(r===maxR&&c===maxC)?' max-cell':'';
+    const sz=size==='small'?' small':'';
+    h+=`<div class="cell ${cls}${sz}${isMax}">${v}</div>`;
+  }
+  return h+`</div>`;
+}
+
+function makeFilter(filt) {
+  let h=`<div class="grid" style="grid-template-columns:repeat(3,26px)">`;
+  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
+    const v=filt.weights[r][c];
+    h+=`<div class="kcell${v===1?' k1':''}">${v}</div>`;
+  }
+  return h+`</div>`;
+}
+
+function makeArrow() {
+  return `<div class="arrow">${svgArrow}</div>`;
+}
+
+function convolveSingle(input, kernel) {
+  const h = input.length, w = input[0].length;
+  const kh = kernel.length, kw = kernel[0].length;
+  const oh = h - kh + 1, ow = w - kw + 1;
+  const out = Array.from({length: oh}, () => Array(ow).fill(0));
+  for (let r=0; r<oh; r++) for (let c=0; c<ow; c++) {
+    let sum = 0;
+    for (let i=0; i<kh; i++) for (let j=0; j<kw; j++) sum += input[r+i][c+j] * kernel[i][j];
+    out[r][c] = sum;
+  }
+  return out;
+}
+function convolveMulti(inputs, kernel) {
+  const kh = kernel.length, kw = kernel[0].length;
+  const h = inputs[0].length, w = inputs[0][0].length;
+  const oh = h - kh + 1, ow = w - kw + 1;
+  const out = Array.from({length: oh}, () => Array(ow).fill(0));
+  for (let r=0; r<oh; r++) for (let c=0; c<ow; c++) {
+    let sum = 0;
+    for (let ch=0; ch<inputs.length; ch++) {
+      for (let i=0; i<kh; i++) for (let j=0; j<kw; j++) sum += inputs[ch][r+i][c+j] * kernel[i][j];
+    }
+    out[r][c] = sum;
+  }
+  return out;
+}
+function getConv2Maps(ex) {
+  return FILTERS2.map(f => convolveMulti(ex.pool1, f.weights));
+}
+function maxPool2x2Stride2(input) {
+  const h=input.length, w=input[0].length;
+  const oh=Math.floor(h/2), ow=Math.floor(w/2);
+  const out=Array.from({length:oh},()=>Array(ow).fill(0));
+  for (let r=0;r<oh;r++) for (let c=0;c<ow;c++) {
+    const r0=2*r, c0=2*c;
+    out[r][c]=Math.max(input[r0][c0], input[r0][c0+1], input[r0+1][c0], input[r0+1][c0+1]);
+  }
+  return out;
+}
+function getPool2Maps(ex) {
+  return getConv2Maps(ex).map(maxPool2x2Stride2);
+}
+function getConv3Map(ex) {
+  const mapBPool2 = getPool2Maps(ex)[1];
+  return convolveSingle(mapBPool2, CONV3_FILTER);
+}
+function getPool3Scalar(ex) {
+  return Math.max(...getConv3Map(ex).flat());
+}
+function recomputeThreshold() {
+  const pos = EXAMPLES.filter(e=>e.output===1).map(getPool3Scalar);
+  const neg = EXAMPLES.filter(e=>e.output===0).map(getPool3Scalar);
+  if (!pos.length || !neg.length) return;
+  const minPos = Math.min(...pos), maxNeg = Math.max(...neg);
+  CONV3_THRESHOLD = Math.floor((minPos + maxNeg) / 2);
+}
+
+// ============================================================
+//  RENDER DISPATCH
+// ============================================================
+function renderStep(stepIdx) {
+  const ex=EXAMPLES[currentExample];
+  const card=document.getElementById('step-card');
+  document.getElementById('recap').style.display='none';
+  card.style.display='block';
+  card.style.animation='none'; card.offsetHeight; card.style.animation='';
+
+  const steps=[renderInput,renderConv1,renderPool1,renderConv2,renderConv3,renderThreshold];
+  const labels=[
+    'STEP 1 / 6 — INPUT (12×12)',
+    'STEP 2 / 6 — CONVOLUTION LAYER 1 — 4 filters → 4 feature maps',
+    'STEP 3 / 6 — MAX POOLING LAYER 1',
+    'STEP 4 / 6 — CONVOLUTION LAYER 2 — asymmetric filters (same mechanism, new filters)',
+    'STEP 5 / 6 — POOL2 (2×2) + CONVOLUTION LAYER 3',
+    'STEP 6 / 6 — MAX POOL 3 + THRESHOLD → OUTPUT',
+  ];
+  document.getElementById('step-label').textContent=labels[stepIdx];
+  document.getElementById('step-content').innerHTML=steps[stepIdx](ex);
+
+  for (let i=0;i<TOTAL_STEPS;i++) {
+    document.getElementById('dot'+i).className='dot'+(i<stepIdx?' done':i===stepIdx?' current':'');
+  }
+  document.getElementById('progress-label').textContent=`step ${stepIdx+1} / ${TOTAL_STEPS}`;
+  document.getElementById('prev-btn').disabled=(stepIdx===0);
+  const nb=document.getElementById('next-btn');
+  if (stepIdx===TOTAL_STEPS-1) { nb.textContent='SEE FULL PIPELINE →'; nb.className='nav-btn recap'; }
+  else { nb.textContent='NEXT STEP →'; nb.className='nav-btn next'; }
+}
+
+// ============================================================
+//  STEP 0: INPUT
+// ============================================================
+function renderInput(ex) {
+  const rows=ex.input.length, cols=ex.input[0].length;
+  const active=ex.input.flat().reduce((a,b)=>a+b,0);
+  let h=`<div class="step-body" style="align-items:flex-start;gap:24px">`;
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl accent">${rows}×${cols} Input Image</div>`;
+  h+=`<div class="grid" style="grid-template-columns:repeat(${cols},var(--scell))">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=ex.input[r][c];
+    h+=`<div class="cell small ${v?'c5':'zero'}">${v}</div>`;
+  }
+  h+=`</div><div class="size-badge">${rows}×${cols} = ${rows*cols} px</div></div>`;
+
+  h+=`<div class="step-col" style="max-width:340px;gap:12px;padding-top:20px">`;
+  h+=`<div style="font-size:0.85rem;line-height:1.75"><strong style="color:var(--accent);font-size:0.95rem">${ex.name}</strong><br>`;
+  h+=`<span style="color:var(--dim)">${ex.desc}</span><br><br>`;
+  h+=`<span style="color:var(--dim)">Active pixels (1): </span><strong style="color:var(--accent)">${active}</strong><br>`;
+  h+=`<span style="color:var(--dim)">Background (0): </span><strong style="color:var(--dim)">${rows*cols-active}</strong></div>`;
+  h+=`</div></div>`;
+  h+=`<div class="explanation"><strong>The input is a binary ${rows}×${cols} grid</strong> — each cell is 1 (active pixel) or 0 (background).<br><br>Goal: detect a <strong>house with a triangular roof at the top</strong>. The other examples (upside-down roof, flat roof) should output 0.</div>`;
+  return h;
+}
+
+// ============================================================
+//  STEP 1: CONV1 — hover on filter card → show feature map
+//  Data stored in window globals (script tags in innerHTML don't execute)
+// ============================================================
+function renderConv1(ex) {
+  const rows=ex.input.length, cols=ex.input[0].length;
+  const fmSize=rows-2;
+
+  // Store data globally — the only reliable way across innerHTML injection
+  window._c1_conv1   = ex.conv1;
+  window._c1_maxArr  = ex.conv1_max;
+
+  let h=`<div class="step-body" style="flex-wrap:wrap;gap:14px;align-items:flex-start">`;
+
+  // Input thumbnail
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl">Input (${rows}×${cols})</div>`;
+  h+=`<div class="grid" style="grid-template-columns:repeat(${cols},var(--xcell))">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=ex.input[r][c];
+    h+=`<div class="cell xsmall ${v?'c5':'zero'}">${v}</div>`;
+  }
+  h+=`</div><div class="size-badge">${rows}×${cols}</div></div>`;
+  h+=makeArrow();
+
+  // Filter cards
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl">4 Filters (3×3) — hover to inspect</div>`;
+  h+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+  FILTERS1.forEach((filt,i) => {
+    h+=`<div class="filter-card fc${i+1}" id="fcard${i}" onmouseenter="c1Hover(${i})" onmouseleave="c1Hover(-1)">`;
+    h+=`<div style="display:flex;gap:8px;align-items:center">`;
+    h+=`<div><div class="filter-name f${i+1}" style="font-size:0.58rem;margin-bottom:4px">${filt.name}</div>`;
+    h+=makeFilter(filt)+`</div>`;
+    h+=`<div style="font-size:0.6rem;color:var(--dim);max-width:110px;line-height:1.45">${filt.desc}</div>`;
+    h+=`</div></div>`;
+  });
+  h+=`</div><div class="filter-hint">↑ hover a filter to see its feature map</div></div>`;
+  h+=makeArrow();
+
+  // Feature map panel
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl">Resulting Feature Map</div>`;
+  h+=`<div id="fm-panel-wrap">`;
+  h+=`<div class="fm-empty">Hover one of the<br>4 filters to see<br>its feature map</div>`;
+  h+=`</div></div>`;
+  h+=`</div>`;// step-body
+
+  h+=`<div class="explanation"><strong>What does each filter do?</strong> It slides over the ${rows}×${cols} image with stride=1 (no padding). At each position it computes a <strong>dot product</strong>: count of 1s in the filter that overlap with active pixels. High value = pattern is present there.<br><br><span class="highlight">Yellow outline</span> = peak activation. With binary inputs and weights, all values are ≥ 0, so ReLU (max(0,x)) leaves them unchanged.</div>`;
+  return h;
+}
+
+function c1Hover(idx) {
+  for (let i=0;i<4;i++) {
+    const fc=document.getElementById('fcard'+i);
+    if (fc) fc.classList.toggle('active-filter', i===idx);
+  }
+  const wrap=document.getElementById('fm-panel-wrap');
+  if (!wrap) return;
+  if (idx===-1) {
+    wrap.innerHTML=`<div class="fm-empty">Hover one of the<br>4 filters to see<br>its feature map</div>`;
+    return;
+  }
+  const fm=window._c1_conv1[idx];
+  const mx=window._c1_maxArr[idx];
+  const fmSize=fm.length;
+  const maxVal=Math.max(...fm.flat(),1);
+  const fcClass=FM_FCOLORS[idx];
+  let h=`<div class="fm-panel ${fcClass}" style="animation:fadeUp 0.15s ease both">`;
+  h+=`<div class="fm-panel-title ${fcClass}">${FM_TITLES[idx]}</div>`;
+  h+=`<div class="grid" style="grid-template-columns:repeat(${fmSize},var(--xcell));gap:2px">`;
+  for (let r=0;r<fmSize;r++) for (let c=0;c<fmSize;c++) {
+    const v=fm[r][c], cls=v===0?'zero':cellClass(v,maxVal);
+    const isMax=(r===mx.r&&c===mx.c)?' max-cell':'';
+    h+=`<div class="cell xsmall ${cls}${isMax}">${v}</div>`;
+  }
+  h+=`</div>`;
+  h+=`<div style="margin-top:6px;font-size:0.6rem;color:var(--dim)">Max: <span style="color:var(--yellow);font-weight:700">${mx.val}</span> at [${mx.r},${mx.c}] &nbsp;|&nbsp; ${fmSize}×${fmSize}</div>`;
+  h+=`</div>`;
+  wrap.innerHTML=h;
+}
+
+// ============================================================
+//  STEP 2: MAX POOL — tab selector + bidirectional hover trace
+// ============================================================
+function renderPool1(ex) {
+  const fmSize=ex.conv1[0].length; // 10
+  const poolSize=ex.pool1[0].length; // 5
+
+  window._p1_ex=ex;
+  window._p1_fmSize=fmSize;
+  window._p1_poolSize=poolSize;
+  window._p1_ch=0;
+
+  const tabLabels=['FM1 ↘','FM2 ↙','FM3 horiz','FM4 vert'];
+  const tabCls=['pt1','pt2','pt3','pt4'];
+
+  let h=`<div class="step-body" style="flex-wrap:wrap;gap:16px;align-items:flex-start">`;
+  h+=`<div class="step-col">`;
+
+  // Tabs
+  h+=`<div class="pool-tabs">`;
+  for (let i=0;i<4;i++) h+=`<button class="pool-tab ${tabCls[i]}${i===0?' active':''}" id="ptab${i}" onclick="p1SelectCh(${i})">${tabLabels[i]}</button>`;
+  h+=`</div>`;
+
+  h+=`<div id="p1-desc" style="font-size:0.62rem;color:var(--dim);margin-bottom:6px;min-height:16px">${FM_DESCS[0]}</div>`;
+
+  // Grids row
+  h+=`<div style="display:flex;gap:16px;align-items:flex-start">`;
+  // source FM 10×10
+  h+=`<div>`;
+  h+=`<div class="section-lbl" style="margin-bottom:4px">Feature map before pooling (${fmSize}×${fmSize})</div>`;
+  h+=`<div id="p1-src" class="grid" style="grid-template-columns:repeat(${fmSize},var(--scell));gap:2px">`;
+  h+=buildP1Src(ex, 0);
+  h+=`</div>`;
+  h+=`<div class="size-badge" style="margin-top:4px">hover → highlights 2×2 window</div>`;
+  h+=`</div>`;
+  // arrow
+  h+=`<div style="display:flex;align-items:center;padding:0 8px;font-size:1.2rem;color:var(--accent);margin-top:36px">→<br><span style="font-size:0.48rem;color:var(--dim)">max 2×2</span></div>`;
+  // pooled 5×5
+  h+=`<div>`;
+  h+=`<div class="section-lbl" style="margin-bottom:4px">After pooling (${poolSize}×${poolSize})</div>`;
+  h+=`<div id="p1-dst" class="grid" style="grid-template-columns:repeat(${poolSize},var(--cell));gap:2px">`;
+  h+=buildP1Dst(ex, 0);
+  h+=`</div>`;
+  h+=`<div class="size-badge" style="margin-top:4px">hover → highlights source block</div>`;
+  h+=`</div>`;
+  h+=`</div>`; // grids row
+  h+=`</div>`; // step-col
+  h+=`</div>`; // step-body
+
+  h+=`<div class="explanation"><strong>Why Max Pooling?</strong> Each 2×2 window is collapsed to its <strong>maximum value</strong>. Size halves (${fmSize}→${poolSize}), reducing the next layer's computation by 4×.<br><br>The maximum preserves the <strong>presence</strong> of a pattern, not its exact position — making the network tolerant to small translations.</div>`;
+  return h;
+}
+
+function buildP1Src(ex, ch) {
+  const fm=ex.conv1[ch];
+  const maxVal=Math.max(...fm.flat(),1);
+  const fmSize=fm.length;
+  let h='';
+  for (let r=0;r<fmSize;r++) for (let c=0;c<fmSize;c++) {
+    const v=fm[r][c], cls=v===0?'zero':cellClass(v,maxVal);
+    const pr=Math.floor(r/2), pc=Math.floor(c/2);
+    h+=`<div class="cell small ${cls}" data-pr="${pr}" data-pc="${pc}" onmouseenter="p1SrcHover(${pr},${pc})" onmouseleave="p1ClearHover()">${v}</div>`;
+  }
+  return h;
+}
+
+function buildP1Dst(ex, ch) {
+  const pm=ex.pool1[ch];
+  const maxVal=Math.max(...pm.flat(),1);
+  const poolSize=pm.length;
+  let h='';
+  for (let r=0;r<poolSize;r++) for (let c=0;c<poolSize;c++) {
+    const v=pm[r][c], cls=v===0?'zero':cellClass(v,maxVal);
+    h+=`<div class="cell ${cls}" data-dr="${r}" data-dc="${c}" onmouseenter="p1DstHover(${r},${c})" onmouseleave="p1ClearHover()">${v}</div>`;
+  }
+  return h;
+}
+
+function p1SelectCh(ch) {
+  window._p1_ch=ch;
+  const ex=window._p1_ex;
+  for (let i=0;i<4;i++) {
+    const t=document.getElementById('ptab'+i);
+    if (t) t.className=`pool-tab pt${i+1}${i===ch?' active':''}`;
+  }
+  const descEl=document.getElementById('p1-desc');
+  if (descEl) descEl.textContent=FM_DESCS[ch];
+  const src=document.getElementById('p1-src');
+  const dst=document.getElementById('p1-dst');
+  if (src) src.innerHTML=buildP1Src(ex,ch);
+  if (dst) dst.innerHTML=buildP1Dst(ex,ch);
+}
+
+function p1SrcHover(pr,pc) {
+  document.querySelectorAll('#p1-src .cell').forEach(el=>{
+    el.classList.toggle('src-highlight', +el.dataset.pr===pr && +el.dataset.pc===pc);
+  });
+  document.querySelectorAll('#p1-dst .cell').forEach(el=>{
+    el.classList.toggle('pool-hover', +el.dataset.dr===pr && +el.dataset.dc===pc);
+  });
+}
+function p1DstHover(pr,pc) {
+  document.querySelectorAll('#p1-src .cell').forEach(el=>{
+    el.classList.toggle('src-highlight', +el.dataset.pr===pr && +el.dataset.pc===pc);
+  });
+  document.querySelectorAll('#p1-dst .cell').forEach(el=>{
+    el.classList.toggle('pool-hover', +el.dataset.dr===pr && +el.dataset.dc===pc);
+  });
+}
+function p1ClearHover() {
+  document.querySelectorAll('#p1-src .cell, #p1-dst .cell').forEach(el=>{
+    el.classList.remove('src-highlight','pool-hover');
+  });
+}
+
+// ============================================================
+//  STEP 3: CONV2 — animated channel combination
+// ============================================================
+function renderConv2(ex) {
+  const poolSize=ex.pool1[0].length;
+  const conv2Maps=getConv2Maps(ex);
+  const c2Size=conv2Maps[0].length;
+
+  window._c2_ex=ex;
+  window._c2_activeFilter=0;
+
+  let h=``;
+  h+=`<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Same mechanism as Step 2</strong> — sliding window + dot product. Now we have <strong>4 input channels</strong> (the pooled maps) and <strong>asymmetric filters</strong> that look at the spatial distribution of features. <span class="repeat-badge">conv2 ≡ conv1</span></div></div>`;
+
+  h+=`<div class="step-body" style="flex-wrap:wrap;gap:16px;align-items:flex-start">`;
+
+  // Left: 4 pooled maps
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl">4 Pooled maps (Conv2 input)</div>`;
+  h+=`<div style="display:flex;flex-direction:column;gap:7px">`;
+  const poolNames=['Pool-FM1 (↘)','Pool-FM2 (↙)','Pool-FM3 (horiz)','Pool-FM4 (vert)'];
+  ex.pool1.forEach((pm,i)=>{
+    h+=`<div class="fm-box fm${i+1}" style="padding:5px 7px">`;
+    h+=`<div class="filter-name f${i+1}" style="font-size:0.52rem;margin-bottom:3px">${poolNames[i]}</div>`;
+    h+=makeGrid(pm,'small',Math.max(...pm.flat(),1));
+    h+=`</div>`;
+  });
+  h+=`<div class="size-badge">4 × ${poolSize}×${poolSize}</div>`;
+  h+=`</div></div>`;
+
+  h+=makeArrow();
+
+  // Middle: filter selector + animated combination
+  h+=`<div class="step-col" style="gap:10px;min-width:310px">`;
+  h+=`<div class="section-lbl">Filter & Channel Combination</div>`;
+
+  // Filter tabs
+  h+=`<div class="conv2-filter-tabs">`;
+  h+=`<button class="conv2-ftab active" id="c2tab0" onclick="c2SelectFilter(0)">Filter A — Top-heavy</button>`;
+  h+=`<button class="conv2-ftab"        id="c2tab1" onclick="c2SelectFilter(1)">Filter B — Bottom-heavy</button>`;
+  h+=`</div>`;
+
+  // Filter weight grid + row-weight labels side by side
+  h+=`<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">`;
+  h+=`<div id="c2-filter-vis"></div>`;
+  h+=`<div id="c2-row-weights" style="font-size:0.65rem;line-height:2.2;color:var(--dim)"></div>`;
+  h+=`</div>`;
+
+  // Animated channel-by-channel accumulation
+  h+=`<div class="section-lbl" style="text-align:left;margin-top:2px">Combining all 4 channels:</div>`;
+  h+=`<div class="ch-anim-container" id="c2-anim">`;
+  for (let k=0;k<4;k++) {
+    h+=`<div class="ch-anim-row" id="c2-row${k}">`;
+    h+=`<span class="ch-lbl" id="c2-lbl${k}"></span>`;
+    h+=`<span class="ch-w-badge" id="c2-wb${k}"></span>`;
+    h+=`<span style="font-size:0.65rem;color:var(--dim);padding:0 3px">×</span>`;
+    h+=`<div class="ch-bar-wrap"><div class="ch-bar" id="c2-bar${k}"></div></div>`;
+    h+=`<span style="font-size:0.62rem;color:var(--dim);width:28px;text-align:right" id="c2-num${k}"></span>`;
+    h+=`</div>`;
+  }
+  h+=`<div class="ch-sum-line" id="c2-sumline">`;
+  h+=`<span style="font-size:0.62rem;color:var(--dim);width:80px;text-align:right">= sum at (r,c)</span>`;
+  h+=`<span class="ch-sum-val" id="c2-sumval">?</span>`;
+  h+=`<span style="font-size:0.6rem;color:var(--dim)">(one output cell)</span>`;
+  h+=`</div>`;
+  h+=`</div>`; // ch-anim-container
+
+  h+=`</div>`; // step-col middle
+
+  h+=makeArrow();
+
+  // Right: 2 output maps
+  h+=`<div class="step-col">`;
+  h+=`<div class="section-lbl">2 Output Maps (${c2Size}×${c2Size})</div>`;
+  h+=`<div style="display:flex;flex-direction:column;gap:10px">`;
+  const outNames=['Map A — top-heavy','Map B — bottom-heavy'];
+  conv2Maps.forEach((cm,i)=>{
+    const maxV=Math.max(...cm.flat(),1);
+    h+=`<div class="fm-box fm${i+1}">`;
+    h+=`<div class="filter-name f${i+1}" style="margin-bottom:4px">${outNames[i]}</div>`;
+    h+=makeGrid(cm,'normal',maxV);
+    h+=`<div style="font-size:0.62rem;color:var(--dim);margin-top:3px">max = <span style="color:var(--yellow);font-weight:700">${maxV}</span></div>`;
+    h+=`</div>`;
+  });
+  h+=`<div class="size-badge">2 × ${c2Size}×${c2Size}</div>`;
+  h+=`</div></div>`;
+
+  h+=`</div>`; // step-body
+
+  h+=`<div class="explanation"><strong>Asymmetric filters — the key to classification.</strong> Conv1 detected local features. Conv2 <em>combines them spatially</em>: sums contributions from all 4 channels, weighting rows differently.<br><br><strong>Filter A (top-heavy)</strong>: top row ×2, bottom row ×1 → fires when features cluster at the top of the pooled map.<br><strong>Filter B (bottom-heavy)</strong>: bottom row ×2, top row ×1 → fires when features cluster at the bottom of the pooled map — meaning the roof is at the <em>top</em> of the original image. ← <span class="highlight">this is the discrimination</span></div>`;
+
+  return h;
+}
+
+// Called after DOM is ready (via requestAnimationFrame in renderStep flow)
+function initConv2Anim() {
+  c2SelectFilter(0);
+}
+
+function c2SelectFilter(fi) {
+  window._c2_activeFilter=fi;
+  const ex=window._c2_ex;
+  if (!ex) return;
+
+  // update tabs
+  document.getElementById('c2tab0').className='conv2-ftab'+(fi===0?' active':'');
+  document.getElementById('c2tab1').className='conv2-ftab'+(fi===1?' active':'');
+
+  const filt=FILTERS2[fi];
+
+  // update filter visualisation
+  const filterVis=document.getElementById('c2-filter-vis');
+  if (filterVis) {
+    const fhCols=filt.weights[0].length, fhRows=filt.weights.length;
+    let fh=`<div class="grid" style="grid-template-columns:repeat(${fhCols},26px)">`;
+    for (let r=0;r<fhRows;r++) for (let c=0;c<fhCols;c++) {
+      const v=filt.weights[r][c];
+      const bg=v===2?'background:rgba(0,255,170,0.3);border-color:rgba(0,255,170,0.6);color:var(--accent)':
+               v===1?'background:rgba(0,255,170,0.1);border-color:rgba(0,255,170,0.25);color:rgba(0,255,170,0.7)':
+                     'background:rgba(255,255,255,0.02);color:var(--dim)';
+      fh+=`<div class="kcell" style="${bg}">${v}</div>`;
+    }
+    fh+=`</div>`;
+    filterVis.innerHTML=fh;
+  }
+
+  // row weight labels
+  const rwEl=document.getElementById('c2-row-weights');
+  if (rwEl) {
+    const rowW=filt.weights.map(row=>row[0]);
+    const names=rowW.length===2?['top row','bottom row']:['top row','mid row','bot row'];
+    rwEl.innerHTML=names.map((n,i)=>`<div>${n}: <strong style="color:${rowW[i]===2?'var(--accent)':rowW[i]===1?'rgba(0,255,170,0.7)':'var(--dim)'}">${rowW[i]}×</strong></div>`).join('');
+  }
+
+  // Animate channel bars — use max value of pooled map as reference for bar width
+  // Show representative cell: max contribution across all channels at the peak position
+  const channelColors=['var(--accent)','var(--pink)','var(--blue)','var(--yellow)'];
+  const channelLabels=['channel 1 (↘)','channel 2 (↙)','channel 3 (horiz)','channel 4 (vert)'];
+  const rowW=filt.weights.map(row=>row[0]); // weight per row
+  // Compute a representative "contribution" for each channel at best matching position
+  // We use max of pooled map × row weight applied proportionally
+  const contributions=ex.pool1.map((pm,k)=>{
+    // weighted sum of rows for this channel at the densest column
+    const poolSize=pm.length;
+    let best=0;
+    for (let c=0;c<poolSize;c++) {
+      let s=0;
+      for (let r=0;r<Math.min(rowW.length,poolSize);r++) s+=pm[r][c]*rowW[r];
+      if (s>best) best=s;
+    }
+    return best;
+  });
+  const totalContrib=contributions.reduce((a,b)=>a+b,0);
+  const maxContrib=Math.max(...contributions,1);
+
+  // first hide all rows
+  for (let k=0;k<4;k++) {
+    const row=document.getElementById('c2-row'+k);
+    if (row) row.classList.remove('visible');
+    const bar=document.getElementById('c2-bar'+k);
+    if (bar) bar.style.width='0%';
+  }
+  const sumLine=document.getElementById('c2-sumline');
+  if (sumLine) sumLine.classList.remove('visible');
+
+  // animate rows one by one
+  for (let k=0;k<4;k++) {
+    setTimeout(()=>{
+      const row=document.getElementById('c2-row'+k);
+      const bar=document.getElementById('c2-bar'+k);
+      const lbl=document.getElementById('c2-lbl'+k);
+      const wb=document.getElementById('c2-wb'+k);
+      const num=document.getElementById('c2-num'+k);
+      if (!row) return;
+      const w=rowW[0]; // same weight for all cols in a row
+      if (lbl) lbl.textContent=channelLabels[k];
+      if (wb) { wb.textContent=w+'×'; wb.className=`ch-w-badge w${w}`; }
+      if (num) { num.textContent=Math.round(contributions[k]); num.style.color=channelColors[k]; }
+      if (bar) { bar.style.background=channelColors[k]; bar.style.width=(contributions[k]/maxContrib*100)+'%'; }
+      row.classList.add('visible');
+      if (k===3) {
+        setTimeout(()=>{
+          const sv=document.getElementById('c2-sumval');
+          if (sv) sv.textContent=Math.round(totalContrib);
+          if (sumLine) sumLine.classList.add('visible');
+        },400);
+      }
+    }, k*250);
+  }
+}
+
+// Hook into renderStep to trigger animation after DOM is painted
+const _origRenderStep=renderStep;
+// We'll call initConv2Anim from inside renderConv2 itself via requestAnimationFrame
+function renderConv2WithAnim(ex) {
+  const html=renderConv2(ex);
+  // schedule animation init after innerHTML is set
+  requestAnimationFrame(()=>requestAnimationFrame(initConv2Anim));
+  return html;
+}
+
+// override step dispatch to use animated version for step 3
+(function(){
+  const origRenderStep=renderStep;
+  renderStep=function(stepIdx) {
+    const ex=EXAMPLES[currentExample];
+    const card=document.getElementById('step-card');
+    document.getElementById('recap').style.display='none';
+    card.style.display='block';
+    card.style.animation='none'; card.offsetHeight; card.style.animation='';
+    const steps=[renderInput,renderConv1,renderPool1,renderConv2WithAnim,renderConv3,renderThreshold];
+    const labels=[
+      'STEP 1 / 6 — INPUT (12×12)',
+      'STEP 2 / 6 — CONVOLUTION LAYER 1 — 4 filters → 4 feature maps',
+      'STEP 3 / 6 — MAX POOLING LAYER 1',
+      'STEP 4 / 6 — CONVOLUTION LAYER 2 — asymmetric filters (same mechanism, new filters)',
+      'STEP 5 / 6 — POOL2 (2×2) + CONVOLUTION LAYER 3',
+      'STEP 6 / 6 — MAX POOL 3 + THRESHOLD → OUTPUT',
+    ];
+    document.getElementById('step-label').textContent=labels[stepIdx];
+    document.getElementById('step-content').innerHTML=steps[stepIdx](ex);
+    for (let i=0;i<TOTAL_STEPS;i++) {
+      document.getElementById('dot'+i).className='dot'+(i<stepIdx?' done':i===stepIdx?' current':'');
+    }
+    document.getElementById('progress-label').textContent=`step ${stepIdx+1} / ${TOTAL_STEPS}`;
+    document.getElementById('prev-btn').disabled=(stepIdx===0);
+    const nb=document.getElementById('next-btn');
+    if (stepIdx===TOTAL_STEPS-1){nb.textContent='SEE FULL PIPELINE →';nb.className='nav-btn recap';}
+    else{nb.textContent='NEXT STEP →';nb.className='nav-btn next';}
+  };
+})();
+
+// ============================================================
+//  STEP 4: CONV3 — 2×2 filter on Map B → 2×2 output
+//  Data stored in window globals before innerHTML is set
+// ============================================================
+function renderConv3(ex) {
+  const conv2Maps = getConv2Maps(ex);
+  const mapB = conv2Maps[1];
+  const mapBPool2 = maxPool2x2Stride2(mapB);
+  const conv3Map = convolveSingle(mapBPool2, CONV3_FILTER);
+  const mapBSize = mapB.length;
+  const pool2Size = mapBPool2.length;
+  const conv3Size = conv3Map.length;
+  const conv3Scalar = conv3Map[0][0];
+  window._c3_input = mapBPool2;
+  window._c3_inputSize = pool2Size;
+
+  let h = ``;
+  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Inserted Pooling 2×2 between Conv2 and Conv3</strong> — first we max-pool Map B (stride 2), then apply the Conv3 2×2 filter. <span class="repeat-badge">pool2 → conv3</span></div></div>`;
+
+  h += `<div class="step-body" style="flex-wrap:wrap;gap:16px;align-items:flex-start">`;
+
+  // Conv2 Map B
+  h += `<div class="step-col">`;
+  h += `<div class="section-lbl">Conv2 Map B (${mapBSize}×${mapBSize})</div>`;
+  h += makeGrid(mapB, 'normal');
+  h += `<div class="size-badge">from Conv2 (bottom-heavy)</div>`;
+  h += `</div>`;
+
+  h += makeArrow();
+
+  // Pool2 result
+  h += `<div class="step-col">`;
+  h += `<div class="section-lbl">Pool2 (2×2, stride 2)</div>`;
+  h += `<div id="c3-mapb" class="grid" style="grid-template-columns:repeat(${pool2Size},var(--cell));gap:2px">`;
+  const maxP2 = Math.max(...mapBPool2.flat(),1);
+  for (let r = 0; r < pool2Size; r++) for (let c = 0; c < pool2Size; c++) {
+    const v = mapBPool2[r][c], cls = cellClass(v, maxP2);
+    h += `<div class="cell ${cls}" id="c3-src-${r}-${c}">${v}</div>`;
+  }
+  h += `</div>`;
+  h += `<div class="size-badge" style="margin-top:4px">${mapBSize}×${mapBSize} → ${pool2Size}×${pool2Size}</div>`;
+  h += `</div>`;
+
+  h += makeArrow();
+
+  // Conv3 filter
+  h += `<div class="step-col" style="gap:8px">`;
+  h += `<div class="section-lbl">Conv3 Filter (2×2)</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(2,26px);gap:2px">`;
+  CONV3_FILTER.forEach(row => row.forEach(v => {
+    const bg = v === 2 ? 'background:rgba(0,255,170,0.3);border-color:rgba(0,255,170,0.6);color:var(--accent)'
+             : v === 1 ? 'background:rgba(0,255,170,0.1);border-color:rgba(0,255,170,0.25);color:rgba(0,255,170,0.7)'
+             : 'background:rgba(255,255,255,0.02);color:var(--dim)';
+    h += `<div class="kcell" style="${bg}">${v}</div>`;
+  }));
+  h += `</div>`;
+  h += `<div style="font-size:0.6rem;color:var(--dim);line-height:1.5;max-width:130px">Out = M[0][0] + 2·M[1][0]</div>`;
+  h += `</div>`;
+
+  h += makeArrow();
+
+  // Conv3 output 1x1
+  h += `<div class="step-col">`;
+  h += `<div class="section-lbl">Conv3 Output (${conv3Size}×${conv3Size})</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(${conv3Size},var(--cell));gap:2px">`;
+  h += `<div class="cell c5 max-cell" onmouseenter="c3HoverOut(0,0)" onmouseleave="c3ClearHover()">${conv3Scalar}</div>`;
+  h += `</div>`;
+  h += `<div class="size-badge" style="margin-top:4px">single scalar (already 1×1)</div>`;
+  h += `</div>`;
+
+  h += `</div>`;
+
+  h += `<div class="explanation"><strong>Now the dimensions are consistent.</strong> After Conv2 (4×4), the added <strong>Pool2 2×2</strong> reduces Map B to <strong>2×2</strong>. Then Conv3 can safely apply its 2×2 filter and produce a <strong>1×1 scalar</strong> for the final threshold comparison.</div>`;
+  return h;
+}
+
+function c3HoverOut(or, oc) {
+  // Highlight the 2×2 source window in Map B: rows [or, or+1], cols [oc, oc+1]
+  const sz = window._c3_inputSize || 0; for (let r = 0; r < sz; r++) for (let c = 0; c < sz; c++) {
+    const el = document.getElementById(`c3-src-${r}-${c}`);
+    if (el) el.classList.toggle('src-highlight', r >= or && r <= or+1 && c >= oc && c <= oc+1);
+  }
+}
+function c3ClearHover() {
+  const sz = window._c3_inputSize || 0; for (let r = 0; r < sz; r++) for (let c = 0; c < sz; c++) {
+    const el = document.getElementById(`c3-src-${r}-${c}`);
+    if (el) el.classList.remove('src-highlight');
+  }
+}
+
+// ============================================================
+//  STEP 5: POOL3 + THRESHOLD → OUTPUT
+// ============================================================
+function renderThreshold(ex) {
+  const conv3Map = getConv3Map(ex);
+  const scalar = Math.max(...conv3Map.flat());
+  const isDetected = scalar > CONV3_THRESHOLD;
+  const maxBar = Math.max(CONV3_THRESHOLD + 20, scalar + 10);
+  const maxC3 = Math.max(...conv3Map.flat(), 1);
+  const conv3Size = conv3Map.length;
+
+  let h = ``;
+  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Same mechanism as Pool1 &amp; Pool2</strong> — take the maximum value from the window. At this point Conv3 is already 1×1, so pooling is trivial (same value). Then compare to a fixed threshold. <span class="repeat-badge">pool3 ≡ pool1 ≡ pool2</span></div></div>`;
+
+  h += `<div class="step-body" style="flex-wrap:wrap;gap:20px;align-items:flex-start;justify-content:center">`;
+
+  // Left: 2×2 conv3 map → max pool → scalar
+  h += `<div class="step-col" style="gap:10px">`;
+  h += `<div class="section-lbl">Conv3 Map (${conv3Size}×${conv3Size})</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(${conv3Size},var(--cell));gap:2px">`;
+  for (let r = 0; r < conv3Size; r++) for (let c = 0; c < conv3Size; c++) {
+    const v = conv3Map[r][c], cls = cellClass(v, maxC3);
+    const isMax = v === scalar ? ' max-cell' : '';
+    h += `<div class="cell ${cls}${isMax}">${v}</div>`;
+  }
+  h += `</div>`;
+  h += `<div style="margin-top:8px;font-size:0.68rem;color:var(--dim)">optional pool3 (1×1 → same):</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(1,var(--cell))">`;
+  h += `<div class="cell c5">${scalar}</div>`;
+  h += `</div>`;
+  h += `<div class="size-badge" style="margin-top:4px">${conv3Size}×${conv3Size} → scalar ${scalar}</div>`;
+  h += `</div>`;
+
+  h += makeArrow();
+
+  // Middle: bar chart with threshold marker
+  h += `<div class="step-col" style="min-width:300px">`;
+  h += `<div class="section-lbl">Scalar vs Threshold</div>`;
+  h += `<div class="fc-verdict">`;
+  h += `<div style="font-size:0.65rem;color:var(--dim);margin-bottom:8px;align-self:flex-start">Rule: <strong style="color:var(--text)">scalar &gt; ${CONV3_THRESHOLD}</strong></div>`;
+
+  // threshold bar
+  const pctT = Math.round(100 * CONV3_THRESHOLD / maxBar);
+  h += `<div class="score-bar-row">`;
+  h += `<span class="score-bar-label" style="color:var(--yellow);font-size:0.58rem">threshold<br>${CONV3_THRESHOLD}</span>`;
+  h += `<div class="score-bar-track" style="background:transparent;border:1px dashed rgba(255,209,102,0.3)">`;
+  h += `<div style="width:${pctT}%;height:100%;background:rgba(255,209,102,0.15);border-right:2px solid var(--yellow)"></div>`;
+  h += `</div>`;
+  h += `<span class="score-bar-num" style="color:var(--yellow)">${CONV3_THRESHOLD}</span>`;
+  h += `</div>`;
+
+  // scalar bar
+  const pctS = Math.round(100 * scalar / maxBar);
+  h += `<div class="score-bar-row" style="margin-top:8px">`;
+  h += `<span class="score-bar-label">scalar<br><span style="font-size:0.5rem">(final scalar)</span></span>`;
+  h += `<div class="score-bar-track">`;
+  h += `<div class="score-bar-fill" style="width:${pctS}%;background:${isDetected?'var(--accent)':'var(--red)'}"></div>`;
+  h += `</div>`;
+  h += `<span class="score-bar-num" style="color:${isDetected?'var(--accent)':'var(--red)'}">${scalar}</span>`;
+  h += `</div>`;
+
+  // Verdict
+  h += `<div style="margin-top:14px;font-size:0.78rem;color:var(--dim)">`;
+  h += `Does <strong style="color:${isDetected?'var(--accent)':'var(--red)'}">${scalar}</strong> &gt; <strong style="color:var(--yellow)">${CONV3_THRESHOLD}</strong>?`;
+  h += `</div>`;
+  if (isDetected) {
+    h += `<div class="verdict-result pass">✓ YES — ${scalar} > ${CONV3_THRESHOLD} (Δ = +${scalar - CONV3_THRESHOLD})</div>`;
+  } else {
+    h += `<div class="verdict-result fail">✗ NO — ${scalar} ≤ ${CONV3_THRESHOLD} (Δ = ${scalar - CONV3_THRESHOLD})</div>`;
+  }
+  h += `</div>`; // fc-verdict
+  h += `</div>`; // step-col
+
+  h += makeArrow();
+
+  // Right: big output + all-examples table
+  h += `<div class="step-col" style="gap:14px">`;
+  h += `<div class="section-lbl">Output</div>`;
+  h += `<div class="output-big ${isDetected?'yes':'no'}">${isDetected?'1':'0'}<div class="output-sublabel">${isDetected?'HOUSE DETECTED':'NOT DETECTED'}</div></div>`;
+
+  // Comparison table of all examples
+  h += `<div style="margin-top:8px;font-size:0.68rem;color:var(--dim);background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:10px 12px;min-width:240px">`;
+  h += `<div style="color:var(--text);font-weight:700;margin-bottom:8px;font-size:0.65rem;letter-spacing:1px">ALL EXAMPLES</div>`;
+  EXAMPLES.forEach(e => {
+    const isCur = e === EXAMPLES[currentExample];
+    const eScalar = getPool3Scalar(e);
+    const pass = eScalar > CONV3_THRESHOLD;
+    const delta = eScalar - CONV3_THRESHOLD;
+    h += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:5px;${isCur?'color:var(--text);font-weight:700':'color:var(--dim)'}">`;
+    h += `<span>${isCur?'▶ ':'\u00a0\u00a0'}${e.name}</span>`;
+    h += `<span style="color:var(--yellow)">${eScalar}</span>`;
+    h += `<span style="color:${pass?'var(--accent)':'var(--red)'}">${e.output} ${pass?'✓':'✗'}</span>`;
+    h += `</div>`;
+  });
+  h += `</div>`;
+  h += `</div>`; // right col
+
+  h += `</div>`; // step-body
+
+  h += `<div class="explanation"><strong>Pool3 → scalar ${scalar}, threshold ${CONV3_THRESHOLD}.</strong><br><br>`;
+  h += `The 2×2 map is collapsed to its maximum, giving a single number. That number is compared to the fixed threshold ${CONV3_THRESHOLD}.<br><br>`;
+  h += `<strong>Why only the normal house passes?</strong><br>`;
+  h += `Conv3's filter (left column, bottom row ×2) targets the bottom-left of Map B. Map B is the bottom-heavy conv2 output, which captures diagonal features from the <em>top</em> of the original image. Only when the triangular roof sits at the top (normal house) does this cell reach a high enough value to push the scalar above the threshold.</div>`;
+  return h;
+}
+
+// ============================================================
+//  RECAP
+// ============================================================
+function renderRecap() {
+  const ex = EXAMPLES[currentExample];
+  const scalarCur = getPool3Scalar(ex);
+  const isDetected = scalarCur > CONV3_THRESHOLD;
+  const card = document.getElementById('step-card');
+  const recap = document.getElementById('recap');
+  card.style.display = 'none';
+  recap.style.display = 'block';
+  recap.style.animation = 'none'; recap.offsetHeight; recap.style.animation = '';
+
+  const inR = ex.input.length, inC = ex.input[0].length;
+  const fmSz = inR - 2, poolSz = Math.floor(fmSz / 2);
+  const conv2Cur = getConv2Maps(ex);
+  const c2Sz = conv2Cur[0].length;
+  const conv3Cur = getConv3Map(ex);
+  const c3Sz = conv3Cur.length;
+
+  let h = `<h2>FULL PIPELINE RECAP</h2>`;
+  h += `<div class="recap-sub">Example: ${ex.name} — Output: ${isDetected ? '1 (Normal house detected ✓)' : '0 (Not a normal house ✗)'}</div>`;
+
+  // Cycle bracket labels — one div per stage (8 stages: INPUT CONV1 POOL1 CONV2 POOL2 CONV3 POOL3 OUTPUT)
+  // Cycle 1: INPUT+CONV1+POOL1 (3), Cycle 2: CONV2+POOL2 (2), Cycle 3: CONV3+POOL3+OUTPUT (3)
+  h += `<div style="display:flex;justify-content:center;gap:0;flex-wrap:nowrap;margin-bottom:4px;width:100%">`;
+  // Each cycle label spans proportionally over the stage+arrow slots
+  // Stage widths are roughly equal; arrows are thin. We use flex proportional to stage count.
+  const cycleSpans = [
+    { label: 'CYCLE 1 — CONV + POOL', color: 'var(--pink)',   flex: 3 },
+    { label: 'CYCLE 2 — CONV + POOL', color: 'var(--blue)',   flex: 2 },
+    { label: 'CYCLE 3 — CONV + POOL + THRESHOLD', color: 'var(--yellow)', flex: 3 },
+  ];
+  cycleSpans.forEach((cy, ci) => {
+    h += `<div style="flex:${cy.flex};text-align:center;border-top:2px solid ${cy.color};margin-top:0;padding:4px 4px 2px;font-size:0.55rem;color:${cy.color};letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cy.label}</div>`;
+    if (ci < cycleSpans.length - 1) h += `<div style="width:44px;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.06);padding-top:4px"></div>`;
+  });
+  h += `</div>`;
+
+  // Pipeline flow — 8 stages with explicit POOL2
+  const maxMapB = Math.max(...conv2Cur[1].flat(), 1);
+  h += `<div class="pipeline-flow">`;
+  const stages = [
+    { title: 'INPUT',   size: `${inR}×${inC}`,           color: 'var(--accent)',                               thumb: makeInputThumb(ex.input) },
+    { title: 'CONV1',   size: `4×${fmSz}×${fmSz}`,      color: 'var(--pink)',                                 thumb: makeGridThumb(ex.conv1[0], fmSz, 'green') },
+    { title: 'POOL1',   size: `4×${poolSz}×${poolSz}`,   color: 'var(--blue)',                                 thumb: makeGridThumb(ex.pool1[0], poolSz, 'blue') },
+    { title: 'CONV2',   size: `2×${c2Sz}×${c2Sz}`,      color: 'var(--pink)',                                 thumb: makeGridThumb(conv2Cur[0], c2Sz, 'pink') },
+    { title: 'POOL2',   size: `Map B (${c2Sz}×${c2Sz})`,              color: 'var(--blue)',                                 thumb: makeGridThumb(conv2Cur[1], c2Sz, 'blue') },
+    { title: 'CONV3',   size: `1 filter → ${c3Sz}×${c3Sz}`,           color: 'var(--yellow)',                               thumb: makeConv3Thumb(ex) },
+    { title: 'POOL3',   size: `max → ${scalarCur}`, color: 'var(--yellow)',                               thumb: makeScalarThumb(scalarCur) },
+    { title: 'OUTPUT',  size: `${scalarCur} > ${CONV3_THRESHOLD}?`, color: isDetected ? 'var(--accent)' : 'var(--red)', thumb: makeOutputThumb(ex.output) },
+  ];
+  stages.forEach((s, i) => {
+    h += `<div class="pipe-stage"><div class="pipe-title" style="color:${s.color}">${s.title}</div><div class="pipe-thumb">${s.thumb}</div><div class="pipe-size">${s.size}</div></div>`;
+    if (i < stages.length - 1) h += `<div style="display:flex;align-items:center;padding:0 4px;margin-top:18px"><div class="arrow">${svgArrow}</div></div>`;
+  });
+  h += `</div>`;
+
+  h += `<div class="recap-legend">`;
+  h += `<div style="font-size:0.68rem;color:var(--dim);width:100%;margin-bottom:6px;letter-spacing:1px">COLOR LEGEND:</div>`;
+  h += `<div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>High activation</div>`;
+  h += `<div class="legend-item"><div class="legend-dot" style="background:rgba(0,255,170,0.18);border:1px solid rgba(0,255,170,0.4)"></div>Medium activation</div>`;
+  h += `<div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)"></div>Zero / inactive</div>`;
+  h += `<div class="legend-item"><div class="legend-dot" style="background:rgba(255,209,102,0.3);border:1px solid rgba(255,209,102,0.6)"></div>Maximum in region</div>`;
+  h += `</div>`;
+
+  h += `<div class="recap-summary"><h3>What did the CNN learn?</h3><p>`;
+  h += `<strong>Cycle 1 — Conv1 + Pool1</strong>: Conv1 slides 4 filters (↘ diagonal, ↙ diagonal, horizontal, vertical) over the 12×12 input → 4 feature maps 10×10. Pool1 (2×2 max) halves them to 4×5×5.<br>`;
+  h += `<strong>Cycle 2 — Conv2 + Pool2</strong>: Conv2 combines all 4 channels with 2 asymmetric 2×2 filters → 2 maps 4×4. Pool2 selects Map B (the bottom-heavy map that discriminates roof position).<br>`;
+  h += `<strong>Cycle 3 — Conv3 + Pool3 + Threshold</strong>: Conv3 applies a 2×2 filter to Map B → ${c3Sz}×${c3Sz} map. Pool3 (global max) → scalar ${scalarCur}. If scalar > ${CONV3_THRESHOLD} → <span style="color:${isDetected?'var(--accent)':'var(--red)'}">${isDetected?'house detected ✓':'not detected ✗'}</span>.`;
+  h += `</p></div>`;
+
+  h += `<div style="overflow-x:auto;margin-bottom:18px"><table style="font-size:0.75rem;border-collapse:collapse;width:100%">`;
+  h += `<tr style="color:var(--dim);font-size:0.65rem;letter-spacing:1px;text-transform:uppercase">`;
+  ['Shape', 'Conv3 map', 'Scalar (Pool3)', 'Threshold', 'Pass?', 'Output'].forEach(c => {
+    h += `<th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)">${c}</th>`;
+  });
+  h += `</tr>`;
+  EXAMPLES.forEach(e => {
+    const yes = e.output === 1, isCur = e === EXAMPLES[currentExample];
+    const eConv3 = getConv3Map(e);
+    const eScalar = Math.max(...eConv3.flat());
+    const pass = eScalar > CONV3_THRESHOLD;
+    h += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05)">`;
+    h += `<td style="padding:8px 12px;color:${isCur ? 'var(--accent)' : 'var(--text)'};font-weight:${isCur ? 700 : 400}">${e.name}${isCur ? ' ←' : ''}</td>`;
+    h += `<td style="padding:8px 12px;font-size:0.6rem;color:var(--dim)">${eConv3.map(row=>`[${row.join(',')}]`).join(' ')}</td>`;
+    h += `<td style="padding:8px 12px;text-align:center;color:${pass ? 'var(--accent)' : 'var(--yellow)'};font-weight:700">${eScalar}</td>`;
+    h += `<td style="padding:8px 12px;text-align:center;color:var(--yellow)">&gt; ${CONV3_THRESHOLD}</td>`;
+    h += `<td style="padding:8px 12px;text-align:center;color:${pass ? 'var(--accent)' : 'var(--red)'};">${pass ? 'YES ✓' : 'NO ✗'}</td>`;
+    h += `<td style="padding:8px 12px;text-align:center"><span style="color:${yes ? 'var(--accent)' : 'var(--red)'};font-weight:700">${e.output}</span> ${yes ? '✓' : '✗'}</td>`;
+    h += `</tr>`;
+  });
+  h += `</table></div>`;
+
+  h += `<div style="text-align:center"><button class="btn active" onclick="restartPipeline()" style="padding:12px 32px;font-size:0.85rem">↺ RESTART FROM STEP 1</button></div>`;
+
+  recap.innerHTML = h;
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('prev-btn').disabled = false;
+  document.getElementById('prev-btn').textContent = '← BACK TO STEP 6';
+}
+
+function makeInputThumb(input) {
+  const rows=input.length, cols=input[0].length, px=5;
+  let h=`<div class="grid" style="grid-template-columns:repeat(${cols},${px}px);gap:1px">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=input[r][c];
+    h+=`<div style="width:${px}px;height:${px}px;border-radius:1px;background:${v?'var(--accent)':'rgba(255,255,255,0.05)'}"></div>`;
+  }
+  return h+`</div>`;
+}
+function makeGridThumb(data, size, color) {
+  const cmap={green:'var(--accent)',yellow:'var(--yellow)',blue:'var(--blue)',pink:'var(--pink)',red:'var(--red)'};
+  const maxV=Math.max(...data.flat(),1), col=cmap[color]||'var(--accent)';
+  const px=size>=8?4:size>=5?7:10;
+  let h=`<div class="grid" style="grid-template-columns:repeat(${size},${px}px);gap:1px">`;
+  for (let r=0;r<size;r++) for (let c=0;c<size;c++) {
+    const v=data[r][c], op=(v===0?0.05:0.15+0.85*(v/maxV)).toFixed(2);
+    h+=`<div style="width:${px}px;height:${px}px;border-radius:1px;background:${col};opacity:${op}"></div>`;
+  }
+  return h+`</div>`;
+}
+function makeVecThumb(vec) {
+  const maxV=Math.max(...vec,1);
+  let h=`<div style="display:flex;flex-direction:column;gap:4px;padding:4px">`;
+  vec.forEach(v=>{
+    const w=Math.round(50*v/maxV);
+    h+=`<div style="display:flex;align-items:center;gap:4px"><div style="width:${w}px;height:10px;background:var(--yellow);border-radius:2px;min-width:4px"></div><span style="font-size:0.6rem;color:var(--dim)">${v}</span></div>`;
+  });
+  return h+`</div>`;
+}
+function makeOutputThumb(output) {
+  return `<div style="width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;background:${output?'rgba(0,255,170,0.15)':'rgba(255,92,92,0.15)'};border:1px solid ${output?'rgba(0,255,170,0.4)':'rgba(255,92,92,0.4)'};color:${output?'var(--accent)':'var(--red)'}">${output}</div>`;
+}
+function makeConv3Thumb(ex) {
+  const c3 = getConv3Map(ex);
+  return makeGridThumb(c3, c3.length, 'yellow');
+}
+function makeScalarThumb(scalar) {
+  const pct = Math.round(scalar / 300 * 100); // 300 ≈ rough max
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 6px">
+    <div style="width:44px;height:10px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:var(--yellow);border-radius:2px"></div>
+    </div>
+    <span style="font-size:0.72rem;font-weight:700;color:var(--yellow)">${scalar}</span>
+  </div>`;
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function nextStep() {
+  if (currentStep>=TOTAL_STEPS-1) { renderRecap(); return; }
+  currentStep++;
+  renderStep(currentStep);
+}
+function prevStep() {
+  if (document.getElementById('recap').style.display!=='none') {
+    currentStep=TOTAL_STEPS-1;
+    document.getElementById('recap').style.display='none';
+    document.getElementById('step-card').style.display='block';
+    document.getElementById('next-btn').style.display='';
+    document.getElementById('prev-btn').textContent='← BACK';
+    renderStep(currentStep);
+    return;
+  }
+  if (currentStep<=0) return;
+  currentStep--;
+  renderStep(currentStep);
+}
+function loadExample(idx) {
+  currentExample=idx; currentStep=0;
+  document.getElementById('recap').style.display='none';
+  document.getElementById('step-card').style.display='block';
+  document.getElementById('next-btn').style.display='';
+  document.getElementById('next-btn').textContent='NEXT STEP →';
+  document.getElementById('next-btn').className='nav-btn next';
+  document.getElementById('prev-btn').textContent='← BACK';
+  document.getElementById('ex1btn').className='btn'+(idx===0?' active':'');
+  document.getElementById('ex2btn').className='btn'+(idx===1?' active':'');
+  document.getElementById('ex3btn').className='btn'+(idx===2?' active':'');
+  renderStep(0);
+}
+function restartPipeline() {
+  currentStep=0;
+  document.getElementById('recap').style.display='none';
+  document.getElementById('step-card').style.display='block';
+  document.getElementById('next-btn').style.display='';
+  document.getElementById('next-btn').textContent='NEXT STEP →';
+  document.getElementById('next-btn').className='nav-btn next';
+  document.getElementById('prev-btn').textContent='← BACK';
+  renderStep(0);
+}
+
+loadExample(0);
+</script>
+</body>
+</html>

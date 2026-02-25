@@ -19,8 +19,8 @@
       --purple:#a86eff;
       --pink:#ff6eb4;
 
-      --cell:32px;
-      --kcell:20px;
+      --cell:38px;
+      --kcell:22px;
 
       --cube: 90px;
       --cube-pad: 8px;
@@ -32,58 +32,58 @@
     body{
       background:var(--bg); color:var(--text);
       font-family:'Sora',sans-serif;
-      min-height:100vh; overflow-x:auto;
+      min-height:100vh; overflow-x:hidden;
     }
     body::before{
       content:''; position:fixed; inset:0;
       background:
-        radial-gradient(ellipse at 20% 10%, rgba(0,228,160,0.03) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 90%, rgba(168,110,255,0.03) 0%, transparent 60%);
+        radial-gradient(ellipse at 30% 20%, rgba(0,228,160,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(168,110,255,0.03) 0%, transparent 60%);
       pointer-events:none;
     }
 
     .app{
-      padding:16px 18px 10px;
+      padding:24px 30px;
       min-height:100vh;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      display:flex; flex-direction:column; align-items:center;
     }
-    header{ text-align:center; margin-bottom:10px; }
+    header{ text-align:center; margin-bottom:16px; }
     header h1{
       font-family:'JetBrains Mono',monospace;
-      font-size:1.25rem; font-weight:900;
+      font-size:1.6rem; font-weight:700;
       letter-spacing:-0.5px; color:var(--accent);
     }
-    header p{ color:var(--dim); font-size:0.78rem; margin-top:2px; font-weight:300; }
+    header p{ color:var(--dim); font-size:0.88rem; margin-top:4px; font-weight:300; }
 
     .controls{
-      display:flex; gap:8px; margin-bottom:10px;
+      display:flex; gap:12px; margin-bottom:20px;
       align-items:center; flex-wrap:wrap; justify-content:center;
     }
     .btn{
       font-family:'JetBrains Mono',monospace;
-      font-size:0.66rem; padding:6px 12px;
+      font-size:0.75rem; padding:9px 20px;
       border:1px solid var(--border); border-radius:6px;
       background:var(--surface); color:var(--text);
       cursor:pointer; transition:all 0.2s;
-      letter-spacing:0.4px; text-transform:uppercase;
+      letter-spacing:0.5px; text-transform:uppercase;
     }
     .btn:hover{ border-color:var(--accent); color:var(--accent); }
-    .btn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:900; }
-    .btn.run{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:900; padding:6px 16px; }
-    .btn.run:hover{ box-shadow:0 0 20px rgba(0,228,160,0.3); transform:translateY(-1px); }
+    .btn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:700; }
+    .btn.run{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:700; padding:9px 28px; }
+    .btn.run:hover{ box-shadow:0 0 24px rgba(0,228,160,0.3); transform:translateY(-1px); }
 
-    .step-bar{ display:flex; gap:5px; margin-bottom:10px; align-items:center; }
-    .sd{ width:7px; height:7px; border-radius:50%; background:var(--border); transition:all 0.3s; }
-    .sd.done{ background:var(--accent); box-shadow:0 0 5px rgba(0,228,160,0.35); }
-    .sd.now{ background:var(--accent); transform:scale(1.4); box-shadow:0 0 8px rgba(0,228,160,0.5); }
-    .st{ font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--dim); margin-left:5px; }
+    .step-bar{ display:flex; gap:8px; margin-bottom:16px; align-items:center; }
+    .step-dot{ width:10px; height:10px; border-radius:50%; background:var(--border); transition:all 0.3s; }
+    .step-dot.done{ background:var(--accent); box-shadow:0 0 8px rgba(0,228,160,0.4); }
+    .step-dot.current{ background:var(--accent); transform:scale(1.3); box-shadow:0 0 12px rgba(0,228,160,0.5); }
+    .step-text{ font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--dim); margin-left:8px; transition:color 0.3s; }
 
     .pipeline{
       width:100%;
       display:flex;
       align-items:flex-start;
       justify-content:center;
-      gap:14px;
+      gap:0;
       flex-wrap:nowrap;
       overflow-x:auto;
       padding-bottom:8px;
@@ -92,54 +92,57 @@
       background:var(--surface);
       border:1px solid var(--border);
       border-radius:10px;
-      padding:10px;
+      padding:14px;
       display:flex;
       flex-direction:column;
       align-items:center;
       gap:8px;
       min-width: fit-content;
-      opacity:0.18;
-      transition: opacity 0.4s ease, transform 0.35s ease;
+      opacity:0.3;
+      transition: opacity 0.5s ease;
     }
-    .block.on{ opacity:1; transform: translateY(-1px); }
+    .block.on{ opacity:1; }
 
     .lbl{
       font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem;
-      letter-spacing:1px;
+      font-size:0.65rem;
+      letter-spacing:1.5px;
       text-transform:uppercase;
       color:var(--dim);
       text-align:center;
       white-space:nowrap;
+      transition: color 0.3s;
     }
+    .block.on .lbl{ color:var(--accent); }
 
     .arrow{
       display:flex; align-items:center; justify-content:center;
-      padding-top:26px;
-      opacity:0.12;
-      transition: opacity 0.35s ease;
-      min-width: 26px;
+      padding-top:30px;
+      padding:0 16px;
+      opacity:0.15;
+      transition: opacity 0.5s ease;
+      min-width: fit-content;
     }
     .arrow.on{ opacity:1; }
-    .arrow svg{ width:26px; height:14px; }
-    .al{ stroke:var(--accent); stroke-width:1.5; stroke-dasharray:4 3; }
-    .arrow.on .al{ animation: df 0.85s linear infinite; }
-    @keyframes df{ to{ stroke-dashoffset:-7; } }
+    .arrow svg{ width:48px; height:24px; }
+    .al{ stroke:var(--accent); stroke-width:2; stroke-dasharray:6 4; stroke-dashoffset:0; }
+    .arrow.on .al{ animation: df 0.8s linear infinite; }
+    @keyframes df{ to{ stroke-dashoffset:-10; } }
     .ahead{ fill:var(--accent); }
 
-    .grid{ display:inline-grid; gap:1px; }
+    .grid{ display:inline-grid; gap:2px; }
     .ic{
       width:var(--cell); height:var(--cell);
-      border-radius:2px;
+      border-radius:3px;
       background:rgba(255,255,255,0.02);
       border:1px solid rgba(255,255,255,0.04);
       display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem;
-      color:rgba(255,255,255,0.18);
+      font-size:0.7rem;
+      color:rgba(255,255,255,0.3);
       transition:all 0.25s ease;
     }
-    .ic.on{ background:var(--text); color:var(--bg); font-weight:900; box-shadow:0 0 6px rgba(224,223,240,0.12); }
+    .ic.on{ background:var(--text); color:var(--bg); font-weight:700; box-shadow:0 0 12px rgba(224,223,240,0.15); }
     .ic.hl{ outline:2px solid var(--accent); outline-offset:-1px; }
 
     .filters-col{
@@ -147,6 +150,7 @@
       flex-direction:column;
       gap:8px;
       align-items:center;
+      overflow: visible;
     }
     .kbox{
       width: max-content;
@@ -154,21 +158,79 @@
       border-radius:8px;
       padding:6px 8px 8px;
       background:rgba(255,255,255,0.02);
-      transition: transform 0.25s ease, border-color 0.25s ease;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .kbox:hover{
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     .kbox.active{
       border-color: rgba(0,228,160,0.5);
       box-shadow: 0 0 14px rgba(0,228,160,0.12);
       transform: translateY(-1px);
     }
+    .kbox.hovered{
+      border-color: rgba(255,255,255,0.3) !important;
+      box-shadow: 0 0 20px rgba(255,255,255,0.06) !important;
+    }
+
+    /* Generic tooltip */
+    .tip{
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a28;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      z-index: 100;
+      line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .tip::after{
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--border);
+    }
+    .tip.visible{ opacity: 1; }
+    .tip .tip-title{
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .tip .tip-row{
+      color: var(--dim);
+    }
+    .tip .tip-row span{
+      color: var(--text);
+    }
+    .tip .tip-accent{ color: var(--accent); font-weight: 700; }
+    .tip .tip-hot{ color: var(--hot); }
+    .tip .tip-cool{ color: var(--cool); }
+    .tip .tip-purple{ color: var(--purple); }
+    .tip .tip-pink{ color: var(--pink); }
     .kname{
       font-family:'JetBrains Mono',monospace;
-      font-size:0.5rem;
+      font-size:0.6rem;
       letter-spacing:1px;
       text-transform:uppercase;
       margin-bottom:5px;
       text-align:center;
-      font-weight:900;
+      font-weight:700;
     }
     .kg{ display:inline-grid; gap:1px; }
     .kc{
@@ -178,40 +240,10 @@
       border:1px solid rgba(255,255,255,0.05);
       display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace;
-      font-size:0.48rem;
+      font-size:0.55rem;
       color:var(--dim);
     }
-    .kc.k1{ background:rgba(0,228,160,0.15); border-color:rgba(0,228,160,0.3); color:var(--accent); font-weight:900; }
-
-    .cubes-row{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      justify-content:center;
-      flex-wrap:nowrap;
-    }
-    .cube-card{
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:10px;
-      padding:10px 10px 12px;
-      background:rgba(255,255,255,0.02);
-      transition: transform 0.25s ease, border-color 0.25s ease;
-      min-width: max-content;
-    }
-    .cube-card.active{
-      border-color: rgba(0,228,160,0.5);
-      box-shadow: 0 0 14px rgba(0,228,160,0.10);
-      transform: translateY(-1px);
-    }
-    .cube-title{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.52rem;
-      letter-spacing:1px;
-      text-transform:uppercase;
-      text-align:center;
-      margin-bottom:8px;
-      font-weight:900;
-    }
+    .kc.k1{ background:rgba(0,228,160,0.15); border-color:rgba(0,228,160,0.3); color:var(--accent); font-weight:700; }
 
     .posGrid{
       display:grid;
@@ -221,9 +253,9 @@
       padding:6px;
       background:rgba(255,255,255,0.01);
     }
-    .posGrid.r4{ grid-template-rows: repeat(4, 28px); }
-    .posGrid.r5{ grid-template-rows: repeat(5, 28px); }
-    .posGrid.c4{ grid-template-columns: repeat(4, 28px); }
+    .posGrid.r4{ grid-template-rows: repeat(4, 30px); }
+    .posGrid.r5{ grid-template-rows: repeat(5, 30px); }
+    .posGrid.c4{ grid-template-columns: repeat(4, 30px); }
     .pc{
       border-radius:4px;
       border:1px solid rgba(255,255,255,0.06);
@@ -232,7 +264,7 @@
       align-items:center;
       justify-content:center;
       font-family:'JetBrains Mono',monospace;
-      font-weight:900;
+      font-weight:700;
       font-size:0.75rem;
       color: rgba(255,255,255,0.15);
       transition: all 0.25s ease;
@@ -241,13 +273,43 @@
       color:#fff;
       box-shadow: 0 0 10px rgba(255,255,255,0.12);
       border-color: rgba(255,255,255,0.18);
+      cursor: pointer;
     }
     .pc.hot{ background:var(--hot); }
     .pc.cool{ background:var(--cool); }
     .pc.purple{ background:var(--purple); }
     .pc.pink{ background:var(--pink); }
+    .pc.hit:hover{ filter: brightness(1.25); transform: scale(1.12); z-index: 2; }
 
+    /* posGrid tooltip */
+    .pos-tip{
+      position: fixed;
+      background: #1a1a28;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 200;
+      line-height: 1.7;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .pos-tip.visible{ opacity: 1; }
 
+    /* ID cube — hoverable quadrants */
+    .q[data-ki]{
+      cursor: pointer;
+    }
+    .q[data-ki]:hover{
+      filter: brightness(1.3);
+      transform: scale(1.08);
+      z-index: 10;
+    }
 
     .cube{
       position:relative;
@@ -308,7 +370,7 @@
       align-items:center;
       justify-content:center;
       font-family:'JetBrains Mono',monospace;
-      font-weight:900;
+      font-weight:700;
       font-size:1.05rem;
       color: rgba(255,255,255,0.25);
       transition: all 0.25s ease;
@@ -325,47 +387,57 @@
     .q.purple{ background:var(--purple); box-shadow:0 0 16px rgba(168,110,255,0.22); }
     .q.pink{ background:var(--pink); box-shadow:0 0 16px rgba(255,110,180,0.22); }
 
-
     .q.template{
       background: rgba(255,255,255,0.02);
       color: rgba(255,255,255,0.35);
     }
 
     .out{
-      width:72px; height:72px;
-      border-radius:14px;
+      width:90px; height:90px;
+      border-radius:12px;
       border:2px solid var(--border);
       background:var(--surface);
       display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace;
-      font-weight:900;
-      font-size:2.2rem;
-      transition: all 0.35s ease;
+      font-weight:700;
+      font-size:3rem;
+      transition: all 0.5s ease;
     }
     .out.y{
       color:var(--accent); border-color:var(--accent);
-      background: rgba(0,228,160,0.09);
-      box-shadow: 0 0 26px rgba(0,228,160,0.22);
+      background: rgba(0,228,160,0.08);
+      box-shadow: 0 0 30px rgba(0,228,160,0.25);
     }
     .out.n{
       color:var(--hot); border-color:var(--hot);
-      background: rgba(255,92,92,0.08);
-      box-shadow: 0 0 26px rgba(255,92,92,0.16);
+      background: rgba(255,92,92,0.06);
+      box-shadow: 0 0 30px rgba(255,92,92,0.2);
     }
-    .ocap{ font-size:0.72rem; font-weight:700; text-align:center; color:var(--dim); }
+    .ocap{ font-size:0.65rem; font-weight:700; text-align:center; color:var(--dim); letter-spacing:1px; text-transform:uppercase; }
 
     .footer{
-      padding:8px 0; text-align:center;
+      margin-top:auto;
+      padding:16px 0; text-align:center;
       font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem; color:var(--dim); line-height:1.5;
-      max-width: 980px;
+      font-size:0.7rem; color:var(--dim); line-height:1.6;
     }
 
     @media (max-width: 1100px){
-      :root{ --cell:28px; --cube: 84px; --cube-depth: 16px; }
+      :root{ --cell:32px; --cube: 84px; --cube-depth: 16px; }
+      .arrow{ padding:0 8px; }
+      .arrow svg{ width:32px; }
     }
-    @media (max-width: 800px){
+    @media (max-width: 900px){
+      :root{ --cell:28px; }
+      .pipeline{ flex-wrap:wrap; gap:20px; }
+      .arrow{ display:none; }
+    }
+    @media (max-width: 600px){
       :root{ --cell:24px; --cube: 78px; --cube-depth: 14px; }
+      .app{ padding:16px 12px; }
+      header h1{ font-size:1.2rem; }
+      header p{ font-size:0.78rem; }
+      .out{ width:70px; height:70px; font-size:2.4rem; }
     }
   </style>
 </head>
@@ -377,7 +449,7 @@
     </header>
 
     <div class="controls">
-      <span style="font-family:'JetBrains Mono';font-size:0.6rem;color:var(--dim);">EXAMPLE:</span>
+      <span style="font-family:'JetBrains Mono';font-size:0.7rem;color:var(--dim);margin-right:4px;">EXAMPLE:</span>
       <button class="btn active" id="btnEx1" onclick="pick('ex1')">Example 1</button>
       <button class="btn" id="btnEx2" onclick="pick('ex2')">Example 2</button>
       <button class="btn" id="btnEx3" onclick="pick('ex3')">Example 3</button>
@@ -385,9 +457,9 @@
     </div>
 
     <div class="step-bar">
-      <div class="sd" id="d0"></div><div class="sd" id="d1"></div><div class="sd" id="d2"></div><div class="sd" id="d3"></div>
-      <div class="sd" id="d4"></div><div class="sd" id="d5"></div><div class="sd" id="d6"></div><div class="sd" id="d7"></div>
-      <span class="st" id="sT">Choose an example and press Run</span>
+      <div class="step-dot" id="d0"></div><div class="step-dot" id="d1"></div><div class="step-dot" id="d2"></div><div class="step-dot" id="d3"></div>
+      <div class="step-dot" id="d4"></div><div class="step-dot" id="d5"></div><div class="step-dot" id="d6"></div><div class="step-dot" id="d7"></div>
+      <span class="step-text" id="sT">Choose an example and press Run</span>
     </div>
 
     <div class="pipeline">
@@ -402,7 +474,7 @@
         <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
       </div>
 
-      <!-- FILTERS (colonna) -->
+      <!-- FILTERS (column) -->
       <div class="block" id="bK">
         <div class="lbl">4 Filters</div>
         <div class="filters-col" id="kCol"></div>
@@ -454,7 +526,16 @@
       </div>
 
     </div>
+
+    <div class="footer">
+      Rule: 4 filters slide over 6×6 input → best-match positions → ID matrix 2×2 →
+      compare with template [[1,2],[3,4]] → <span style="color:var(--accent);">1</span>
+      (cup detected), else <span style="color:var(--hot);">0</span>
+    </div>
   </div>
+
+  <!-- floating tooltip for posGrid and cube -->
+  <div class="pos-tip" id="posTip"></div>
 
 <script>
 const SZ = 6, KS = 3;
@@ -638,14 +719,127 @@ function buildInputGrid(){
   for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
 }
 
+// Human-readable filter pattern names
+const KERNEL_NAMES = ['Left vertical', 'Center vertical', 'Top-left L', 'Top-right L'];
+// Pattern description (active cells)
+const KERNEL_DESC = [
+  'Left column + center',
+  'Center column + left',
+  'Top-left row + left column',
+  'Top-right row + right column',
+];
+
+// Last computed result (for interactive hover)
+let lastFmaps = null;
+let lastComb = null;
+let hoverDisabled = false; // disabled during run() animation
+
+function getFilterBestPos(ki){
+  if(!lastFmaps) return null;
+  const fm = lastFmaps[ki];
+  const ks = ksum(ki);
+  let best = null;
+  for(let r=0;r<fm.length;r++)
+    for(let c=0;c<fm[r].length;c++)
+      if(fm[r][c] === ks) { best = {r,c}; break; }
+  return best;
+}
+
+function showPosTip(e, html){
+  const tip = $('posTip');
+  tip.innerHTML = html;
+  tip.classList.add('visible');
+  movePosTip(e);
+}
+function movePosTip(e){
+  const tip = $('posTip');
+  const x = e.clientX + 14;
+  const y = e.clientY - tip.offsetHeight / 2;
+  tip.style.left = Math.min(x, window.innerWidth - tip.offsetWidth - 8) + 'px';
+  tip.style.top  = Math.max(8, Math.min(y, window.innerHeight - tip.offsetHeight - 8)) + 'px';
+}
+function hidePosTip(){
+  $('posTip').classList.remove('visible');
+}
+
+function attachKboxHover(box, ki){
+  box.addEventListener('mouseenter', () => {
+    if(hoverDisabled || !lastFmaps) return;
+    // highlight the best match position on the input
+    const pos = getFilterBestPos(ki);
+    if(pos) renderInput(getInput(), pos.r, pos.c);
+    // highlight the kbox
+    box.classList.add('hovered');
+    // show the inline tooltip
+    const tip = box.querySelector('.tip');
+    if(tip) tip.classList.add('visible');
+  });
+  box.addEventListener('mouseleave', () => {
+    renderInput(getInput());
+    box.classList.remove('hovered');
+    const tip = box.querySelector('.tip');
+    if(tip) tip.classList.remove('visible');
+  });
+}
+
+function attachPcHover(cell, ki, pr, pc_){
+  // pr, pc_ = row and column in posGrid (0-based)
+  cell.addEventListener('mouseenter', e => {
+    if(hoverDisabled || !lastFmaps) return;
+    const inp = getInput();
+    // highlight the input region where this filter matched
+    renderInput(inp, pr, pc_);
+    // highlight the corresponding kbox
+    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
+    $(`kbox${ki}`).classList.add('hovered');
+
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
+    const html = `<span class="${colorClass}" style="font-weight:700">Filter ${ki+1}</span> — ${KERNEL_NAMES[ki]}<br>
+<span style="color:var(--dim)">input position:</span> row <span style="color:var(--text)">${pr}</span>, col <span style="color:var(--text)">${pc_}</span><br>
+<span style="color:var(--dim)">match score:</span> <span style="color:var(--accent)">${lastFmaps[ki][pr][pc_]} / ${ksum(ki)}</span>`;
+    showPosTip(e, html);
+  });
+  cell.addEventListener('mousemove', e => movePosTip(e));
+  cell.addEventListener('mouseleave', () => {
+    renderInput(getInput());
+    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
+    hidePosTip();
+  });
+}
+
+function attachQHover(q, ki){
+  q.addEventListener('mouseenter', e => {
+    if(hoverDisabled || !lastFmaps) return;
+    // highlight the filter position on the input
+    const pos = getFilterBestPos(ki);
+    if(pos) renderInput(getInput(), pos.r, pos.c);
+    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
+    $(`kbox${ki}`).classList.add('hovered');
+
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
+    const quadrantNames = ['↖ Top-left','↗ Top-right','↙ Bottom-left','↘ Bottom-right'];
+    const html = `<span class="${colorClass}" style="font-weight:700">Filter ${ki+1}</span> — ${KERNEL_NAMES[ki]}<br>
+<span style="color:var(--dim)">quadrant:</span> <span style="color:var(--text)">${quadrantNames[ki]}</span><br>
+<span style="color:var(--dim)">pattern:</span> ${KERNEL_DESC[ki]}`;
+    showPosTip(e, html);
+  });
+  q.addEventListener('mousemove', e => movePosTip(e));
+  q.addEventListener('mouseleave', () => {
+    renderInput(getInput());
+    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
+    hidePosTip();
+  });
+}
+
 function build(){
   buildInputGrid();
   const kCol = $('kCol');
   kCol.innerHTML = '';
   KERNELS.forEach((k,ki)=>{
     const box = el('div','kbox'); box.id = `kbox${ki}`;
+
     const nm = el('div','kname');
-    nm.textContent = `Filtro ${k.id}`;
+    nm.textContent = `Filter ${k.id}`;
     nm.style.color = CSS_COLORS[ki];
     box.appendChild(nm);
 
@@ -659,6 +853,16 @@ function build(){
       }
     }
     box.appendChild(kg);
+
+    // Inline tooltip inside kbox (always built, visible only on hover)
+    const tip = el('div','tip');
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
+    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
+<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
+<div class="tip-row">hover after Run to inspect the match</div>`;
+    box.appendChild(tip);
+
+    attachKboxHover(box, ki);
     kCol.appendChild(box);
   });
 
@@ -672,8 +876,10 @@ function build(){
   }
   const tpl = $('tplFace'); tpl.innerHTML = '';
   [[1,2],[3,4]].flat().forEach(v=>{
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][v-1];
     const q = el('div','q template');
     q.textContent = v;
+    q.title = `Filter ${v} — ${KERNEL_NAMES[v-1]}`;
     tpl.appendChild(q);
   });
 }
@@ -728,24 +934,27 @@ function clearPosGrid(){
 function renderPosGrid(fmaps){
   const posGrid = $('posGrid');
   const cells = [...posGrid.children];
-  
-  for(let r=0; r<4; r++){
-    for(let c=0; c<4; c++){
-      const idx = r*4 + c;
+  const numRows = getPosMatrix().length;
+  const numCols = 4;
+
+  for(let r=0; r<numRows; r++){
+    for(let c=0; c<numCols; c++){
+      const idx = r*numCols + c;
       const cell = cells[idx];
       let maxVal = 0;
       let maxKi = -1;
       for(let ki=0; ki<4; ki++){
         const ks = ksum(ki);
-        if(fmaps[ki][r][c] === ks && fmaps[ki][r][c] > maxVal){
+        if(fmaps[ki][r] && fmaps[ki][r][c] === ks && fmaps[ki][r][c] > maxVal){
           maxVal = fmaps[ki][r][c];
           maxKi = ki;
         }
       }
-      
+
       if(maxKi >= 0){
         cell.textContent = maxKi + 1;
         cell.classList.add('hit', COLORS[maxKi]);
+        attachPcHover(cell, maxKi, r, c);
       } else {
         cell.textContent = '';
       }
@@ -770,6 +979,8 @@ function renderIDCube(comb2x2){
       const ki = id - 1;
       q.className = 'q hit ' + COLORS[ki];
       q.textContent = id;
+      q.dataset.ki = ki;
+      attachQHover(q, ki);
     } else {
       q.textContent = '·';
       q.style.color = 'rgba(255,255,255,0.25)';
@@ -781,7 +992,7 @@ function renderIDCube(comb2x2){
 function setStep(i, t){
   for(let j=0;j<8;j++){
     const d = $('d'+j);
-    d.className = (j<i) ? 'sd done' : (j===i ? 'sd now' : 'sd');
+    d.className = (j<i) ? 'step-dot done' : (j===i ? 'step-dot current' : 'step-dot');
   }
   $('sT').textContent = t;
 }
@@ -795,8 +1006,13 @@ function reset(){
   ['a1','a2','a3','a4','a5'].forEach(id => $(id).classList.remove('on'));
 
   for(let ki=0;ki<4;ki++){
-    $(`kbox${ki}`).classList.remove('active');
+    $(`kbox${ki}`).classList.remove('active','hovered');
   }
+
+  lastFmaps = null;
+  lastComb = null;
+  hoverDisabled = false;
+  hidePosTip();
 
   setStep(-1,'Choose an example and press Run');
   $('outV').textContent='?';
@@ -804,6 +1020,17 @@ function reset(){
   $('outC').textContent='';
 
   renderInput(getInput());
+
+  // Reset kbox tooltips to generic text
+  KERNELS.forEach((k, ki) => {
+    const box = $(`kbox${ki}`);
+    const tip = box ? box.querySelector('.tip') : null;
+    if(!tip) return;
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
+    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
+<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
+<div class="tip-row">hover after Run to inspect the match</div>`;
+  });
 
   clearPosGrid();
   const idFace = $('idFace');
@@ -821,46 +1048,63 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 async function run(){
   if(busy) return;
   busy = true;
+  hoverDisabled = true;
+  lastFmaps = null;
+  lastComb = null;
+  hidePosTip();
+
+  const inp = getInput();
 
   setStep(0,'Input loaded');
   setOn('bIn', true);
-  renderInput(getInput());
-  await wait(220);
+  renderInput(inp);
+  await wait(300);
 
-  setStep(1,'Applying 4 filters');
+  setStep(1,'Applying 4 filters...');
   $('a1').classList.add('on');
   setOn('bK', true);
-  await wait(200);
+
+  // Compute real feature maps via convolution
+  const fmaps = KERNELS.map(k => conv(inp, k.data));
+
+  // Animate filters one by one
+  for(let ki=0;ki<4;ki++){
+    $(`kbox${ki}`).classList.add('active');
+    await wait(180);
+    $(`kbox${ki}`).classList.remove('active');
+  }
+  await wait(100);
 
   const posMatrix = getPosMatrix();
   const numRows = posMatrix.length;
   const numCols = 4;
-  
+
   $('posLbl').textContent = `Filter positions ${numRows}×${numCols}`;
   const posGrid = $('posGrid');
   posGrid.className = `posGrid r${numRows} c${numCols}`;
-  
+
   posGrid.innerHTML = '';
   for(let i=0; i<numRows*numCols; i++){
     const c = el('div','pc');
     posGrid.appendChild(c);
   }
-  
+
   setStep(2,`Filter positions in ${numRows}×${numCols} feature map`);
   $('a2').classList.add('on');
   setOn('bP', true);
 
   const cells = [...posGrid.children];
-  
+
   for(let i=0; i<numRows*numCols; i++){
     const r = Math.floor(i/numCols);
     const c = i % numCols;
     const cell = cells[i];
     const val = posMatrix[r][c];
-    
+
     if(val > 0){
       cell.textContent = val;
       cell.classList.add('hit', COLORS[val - 1]);
+      attachPcHover(cell, val - 1, r, c);
     }
     await wait(50);
   }
@@ -872,7 +1116,7 @@ async function run(){
 
   const comb = getIDFromPosMatrix(posMatrix);
   renderIDCube(comb);
-  await wait(240);
+  await wait(300);
 
   setStep(4,'Comparing with template');
   $('a4').classList.add('on');
@@ -890,7 +1134,28 @@ async function run(){
   outC.textContent = ok ? 'Match template (cup)' : 'No match';
   outC.style.color = ok ? 'var(--accent)' : 'var(--hot)';
 
-  setStep(7, ok ? '✓ Output 1' : '✗ Output 0');
+  setStep(7, ok ? '✓ Output 1 — hover filters to explore' : '✗ Output 0 — hover filters to explore');
+
+  // Save results for interactive hover
+  lastFmaps = fmaps;
+  lastComb = comb;
+  hoverDisabled = false;
+
+  // Update kbox tooltips with actual match info
+  KERNELS.forEach((k, ki) => {
+    const box = $(`kbox${ki}`);
+    const tip = box.querySelector('.tip');
+    if(!tip) return;
+    const pos = getFilterBestPos(ki);
+    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
+    const score = pos ? fmaps[ki][pos.r][pos.c] : 0;
+    const posStr = pos ? `row ${pos.r}, col ${pos.c}` : 'none';
+    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
+<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
+<div class="tip-row">best match: <span>${posStr}</span></div>
+<div class="tip-row">score: <span class="tip-accent">${score}/${ksum(ki)}</span></div>`;
+  });
+
   busy = false;
 }
 
