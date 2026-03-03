@@ -158,6 +158,8 @@
             margin-bottom: 10px;
             transition: color 0.3s;
             cursor: default;
+            width: 100%;
+            text-align: center;
         }
         .stage.active .stage-label { color: var(--accent); }
 
@@ -247,12 +249,12 @@
         .fmap-stack {
             position: relative;
             cursor: pointer;
-            min-width: 230px;
-            min-height: 230px;
+            min-width: calc(4 * var(--cell) + 36px);
+            min-height: calc(4 * var(--cell) + 36px);
         }
         .fmap-stack.fmap-stack-sm {
-            min-width: 140px;
-            min-height: 140px;
+            min-width: calc(2 * var(--cell) + 32px);
+            min-height: calc(2 * var(--cell) + 32px);
         }
         .fmap-back, .fmap-front {
             position: absolute;
@@ -496,59 +498,44 @@
             transition: color 0.3s;
         }
 
-        /* === BOTTOM BAR === */
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            border-top: 1px solid var(--border);
-            background: var(--surface);
-            padding: 12px 30px;
+        /* === EXPLAIN PANEL === */
+        .explain-panel {
+            margin-top: 208px;
+            min-height: 24px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            position: relative;
+        }
+        .ep-default {
+            color: var(--dim);
+            opacity: 0.5;
+            transition: opacity 0.15s;
+        }
+        .ep-default.hidden { opacity: 0; }
+        .ep-body {
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 48px;
-            z-index: 50;
-        }
-
-        .rule-text, .explain-content {
-            position: absolute;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            line-height: 1.6;
-            text-align: center;
-            transition: opacity 0.15s ease;
-        }
-
-        .rule-text {
-            color: var(--dim);
-            opacity: 1;
-        }
-        .rule-text.hidden { opacity: 0; pointer-events: none; }
-
-        .explain-content {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
+            gap: 6px;
+            flex-wrap: nowrap;
             opacity: 0;
             pointer-events: none;
+            transition: opacity 0.15s;
+            white-space: nowrap;
         }
-        .explain-content.visible { opacity: 1; }
-        .explain-title { color: var(--accent); font-weight: 700; white-space: nowrap; }
-        .explain-sep { color: var(--border); }
-        .explain-text { color: var(--dim); }
+        .ep-body.visible { opacity: 1; }
+        .ep-title { color: var(--accent); font-weight: 700; }
+        .ep-sep { color: var(--dim); }
+        .ep-text { color: var(--text); }
 
         /* === THEME TOGGLE === */
         #themeToggle {
-            position: fixed;
-            bottom: 68px;
-            right: 20px;
-            z-index: 200;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             padding: 0;
             border-radius: 50%;
             border: 1px solid var(--border);
@@ -560,6 +547,7 @@
             align-items: center;
             justify-content: center;
             transition: border-color 0.15s, color 0.15s;
+            flex-shrink: 0;
         }
         #themeToggle:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -597,6 +585,7 @@
         <button class="btn" id="btnH" onclick="selectShape('H')">H Shape</button>
         <button class="btn" id="btnRandom" onclick="selectShape('random')">? Random</button>
         <button class="btn run" onclick="runPipeline()">▶ Run CNN</button>
+        <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
     </div>
 
     <div class="step-bar" id="stepBar">
@@ -689,55 +678,47 @@
         </div>
     </div>
 
-</div>
-
-<div class="bottom-bar">
-    <div class="rule-text" id="ruleText">
-        Rule: flatten pooled values → if ≥ 2 values equal 1 → <span style="color:var(--accent);">1</span>
-        (H or Cross detected), else <span style="color:var(--hot);">0</span>
+    <div class="explain-panel" id="explainPanel">
+        <div class="ep-default" id="epDefault">hover a stage to learn more</div>
+        <div class="ep-body" id="epBody">
+            <span class="ep-title" id="epTitle"></span>
+            <span class="ep-sep">—</span>
+            <span class="ep-text" id="epText"></span>
+        </div>
     </div>
-    <div class="explain-content" id="explainPanel">
-        <span class="explain-title" id="explainTitle"></span>
-        <span class="explain-sep">—</span>
-        <span class="explain-text" id="explainText"></span>
-    </div>
-</div>
 
-<button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+</div>
 
 <script>
     // ============================
     // EXPLANATIONS
     // ============================
     const EXPLANATIONS = {
-        'input':    { title: 'Input image',            text: 'A binary 6×6 grid fed raw into the CNN. Each cell is either 1 (pixel on) or 0 (pixel off) — the raw signal the network has to classify.' },
-        'filters':  { title: 'Convolutional filters',  text: 'Two 3×3 learned filters slide across every position of the input. At each position they compute a dot product with the local patch and produce a 1 only on a perfect match.' },
-        'features': { title: 'Feature maps',           text: 'One output map per filter. A highlighted 1 means that filter found its pattern starting at that location. The two maps together encode where each shape detector fired across the image.' },
-        'pooling':  { title: 'Max pooling (2×2)',       text: 'Each 2×2 region of a feature map is collapsed to a single value — its maximum. This halves the spatial size and makes detection shift-invariant: a match anywhere in the region is enough to keep a 1.' },
-        'dense':    { title: 'Dense layer',            text: 'All 8 pooled values (4 per filter) are flattened into a vector, multiplied by their weights (×1 here), and summed. If that sum reaches the threshold of 2 or more, the network outputs 1.' },
-        'output':   { title: 'Output',                 text: 'The final binary decision: 1 means a recognisable pattern (Cross or H) was detected, 0 means no match. It is determined entirely by whether the dense layer\'s sum crossed the threshold.' },
+        stageInput:    { title: 'Input image',           text: 'A binary 6×6 grid fed raw into the CNN. Each cell is 1 (pixel on) or 0 (off) — the raw signal the network has to classify.' },
+        stageKernels:  { title: 'Convolutional filters', text: 'Two 3×3 learned filters slide across every position of the input and produce a 1 only where they find a perfect match.' },
+        stageFeatures: { title: 'Feature maps',          text: 'One output map per filter. A highlighted 1 means that filter found its pattern at that location in the image.' },
+        stagePooled:   { title: 'Max pooling (2×2)',     text: 'Each 2×2 region of a feature map is collapsed to its maximum value, making detection shift-invariant.' },
+        stageDense:    { title: 'Dense layer',           text: 'All 8 pooled values are flattened and summed. If the sum reaches 2 or more, the network fires a positive output.' },
+        stageResult:   { title: 'Output',                text: 'The final binary decision: 1 means a pattern (Cross or H) was detected, 0 means no match.' },
     };
 
     function explain(key) {
         const e = EXPLANATIONS[key];
         if (!e) return;
-        document.getElementById('explainTitle').textContent = e.title;
-        document.getElementById('explainText').textContent = e.text;
-        document.getElementById('ruleText').classList.add('hidden');
-        document.getElementById('explainPanel').classList.add('visible');
+        document.getElementById('epTitle').textContent = e.title;
+        document.getElementById('epText').textContent = e.text;
+        document.getElementById('epDefault').classList.add('hidden');
+        document.getElementById('epBody').classList.add('visible');
     }
 
     function clearExplain() {
-        document.getElementById('ruleText').classList.remove('hidden');
-        document.getElementById('explainPanel').classList.remove('visible');
+        document.getElementById('epDefault').classList.remove('hidden');
+        document.getElementById('epBody').classList.remove('visible');
     }
 
-    // ============================
-    // STATIC HOVER LISTENERS
-    // ============================
-    function initStaticExplain() {
-        document.querySelectorAll('[data-explain]').forEach(el => {
-            el.addEventListener('mouseenter', () => explain(el.dataset.explain));
+    function initExplain() {
+        document.querySelectorAll('.stage').forEach(el => {
+            el.addEventListener('mouseenter', () => explain(el.id));
             el.addEventListener('mouseleave', clearExplain);
         });
     }
@@ -1124,7 +1105,7 @@
         setTimeout(() => document.body.classList.remove('no-transition'), 0);
     }
 
-    initStaticExplain();
+    initExplain();
     resetPipeline();
 </script>
 </body>
