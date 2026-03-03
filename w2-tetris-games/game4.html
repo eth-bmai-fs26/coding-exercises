@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CNN Pipeline — Cubes 1–2–3–4</title>
+  <title>CNN Pipeline</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -21,19 +21,47 @@
 
       --cell:38px;
       --kcell:22px;
+      --fmcell:26px;
 
-      --cube: 90px;
-      --cube-pad: 8px;
-      --cube-depth: 18px;
-      --cube-skew: 20deg;
+      --cell-bg: rgba(255,255,255,0.02);
+      --cell-border: rgba(255,255,255,0.04);
+      --cell-text: rgba(255,255,255,0.3);
+      --fm-bg: rgba(255,255,255,0.03);
+      --fm-border: rgba(255,255,255,0.05);
+      --fm-text: rgba(255,255,255,0.25);
+      --kbox-border: rgba(255,255,255,0.06);
     }
+
+    body.light-mode {
+      --bg: #f0f0f5;
+      --surface: #ffffff;
+      --border: #c8c8dc;
+      --text: #1a1a2a;
+      --dim: #7070a0;
+      --accent: #00a872;
+      --hot: #cc2020;
+      --cool: #1a6ad0;
+      --purple: #6030b0;
+      --pink: #c0306e;
+      --cell-bg: rgba(0,0,0,0.04);
+      --cell-border: rgba(0,0,0,0.1);
+      --cell-text: rgba(0,0,0,0.3);
+      --fm-bg: rgba(0,0,0,0.04);
+      --fm-border: rgba(0,0,0,0.08);
+      --fm-text: rgba(0,0,0,0.25);
+      --kbox-border: rgba(0,0,0,0.12);
+    }
+
+    body.no-transition * { transition: none !important; }
 
     *{margin:0;padding:0;box-sizing:border-box;}
     body{
       background:var(--bg); color:var(--text);
       font-family:'Sora',sans-serif;
       min-height:100vh; overflow-x:hidden;
+      visibility:hidden;
     }
+    body.ready{ visibility:visible; }
     body::before{
       content:''; position:fixed; inset:0;
       background:
@@ -81,7 +109,7 @@
     .pipeline{
       width:100%;
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:center;
       gap:0;
       flex-wrap:nowrap;
@@ -117,7 +145,6 @@
 
     .arrow{
       display:flex; align-items:center; justify-content:center;
-      padding-top:30px;
       padding:0 16px;
       opacity:0.15;
       transition: opacity 0.5s ease;
@@ -134,16 +161,15 @@
     .ic{
       width:var(--cell); height:var(--cell);
       border-radius:3px;
-      background:rgba(255,255,255,0.02);
-      border:1px solid rgba(255,255,255,0.04);
+      background:var(--cell-bg);
+      border:1px solid var(--cell-border);
       display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace;
       font-size:0.7rem;
-      color:rgba(255,255,255,0.3);
+      color:var(--cell-text);
       transition:all 0.25s ease;
     }
     .ic.on{ background:var(--text); color:var(--bg); font-weight:700; box-shadow:0 0 12px rgba(224,223,240,0.15); }
-    .ic.hl{ outline:2px solid var(--accent); outline-offset:-1px; }
 
     .filters-col{
       display:flex;
@@ -154,75 +180,16 @@
     }
     .kbox{
       width: max-content;
-      border:1px solid rgba(255,255,255,0.06);
+      border:1px solid var(--kbox-border);
       border-radius:8px;
       padding:6px 8px 8px;
-      background:rgba(255,255,255,0.02);
-      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-      cursor: pointer;
-      position: relative;
-    }
-    .kbox:hover{
-      border-color: rgba(255,255,255,0.2);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      background:var(--cell-bg);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
     .kbox.active{
       border-color: rgba(0,228,160,0.5);
       box-shadow: 0 0 14px rgba(0,228,160,0.12);
-      transform: translateY(-1px);
     }
-    .kbox.hovered{
-      border-color: rgba(255,255,255,0.3) !important;
-      box-shadow: 0 0 20px rgba(255,255,255,0.06) !important;
-    }
-
-    /* Generic tooltip */
-    .tip{
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a1a28;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.62rem;
-      color: var(--text);
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-      z-index: 100;
-      line-height: 1.6;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .tip::after{
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 5px solid transparent;
-      border-top-color: var(--border);
-    }
-    .tip.visible{ opacity: 1; }
-    .tip .tip-title{
-      font-weight: 700;
-      margin-bottom: 3px;
-    }
-    .tip .tip-row{
-      color: var(--dim);
-    }
-    .tip .tip-row span{
-      color: var(--text);
-    }
-    .tip .tip-accent{ color: var(--accent); font-weight: 700; }
-    .tip .tip-hot{ color: var(--hot); }
-    .tip .tip-cool{ color: var(--cool); }
-    .tip .tip-purple{ color: var(--purple); }
-    .tip .tip-pink{ color: var(--pink); }
     .kname{
       font-family:'JetBrains Mono',monospace;
       font-size:0.6rem;
@@ -236,161 +203,151 @@
     .kc{
       width:var(--kcell); height:var(--kcell);
       border-radius:2px;
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.05);
+      background:var(--fm-bg);
+      border:1px solid var(--fm-border);
       display:flex; align-items:center; justify-content:center;
       font-family:'JetBrains Mono',monospace;
       font-size:0.55rem;
       color:var(--dim);
     }
-    .kc.k1{ background:rgba(0,228,160,0.15); border-color:rgba(0,228,160,0.3); color:var(--accent); font-weight:700; }
+    .kc.k-hot    { background:rgba(255,92,92,0.15);   border-color:rgba(255,92,92,0.3);   color:var(--hot);    font-weight:700; }
+    .kc.k-cool   { background:rgba(74,158,255,0.15);  border-color:rgba(74,158,255,0.3);  color:var(--cool);   font-weight:700; }
+    .kc.k-purple { background:rgba(168,110,255,0.15); border-color:rgba(168,110,255,0.3); color:var(--purple); font-weight:700; }
+    .kc.k-pink   { background:rgba(255,110,180,0.15); border-color:rgba(255,110,180,0.3); color:var(--pink);   font-weight:700; }
 
-    .posGrid{
-      display:grid;
-      gap:2px;
-      border:1px solid rgba(255,255,255,0.07);
-      border-radius:8px;
-      padding:6px;
-      background:rgba(255,255,255,0.01);
+    /* === FEATURE MAP STACKS === */
+    #bP, #bID, #bL2K{
+      background:transparent;
+      border:none;
+      overflow:visible;
     }
-    .posGrid.r4{ grid-template-rows: repeat(4, 30px); }
-    .posGrid.r5{ grid-template-rows: repeat(5, 30px); }
-    .posGrid.c4{ grid-template-columns: repeat(4, 30px); }
-    .pc{
-      border-radius:4px;
-      border:1px solid rgba(255,255,255,0.06);
-      background:rgba(255,255,255,0.02);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:'JetBrains Mono',monospace;
-      font-weight:700;
-      font-size:0.75rem;
-      color: rgba(255,255,255,0.15);
-      transition: all 0.25s ease;
-    }
-    .pc.hit{
-      color:#fff;
-      box-shadow: 0 0 10px rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.18);
-      cursor: pointer;
-    }
-    .pc.hot{ background:var(--hot); }
-    .pc.cool{ background:var(--cool); }
-    .pc.purple{ background:var(--purple); }
-    .pc.pink{ background:var(--pink); }
-    .pc.hit:hover{ filter: brightness(1.25); transform: scale(1.12); z-index: 2; }
-
-    /* posGrid tooltip */
-    .pos-tip{
-      position: fixed;
-      background: #1a1a28;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.62rem;
-      color: var(--text);
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      z-index: 200;
-      line-height: 1.7;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .pos-tip.visible{ opacity: 1; }
-
-    /* ID cube — hoverable quadrants */
-    .q[data-ki]{
-      cursor: pointer;
-    }
-    .q[data-ki]:hover{
-      filter: brightness(1.3);
-      transform: scale(1.08);
-      z-index: 10;
-    }
-
-    .cube{
+    .fmap-deck{
       position:relative;
-      width:var(--cube);
-      height:var(--cube);
+      cursor:pointer;
+      min-width:183px;
+      min-height:214px;
+    }
+    .fmap-deck.fmap-deck-sm{
+      min-width:102px;
+      min-height:128px;
+    }
+    #bL2K .fmap-deck{
+      min-width:73px;
+      min-height:100px;
+    }
+    .fmap-card{
+      position:absolute;
+      top:0; left:0;
+      background:var(--surface);
+      border:1px solid var(--border);
       border-radius:10px;
-      background:rgba(255,255,255,0.01);
-      border:1px solid rgba(255,255,255,0.07);
-      overflow: visible;
-    }
-    .cube::before{
-      content:"";
-      position:absolute;
-      left:10px;
-      top:calc(-1 * var(--cube-depth));
-      width:calc(100% - 10px);
-      height:var(--cube-depth);
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.06);
-      border-bottom:none;
-      transform:skewX(calc(-1 * var(--cube-skew)));
-      transform-origin:left bottom;
-      border-top-left-radius:10px;
-      border-top-right-radius:10px;
-    }
-    .cube::after{
-      content:"";
-      position:absolute;
-      right:calc(-1 * var(--cube-depth));
-      top:10px;
-      width:var(--cube-depth);
-      height:calc(100% - 10px);
-      background:rgba(255,255,255,0.02);
-      border:1px solid rgba(255,255,255,0.06);
-      border-left:none;
-      transform:skewY(var(--cube-skew));
-      transform-origin:left top;
-      border-top-right-radius:10px;
-      border-bottom-right-radius:10px;
-    }
-
-    .face{
-      position:absolute;
-      inset:0;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      grid-template-rows:1fr 1fr;
-      gap:2px;
-      padding:8px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.01);
-    }
-    .q{
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.08);
-      background:rgba(255,255,255,0.02);
+      padding:10px;
       display:flex;
+      flex-direction:column;
       align-items:center;
-      justify-content:center;
+      gap:6px;
+      transition:transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+    }
+    /* Default stack: Filter 4 deepest, Filter 1 on top */
+    .fmap-deck .fmap-card:nth-child(1){ transform:translate(18px,18px); opacity:0.25; }
+    .fmap-deck .fmap-card:nth-child(2){ transform:translate(12px,12px); opacity:0.45; }
+    .fmap-deck .fmap-card:nth-child(3){ transform:translate(6px,6px);   opacity:0.65; }
+    .fmap-deck .fmap-card:nth-child(4){ transform:translate(0,0);        opacity:1; box-shadow:4px 4px 16px rgba(0,0,0,0.4); }
+    /* Hover: fan out into 2×2 */
+    .fmap-deck:hover{ z-index:10; }
+    .fmap-deck:hover .fmap-card{ opacity:1; box-shadow:3px 3px 12px rgba(0,0,0,0.35); }
+    .fmap-deck:hover .fmap-card:nth-child(1){ transform:translate(60%, 60%); }
+    .fmap-deck:hover .fmap-card:nth-child(2){ transform:translate(-60%,60%); }
+    .fmap-deck:hover .fmap-card:nth-child(3){ transform:translate(60%,-60%); }
+    .fmap-deck:hover .fmap-card:nth-child(4){ transform:translate(-60%,-60%); box-shadow:3px 3px 12px rgba(0,0,0,0.35); }
+    .fmap-hint{
+      position:absolute;
+      bottom:-24px; left:50%;
+      transform:translateX(-50%);
       font-family:'JetBrains Mono',monospace;
+      font-size:0.5rem;
+      color:var(--dim);
+      opacity:0.5;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      transition:opacity 0.3s;
+      white-space:nowrap;
+    }
+    .fmap-deck:hover .fmap-hint{ opacity:0; }
+    .fmap-tag{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.55rem;
+      text-align:center;
+      text-transform:uppercase;
+      letter-spacing:1px;
       font-weight:700;
-      font-size:1.05rem;
-      color: rgba(255,255,255,0.25);
-      transition: all 0.25s ease;
-      user-select:none;
     }
+    .fm-grid{ display:inline-grid; gap:1px; }
+    .fm-cell{
+      width:var(--fmcell); height:var(--fmcell);
+      border-radius:2px;
+      background:var(--fm-bg);
+      border:1px solid var(--fm-border);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.55rem;
+      color:var(--fm-text);
+      transition:all 0.25s ease;
+    }
+    .fm-cell.hot  { background:var(--hot);    color:#fff; font-weight:700; box-shadow:0 0 6px rgba(255,92,92,0.35); }
+    .fm-cell.cool { background:var(--cool);   color:#fff; font-weight:700; box-shadow:0 0 6px rgba(74,158,255,0.35); }
+    .fm-cell.purple{ background:var(--purple);color:#fff; font-weight:700; box-shadow:0 0 6px rgba(168,110,255,0.35); }
+    .fm-cell.pink { background:var(--pink);   color:#fff; font-weight:700; box-shadow:0 0 6px rgba(255,110,180,0.35); }
+    .fm-cell.accent{ background:var(--accent); color:var(--bg); font-weight:700; box-shadow:0 0 6px rgba(0,228,160,0.4); }
 
-    .q.hit{
-      color:#fff;
-      box-shadow: 0 0 18px rgba(255,255,255,0.10);
-      border-color: rgba(255,255,255,0.14);
+    /* === DENSE LAYER === */
+    .dense-box{
+      display:flex; flex-direction:column; align-items:center; gap:8px;
     }
-    .q.hot{ background:var(--hot); box-shadow:0 0 16px rgba(255,92,92,0.22); }
-    .q.cool{ background:var(--cool); box-shadow:0 0 16px rgba(74,158,255,0.22); }
-    .q.purple{ background:var(--purple); box-shadow:0 0 16px rgba(168,110,255,0.22); }
-    .q.pink{ background:var(--pink); box-shadow:0 0 16px rgba(255,110,180,0.22); }
-
-    .q.template{
-      background: rgba(255,255,255,0.02);
-      color: rgba(255,255,255,0.35);
+    .dense-row{
+      display:flex; gap:6px; align-items:flex-end; justify-content:center;
     }
+    .dense-cell{
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      padding:4px 5px; border-radius:4px;
+      transition:all 0.3s ease;
+    }
+    .dense-cell .dc-val{
+      font-family:'JetBrains Mono',monospace;
+      font-size:1.1rem; font-weight:700;
+      color:var(--cell-text);
+      width:38px; height:38px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:6px;
+      border:1px solid var(--cell-border);
+      background:var(--cell-bg);
+      transition:all 0.3s ease;
+    }
+    .dense-cell .dc-label{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.48rem; color:var(--dim);
+    }
+    .dense-cell.hot-cell  .dc-val{ background:var(--hot);    color:#fff; box-shadow:0 0 14px rgba(255,92,92,0.3); border-color:var(--hot); }
+    .dense-cell.cool-cell .dc-val{ background:var(--cool);   color:#fff; box-shadow:0 0 14px rgba(74,158,255,0.3); border-color:var(--cool); }
+    .dense-cell.purple-cell .dc-val{ background:var(--purple);color:#fff; box-shadow:0 0 14px rgba(168,110,255,0.3); border-color:var(--purple); }
+    .dense-cell.pink-cell .dc-val{ background:var(--pink);   color:#fff; box-shadow:0 0 14px rgba(255,110,180,0.3); border-color:var(--pink); }
+    .dense-cell.perfect .dc-val{
+      border-color:var(--accent);
+      box-shadow:0 0 16px rgba(0,228,160,0.45);
+      animation:perfectPulse 1.2s ease infinite;
+    }
+    .dense-cell.mismatch .dc-val{ opacity:0.4; border-color:var(--hot); }
+    @keyframes perfectPulse{
+      0%,100%{ box-shadow:0 0 14px rgba(0,228,160,0.35); }
+      50%    { box-shadow:0 0 24px rgba(0,228,160,0.6); }
+    }
+    .dense-equation{
+      font-family:'JetBrains Mono',monospace;
+      font-size:0.65rem; color:var(--dim); text-align:center; line-height:1.6;
+    }
+    .dense-equation .eq-sum{ font-weight:700; font-size:0.8rem; }
+    .dense-equation .eq-sum.pass{ color:var(--accent); }
+    .dense-equation .eq-sum.fail{ color:var(--hot); }
 
     .out{
       width:90px; height:90px;
@@ -413,7 +370,6 @@
       background: rgba(255,92,92,0.06);
       box-shadow: 0 0 30px rgba(255,92,92,0.2);
     }
-    .ocap{ font-size:0.65rem; font-weight:700; text-align:center; color:var(--dim); letter-spacing:1px; text-transform:uppercase; }
 
     .footer{
       margin-top:auto;
@@ -422,8 +378,56 @@
       font-size:0.7rem; color:var(--dim); line-height:1.6;
     }
 
+    /* === THEME TOGGLE === */
+    #themeToggle {
+      width:32px; height:32px; padding:0;
+      border-radius:50%;
+      border:1px solid var(--border);
+      background:var(--surface);
+      color:var(--dim);
+      font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:border-color 0.15s, color 0.15s;
+      flex-shrink:0;
+    }
+    #themeToggle:hover{ border-color:var(--accent); color:var(--accent); }
+
+    /* === EXPLAIN PANEL === */
+    .explain-panel {
+      margin-top: 208px;
+      min-height: 24px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      position: relative;
+    }
+    .ep-default {
+      color: var(--dim);
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .ep-default.hidden { opacity: 0; }
+    .ep-body {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .ep-body.visible { opacity: 1; }
+    .ep-title { color: var(--accent); font-weight: 700; }
+    .ep-sep { color: var(--dim); }
+    .ep-text { color: var(--text); }
+
     @media (max-width: 1100px){
-      :root{ --cell:32px; --cube: 84px; --cube-depth: 16px; }
+      :root{ --cell:32px; }
       .arrow{ padding:0 8px; }
       .arrow svg{ width:32px; }
     }
@@ -433,10 +437,9 @@
       .arrow{ display:none; }
     }
     @media (max-width: 600px){
-      :root{ --cell:24px; --cube: 78px; --cube-depth: 14px; }
+      :root{ --cell:24px; }
       .app{ padding:16px 12px; }
       header h1{ font-size:1.2rem; }
-      header p{ font-size:0.78rem; }
       .out{ width:70px; height:70px; font-size:2.4rem; }
     }
   </style>
@@ -444,16 +447,13 @@
 <body>
   <div class="app">
     <header>
-      <h1>CNN Pipeline — Cubes 1–2–3–4</h1>
-      <p>2×2 maps are cubes with quadrants 1–2–3–4 (position labels)</p>
+      <h1>CNN Pipeline</h1>
     </header>
 
     <div class="controls">
-      <span style="font-family:'JetBrains Mono';font-size:0.7rem;color:var(--dim);margin-right:4px;">EXAMPLE:</span>
-      <button class="btn active" id="btnEx1" onclick="pick('ex1')">Example 1</button>
-      <button class="btn" id="btnEx2" onclick="pick('ex2')">Example 2</button>
-      <button class="btn" id="btnEx3" onclick="pick('ex3')">Example 3</button>
-      <button class="btn run" onclick="run()">▶ Run</button>
+      <button class="btn" onclick="newRabbit()">&#8635; New Rabbit</button>
+      <button class="btn run" onclick="run()">&#9654; Run</button>
+      <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
     </div>
 
     <div class="step-bar">
@@ -474,9 +474,9 @@
         <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
       </div>
 
-      <!-- FILTERS (column) -->
+      <!-- FILTERS -->
       <div class="block" id="bK">
-        <div class="lbl">4 Filters</div>
+        <div class="lbl">Filters</div>
         <div class="filters-col" id="kCol"></div>
       </div>
 
@@ -484,21 +484,55 @@
         <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
       </div>
 
-      <!-- FILTER POSITIONS -->
+      <!-- FEATURE MAPS -->
       <div class="block" id="bP">
-        <div class="lbl" id="posLbl">Filter positions 4×4</div>
-        <div class="posGrid r4 c4" id="posGrid"></div>
+        <div class="lbl">Feature Maps</div>
+        <div class="fmap-deck">
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+            <div class="fm-grid" id="fmapGrid3"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+            <div class="fm-grid" id="fmapGrid2"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+            <div class="fm-grid" id="fmapGrid1"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+            <div class="fm-grid" id="fmapGrid0"></div>
+          </div>
+          <span class="fmap-hint">hover to inspect</span>
+        </div>
       </div>
 
       <div class="arrow" id="a3">
         <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
       </div>
 
-      <!-- ID CUBE -->
+      <!-- MAX POOLING -->
       <div class="block" id="bID">
-        <div class="lbl">ID Matrix 2×2 (1..4)</div>
-        <div class="cube" id="idCube">
-          <div class="face" id="idFace"></div>
+        <div class="lbl">Max Pooling</div>
+        <div class="fmap-deck fmap-deck-sm">
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+            <div class="fm-grid" id="poolGrid3"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+            <div class="fm-grid" id="poolGrid2"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+            <div class="fm-grid" id="poolGrid1"></div>
+          </div>
+          <div class="fmap-card">
+            <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+            <div class="fm-grid" id="poolGrid0"></div>
+          </div>
+          <span class="fmap-hint">hover to inspect</span>
         </div>
       </div>
 
@@ -506,12 +540,22 @@
         <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
       </div>
 
-      <!-- TEMPLATE CUBE -->
-      <div class="block" id="bTpl">
-        <div class="lbl">Final filter (template)</div>
-        <div class="cube" id="tplCube">
-          <div class="face" id="tplFace"></div>
+      <!-- L2 FILTER -->
+      <div class="block" id="bL2K">
+        <div class="lbl">Filter</div>
+        <div class="fmap-deck fmap-deck-sm" id="l2FilterDeck">
+          <span class="fmap-hint">hover to inspect</span>
         </div>
+      </div>
+
+      <div class="arrow" id="a4b">
+        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
+      </div>
+
+      <!-- L2 OUTPUT MAP -->
+      <div class="block" id="bL2">
+        <div class="lbl">Feature Maps</div>
+        <div class="fm-grid" id="l2Grid"></div>
       </div>
 
       <div class="arrow" id="a5">
@@ -522,25 +566,26 @@
       <div class="block" id="bOut">
         <div class="lbl">Output</div>
         <div class="out" id="outV">?</div>
-        <div class="ocap" id="outC"></div>
       </div>
 
     </div>
 
-    <div class="footer">
-      Rule: 4 filters slide over 6×6 input → best-match positions → ID matrix 2×2 →
-      compare with template [[1,2],[3,4]] → <span style="color:var(--accent);">1</span>
-      (cup detected), else <span style="color:var(--hot);">0</span>
+    <div class="explain-panel" id="explainPanel">
+      <div class="ep-default" id="epDefault">hover a stage to learn more</div>
+      <div class="ep-body" id="epBody">
+        <span class="ep-title" id="epTitle"></span>
+        <span class="ep-sep">—</span>
+        <span class="ep-text" id="epText"></span>
+      </div>
     </div>
+
   </div>
 
-  <!-- floating tooltip for posGrid and cube -->
-  <div class="pos-tip" id="posTip"></div>
-
 <script>
-const SZ = 6, KS = 3;
+const KS = 3;
 const CSS_COLORS = ['var(--hot)','var(--cool)','var(--purple)','var(--pink)'];
 const COLORS = ['hot','cool','purple','pink'];
+const L2_FILTER = [[1,2],[3,4]]; // filter numbers arranged spatially
 
 const KERNELS = [
   { id:1, data:[[1,0,0],[1,1,0],[1,0,0]] },
@@ -549,102 +594,94 @@ const KERNELS = [
   { id:4, data:[[0,0,1],[1,1,1],[0,0,0]] }
 ];
 
-const CUP_1 = [
-  [0,0,0,0,0,0],
-  [0,1,0,0,1,0],
-  [0,1,1,1,1,0],
-  [1,1,0,0,1,1],
-  [1,1,1,1,1,1],
-  [0,0,0,0,0,0]
-];
-
-const CUP_2 = [
-  [0,1,0,0,1,0],
-  [0,1,1,1,1,0],
-  [1,1,0,0,1,1],
-  [1,1,1,1,1,1],
-  [0,0,0,0,0,0],
-  [0,0,0,0,0,0]
-];
-
-const CUP_3 = [
-  [0,0,0,0,0,0],
-  [0,0,0,0,0,0],
+// Fixed cup shape (4 rows × 6 cols) — position is randomised on the 8×8 grid
+const CUP_SHAPE = [
   [0,1,0,0,1,0],
   [0,1,1,1,1,0],
   [1,1,0,0,1,1],
   [1,1,1,1,1,1]
 ];
 
-function getInput(){
-  if(variant === 'ex1') return CUP_1;
-  if(variant === 'ex2') return CUP_2;
-  if(variant === 'ex3') return CUP_3;
-  return CUP_1;
+function classifies(grid){
+  const fmaps = KERNELS.map(k => conv(grid, k.data));
+  const binaryFmaps = fmaps.map((fm, ki) => {
+    const ks = ksum(ki);
+    return fm.map(row => row.map(v => v === ks ? 1 : 0));
+  });
+  const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
+  return applyL2Filter(pooled).flat().some(v => v === 1);
 }
 
-let variant = 'ex1';
+function generateRabbit(){
+  const sRows = CUP_SHAPE.length;          // 4
+  const sCols = CUP_SHAPE[0].length;       // 6
+  const rowOffset = Math.floor(Math.random() * (8 - sRows)); // 0–3
+  const colOffset = Math.floor(Math.random() * (8 - sCols + 1)); // 0–2
+  const grid = Array.from({length:8}, () => Array(8).fill(0));
+  CUP_SHAPE.forEach((row, r) =>
+    row.forEach((v, c) => { if(v) grid[rowOffset + r][colOffset + c] = 1; })
+  );
+
+  const roll = Math.random();
+  if(roll < 0.4){
+    // Collect all active cells
+    const active = [];
+    for(let r = rowOffset; r < rowOffset + sRows; r++)
+      for(let c = colOffset; c < colOffset + sCols; c++)
+        if(grid[r][c]) active.push([r, c]);
+
+    // Build candidate removals (single cell or neighboring pair)
+    let candidates;
+    if(roll < 0.2){
+      candidates = active.map(([r, c]) => [[r, c]]);
+    } else {
+      const pairs = [];
+      active.forEach(([r, c]) => {
+        if(grid[r][c + 1]) pairs.push([[r, c], [r, c + 1]]);
+        if(grid[r + 1]?.[c]) pairs.push([[r, c], [r + 1, c]]);
+      });
+      candidates = pairs.length > 0 ? pairs : active.map(([r, c]) => [[r, c]]);
+    }
+
+    // Only keep removals that actually break classification to 0
+    const breaking = candidates.filter(removal => {
+      const test = grid.map(row => [...row]);
+      removal.forEach(([r, c]) => test[r][c] = 0);
+      return !classifies(test);
+    });
+
+    if(breaking.length > 0){
+      const removal = breaking[Math.floor(Math.random() * breaking.length)];
+      removal.forEach(([r, c]) => grid[r][c] = 0);
+    }
+    // If no breaking removal exists, return the perfect rabbit unchanged
+  }
+
+  return grid;
+}
+
+let currentInput = generateRabbit();
+function getInput(){ return currentInput; }
+
 let busy = false;
 
 const $ = id => document.getElementById(id);
 function el(tag, cls){ const e = document.createElement(tag); if(cls) e.className = cls; return e; }
 
-const POS_MATRIX_1 = [
-  [0, 0, 0, 0],
-  [0, 1, 0, 2],
-  [0, 0, 0, 0],
-  [3, 0, 0, 4]
-];
-
-const POS_MATRIX_2 = [
-  [0, 1, 0, 2],
-  [0, 0, 0, 0],
-  [3, 0, 0, 4],
-  [0, 0, 0, 0]
-];
-
-const POS_MATRIX_3 = [
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 1, 0, 2],
-  [0, 0, 0, 0],
-  [3, 0, 0, 4]
-];
-
-function getPosMatrix(){
-  if(variant === 'ex1') return POS_MATRIX_1;
-  if(variant === 'ex2') return POS_MATRIX_2;
-  if(variant === 'ex3') return POS_MATRIX_3;
-  return POS_MATRIX_1;
-}
-
-function getIDFromPosMatrix(posMatrix){
-  const id2x2 = [[0,0],[0,0]];
-  const numRows = posMatrix.length;
-  const midRow = Math.ceil(numRows / 2);
-  
-  for(let r=0; r<midRow; r++) for(let c=0;c<2;c++) if(posMatrix[r][c]>0) id2x2[0][0]=posMatrix[r][c];
-  for(let r=0; r<midRow; r++) for(let c=2;c<4;c++) if(posMatrix[r][c]>0) id2x2[0][1]=posMatrix[r][c];
-  for(let r=midRow; r<numRows; r++) for(let c=0;c<2;c++) if(posMatrix[r][c]>0) id2x2[1][0]=posMatrix[r][c];
-  for(let r=midRow; r<numRows; r++) for(let c=2;c<4;c++) if(posMatrix[r][c]>0) id2x2[1][1]=posMatrix[r][c];
-  return id2x2;
-}
-function pick(v){
+function newRabbit(){
   if(busy) return;
-  variant = v;
-  ['Ex1','Ex2','Ex3'].forEach(k => {
-    const b = $('btn' + k);
-    const map = {Ex1:'ex1',Ex2:'ex2',Ex3:'ex3'};
-    b.className = 'btn' + (map[k] === v ? ' active' : '');
-  });
+  currentInput = generateRabbit();
   reset();
 }
 
+// Works for any input size
 function conv(inp, kern){
   const out = [];
-  for(let r=0;r<=SZ-KS;r++){
+  const outRows = inp.length - KS + 1;
+  const outCols = inp[0].length - KS + 1;
+  for(let r=0; r<outRows; r++){
     const row = [];
-    for(let c=0;c<=SZ-KS;c++){
+    for(let c=0; c<outCols; c++){
       let s=0;
       for(let kr=0;kr<KS;kr++)
         for(let kc=0;kc<KS;kc++)
@@ -655,180 +692,34 @@ function conv(inp, kern){
   }
   return out;
 }
-function maxpool2x2(fm4x4){
-  const out = [[0,0],[0,0]];
-  for(let R=0;R<2;R++){
-    for(let C=0;C<2;C++){
-      const r = R*2, c = C*2;
-      out[R][C] = Math.max(
-        fm4x4[r][c], fm4x4[r][c+1],
-        fm4x4[r+1][c], fm4x4[r+1][c+1]
-      );
-    }
+
+// 2×2 max pooling (stride 2) — dynamic output size based on feature map dimensions
+function maxpool2x2(fm){
+  const outRows = Math.floor(fm.length / 2);
+  const outCols = Math.floor(fm[0].length / 2);
+  const out = [];
+  for(let R=0; R<outRows; R++){
+    const row = [];
+    for(let C=0; C<outCols; C++)
+      row.push(Math.max(fm[R*2][C*2], fm[R*2][C*2+1], fm[R*2+1][C*2], fm[R*2+1][C*2+1]));
+    out.push(row);
   }
   return out;
-}
-function ksum(ki){
-  return KERNELS[ki].data.flat().reduce((a,b)=>a+b,0);
 }
 
-function permute(arr){
-  const out = [];
-  function rec(prefix, rest){
-    if(rest.length === 0){ out.push(prefix); return; }
-    for(let i=0;i<rest.length;i++){
-      rec(prefix.concat([rest[i]]), rest.slice(0,i).concat(rest.slice(i+1)));
-    }
-  }
-  rec([], arr);
-  return out;
-}
-function bestAssignment(pooledAll){
-  const cells = [[0,0],[0,1],[1,0],[1,1]];
-  const perms = permute(cells);
-  let best = null;
-  for(const perm of perms){
-    let score = 0;
-    for(let ki=0;ki<4;ki++){
-      const [r,c] = perm[ki];
-      score += pooledAll[ki][r][c];
-    }
-    if(best === null || score > best.score) best = {score, perm};
-  }
-  const comb = [[0,0],[0,0]];
-  for(let ki=0;ki<4;ki++){
-    const [r,c] = best.perm[ki];
-    comb[r][c] = ki+1;
-  }
-  return comb;
-}
-function same2x2(a,b){
-  for(let r=0;r<2;r++) for(let c=0;c<2;c++) if(a[r][c] !== b[r][c]) return false;
-  return true;
+function ksum(ki){
+  return KERNELS[ki].data.flat().reduce((a,b)=>a+b,0);
 }
 
 function buildInputGrid(){
   const inp = getInput();
   const numRows = inp.length;
   const numCols = inp[0].length;
-  
   const inG = $('inGrid');
   inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
   inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
   inG.innerHTML = '';
   for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
-}
-
-// Human-readable filter pattern names
-const KERNEL_NAMES = ['Left vertical', 'Center vertical', 'Top-left L', 'Top-right L'];
-// Pattern description (active cells)
-const KERNEL_DESC = [
-  'Left column + center',
-  'Center column + left',
-  'Top-left row + left column',
-  'Top-right row + right column',
-];
-
-// Last computed result (for interactive hover)
-let lastFmaps = null;
-let lastComb = null;
-let hoverDisabled = false; // disabled during run() animation
-
-function getFilterBestPos(ki){
-  if(!lastFmaps) return null;
-  const fm = lastFmaps[ki];
-  const ks = ksum(ki);
-  let best = null;
-  for(let r=0;r<fm.length;r++)
-    for(let c=0;c<fm[r].length;c++)
-      if(fm[r][c] === ks) { best = {r,c}; break; }
-  return best;
-}
-
-function showPosTip(e, html){
-  const tip = $('posTip');
-  tip.innerHTML = html;
-  tip.classList.add('visible');
-  movePosTip(e);
-}
-function movePosTip(e){
-  const tip = $('posTip');
-  const x = e.clientX + 14;
-  const y = e.clientY - tip.offsetHeight / 2;
-  tip.style.left = Math.min(x, window.innerWidth - tip.offsetWidth - 8) + 'px';
-  tip.style.top  = Math.max(8, Math.min(y, window.innerHeight - tip.offsetHeight - 8)) + 'px';
-}
-function hidePosTip(){
-  $('posTip').classList.remove('visible');
-}
-
-function attachKboxHover(box, ki){
-  box.addEventListener('mouseenter', () => {
-    if(hoverDisabled || !lastFmaps) return;
-    // highlight the best match position on the input
-    const pos = getFilterBestPos(ki);
-    if(pos) renderInput(getInput(), pos.r, pos.c);
-    // highlight the kbox
-    box.classList.add('hovered');
-    // show the inline tooltip
-    const tip = box.querySelector('.tip');
-    if(tip) tip.classList.add('visible');
-  });
-  box.addEventListener('mouseleave', () => {
-    renderInput(getInput());
-    box.classList.remove('hovered');
-    const tip = box.querySelector('.tip');
-    if(tip) tip.classList.remove('visible');
-  });
-}
-
-function attachPcHover(cell, ki, pr, pc_){
-  // pr, pc_ = row and column in posGrid (0-based)
-  cell.addEventListener('mouseenter', e => {
-    if(hoverDisabled || !lastFmaps) return;
-    const inp = getInput();
-    // highlight the input region where this filter matched
-    renderInput(inp, pr, pc_);
-    // highlight the corresponding kbox
-    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
-    $(`kbox${ki}`).classList.add('hovered');
-
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
-    const html = `<span class="${colorClass}" style="font-weight:700">Filter ${ki+1}</span> — ${KERNEL_NAMES[ki]}<br>
-<span style="color:var(--dim)">input position:</span> row <span style="color:var(--text)">${pr}</span>, col <span style="color:var(--text)">${pc_}</span><br>
-<span style="color:var(--dim)">match score:</span> <span style="color:var(--accent)">${lastFmaps[ki][pr][pc_]} / ${ksum(ki)}</span>`;
-    showPosTip(e, html);
-  });
-  cell.addEventListener('mousemove', e => movePosTip(e));
-  cell.addEventListener('mouseleave', () => {
-    renderInput(getInput());
-    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
-    hidePosTip();
-  });
-}
-
-function attachQHover(q, ki){
-  q.addEventListener('mouseenter', e => {
-    if(hoverDisabled || !lastFmaps) return;
-    // highlight the filter position on the input
-    const pos = getFilterBestPos(ki);
-    if(pos) renderInput(getInput(), pos.r, pos.c);
-    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
-    $(`kbox${ki}`).classList.add('hovered');
-
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
-    const quadrantNames = ['↖ Top-left','↗ Top-right','↙ Bottom-left','↘ Bottom-right'];
-    const html = `<span class="${colorClass}" style="font-weight:700">Filter ${ki+1}</span> — ${KERNEL_NAMES[ki]}<br>
-<span style="color:var(--dim)">quadrant:</span> <span style="color:var(--text)">${quadrantNames[ki]}</span><br>
-<span style="color:var(--dim)">pattern:</span> ${KERNEL_DESC[ki]}`;
-    showPosTip(e, html);
-  });
-  q.addEventListener('mousemove', e => movePosTip(e));
-  q.addEventListener('mouseleave', () => {
-    renderInput(getInput());
-    for(let i=0;i<4;i++) $(`kbox${i}`).classList.remove('hovered');
-    hidePosTip();
-  });
 }
 
 function build(){
@@ -837,57 +728,33 @@ function build(){
   kCol.innerHTML = '';
   KERNELS.forEach((k,ki)=>{
     const box = el('div','kbox'); box.id = `kbox${ki}`;
-
     const nm = el('div','kname');
     nm.textContent = `Filter ${k.id}`;
     nm.style.color = CSS_COLORS[ki];
     box.appendChild(nm);
-
     const kg = el('div','kg');
     kg.style.gridTemplateColumns = `repeat(${KS}, var(--kcell))`;
     for(let r=0;r<KS;r++){
       for(let c=0;c<KS;c++){
-        const ce = el('div', 'kc' + (k.data[r][c] ? ' k1' : ''));
+        const ce = el('div', 'kc' + (k.data[r][c] ? ` k-${COLORS[ki]}` : ''));
         ce.textContent = k.data[r][c];
         kg.appendChild(ce);
       }
     }
     box.appendChild(kg);
-
-    // Inline tooltip inside kbox (always built, visible only on hover)
-    const tip = el('div','tip');
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
-    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
-<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
-<div class="tip-row">hover after Run to inspect the match</div>`;
-    box.appendChild(tip);
-
-    attachKboxHover(box, ki);
     kCol.appendChild(box);
   });
-
-  buildPosGrid();
-  const idFace = $('idFace'); idFace.innerHTML = '';
-  for(let i=0;i<4;i++){
-    const q = el('div','q');
-    q.textContent = '·';
-    q.style.color = 'rgba(255,255,255,0.25)';
-    idFace.appendChild(q);
-  }
-  const tpl = $('tplFace'); tpl.innerHTML = '';
-  [[1,2],[3,4]].flat().forEach(v=>{
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][v-1];
-    const q = el('div','q template');
-    q.textContent = v;
-    q.title = `Filter ${v} — ${KERNEL_NAMES[v-1]}`;
-    tpl.appendChild(q);
-  });
+  // Feature maps: 6 rows × 6 cols (8-3+1=6)
+  buildFmapPlaceholders(6, 6);
+  // Pooled: 3 rows × 3 cols (6/2=3)
+  buildPoolPlaceholders(3, 3);
+  buildL2FilterDisplay();
+  buildL2Placeholders();
 }
 
-function renderInput(inp, hr, hc){
+function renderInput(inp){
   const numRows = inp.length;
   const numCols = inp[0].length;
-  
   const inG = $('inGrid');
   const currentCells = inG.children.length;
   if(currentCells !== numRows * numCols){
@@ -896,7 +763,6 @@ function renderInput(inp, hr, hc){
     inG.innerHTML = '';
     for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
   }
-  
   const cells = [...inG.children];
   let idx = 0;
   for(let r=0;r<numRows;r++){
@@ -905,88 +771,138 @@ function renderInput(inp, hr, hc){
       ce.className = 'ic';
       ce.textContent = inp[r][c];
       if(inp[r][c]) ce.classList.add('on');
-      if(hr !== undefined && r>=hr && r<hr+KS && c>=hc && c<hc+KS) ce.classList.add('hl');
     }
   }
 }
 
-function buildPosGrid(){
-  const posMatrix = getPosMatrix();
-  const numRows = posMatrix.length;
-  const numCols = 4;
-  
-  $('posLbl').textContent = `Filter positions ${numRows}×${numCols}`;
-  const posGrid = $('posGrid');
-  posGrid.className = `posGrid r${numRows} c${numCols}`;
-  posGrid.innerHTML = '';
-  
-  for(let i=0; i<numRows*numCols; i++){
-    const c = el('div','pc');
-    c.textContent = '';
-    posGrid.appendChild(c);
-  }
+function buildFmapPlaceholders(rows, cols){
+  ['fmapGrid0','fmapGrid1','fmapGrid2','fmapGrid3'].forEach(id => {
+    const g = $(id);
+    g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+    g.innerHTML = '';
+    for(let i=0; i<rows*cols; i++) g.appendChild(el('div','fm-cell'));
+  });
 }
 
-function clearPosGrid(){
-  buildPosGrid();
+function buildPoolPlaceholders(rows, cols){
+  ['poolGrid0','poolGrid1','poolGrid2','poolGrid3'].forEach(id => {
+    const g = $(id);
+    g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+    g.innerHTML = '';
+    for(let i=0; i<rows*cols; i++) g.appendChild(el('div','fm-cell'));
+  });
 }
 
-function renderPosGrid(fmaps){
-  const posGrid = $('posGrid');
-  const cells = [...posGrid.children];
-  const numRows = getPosMatrix().length;
-  const numCols = 4;
+function renderFeatureMaps(binaryFmaps){
+  binaryFmaps.forEach((fmap, ki) => {
+    const cells = $('fmapGrid' + ki).querySelectorAll('.fm-cell');
+    fmap.forEach((row, r) => row.forEach((v, c) => {
+      const cell = cells[r * fmap[0].length + c];
+      cell.textContent = v ? ki + 1 : 0;
+      if(v) cell.classList.add(COLORS[ki]);
+    }));
+  });
+}
 
-  for(let r=0; r<numRows; r++){
-    for(let c=0; c<numCols; c++){
-      const idx = r*numCols + c;
-      const cell = cells[idx];
-      let maxVal = 0;
-      let maxKi = -1;
-      for(let ki=0; ki<4; ki++){
-        const ks = ksum(ki);
-        if(fmaps[ki][r] && fmaps[ki][r][c] === ks && fmaps[ki][r][c] > maxVal){
-          maxVal = fmaps[ki][r][c];
-          maxKi = ki;
-        }
-      }
+function renderPooled(pooledMaps){
+  pooledMaps.forEach((pool, ki) => {
+    const cells = $('poolGrid' + ki).querySelectorAll('.fm-cell');
+    pool.forEach((row, r) => row.forEach((v, c) => {
+      const cell = cells[r * pool[0].length + c];
+      cell.textContent = v ? ki + 1 : 0;
+      if(v) cell.classList.add(COLORS[ki]);
+    }));
+  });
+}
 
-      if(maxKi >= 0){
-        cell.textContent = maxKi + 1;
-        cell.classList.add('hit', COLORS[maxKi]);
-        attachPcHover(cell, maxKi, r, c);
+function buildL2FilterDisplay(){
+  const deck = $('l2FilterDeck');
+  deck.innerHTML = '';
+
+  // Cards ordered deepest to top: filter 4 → filter 1
+  [4, 3, 2, 1].forEach(filterNum => {
+    const card = el('div', 'fmap-card');
+
+    const tag = el('div', 'fmap-tag');
+    tag.textContent = `Filter ${filterNum}`;
+    tag.style.color = CSS_COLORS[filterNum - 1];
+    card.appendChild(tag);
+
+    const grid = el('div', 'fm-grid');
+    grid.style.gridTemplateColumns = `repeat(2, var(--fmcell))`;
+    L2_FILTER.forEach((row, r) => row.forEach((v, c) => {
+      const cell = el('div', 'fm-cell');
+      if(v === filterNum){
+        cell.classList.add(COLORS[filterNum - 1]);
+        cell.textContent = filterNum;
       } else {
-        cell.textContent = '';
+        cell.textContent = 0;
       }
-    }
-  }
+      grid.appendChild(cell);
+    }));
+    card.appendChild(grid);
+    deck.appendChild(card);
+  });
+
+  const hint = el('span', 'fmap-hint');
+  hint.textContent = 'hover to inspect';
+  deck.appendChild(hint);
 }
 
-function renderIDCube(comb2x2){
-  const idFace = $('idFace');
-  idFace.innerHTML = '';
-  const ids = [
-    comb2x2[0][0],
-    comb2x2[0][1],
-    comb2x2[1][0],
-    comb2x2[1][1]
-  ];
-
-  for(let i=0;i<4;i++){
-    const id = ids[i];
-    const q = el('div','q');
-    if(id > 0){
-      const ki = id - 1;
-      q.className = 'q hit ' + COLORS[ki];
-      q.textContent = id;
-      q.dataset.ki = ki;
-      attachQHover(q, ki);
-    } else {
-      q.textContent = '·';
-      q.style.color = 'rgba(255,255,255,0.25)';
+function applyL2Filter(pooledMaps){
+  const outRows = pooledMaps[0].length - L2_FILTER.length + 1;
+  const outCols = pooledMaps[0][0].length - L2_FILTER[0].length + 1;
+  const out = [];
+  for(let R = 0; R < outRows; R++){
+    const row = [];
+    for(let C = 0; C < outCols; C++){
+      const match = L2_FILTER.every((frow, dr) =>
+        frow.every((filterNum, dc) =>
+          pooledMaps[filterNum - 1][R + dr][C + dc] === 1
+        )
+      );
+      row.push(match ? 1 : 0);
     }
-    idFace.appendChild(q);
+    out.push(row);
   }
+  return out;
+}
+
+function buildL2Placeholders(){
+  const g = $('l2Grid');
+  g.style.gridTemplateColumns = `repeat(${L2_FILTER[0].length}, var(--fmcell))`;
+  g.innerHTML = '';
+  for(let i = 0; i < L2_FILTER.length * L2_FILTER[0].length; i++)
+    g.appendChild(el('div','fm-cell'));
+}
+
+function renderL2Output(l2map){
+  const cols = l2map[0].length;
+  const cells = $('l2Grid').querySelectorAll('.fm-cell');
+  l2map.forEach((row, r) => row.forEach((v, c) => {
+    const cell = cells[r * cols + c];
+    cell.textContent = v || 0;
+    if(v) cell.classList.add('accent');
+  }));
+}
+
+function renderDense(binaryFmaps){
+  const denseRow = $('denseRow');
+  denseRow.innerHTML = '';
+  binaryFmaps.forEach((fmap, ki) => {
+    const fired = fmap.flat().some(v => v === 1);
+    const dc = el('div', 'dense-cell ' + COLORS[ki] + '-cell' + (fired ? ' perfect' : ' mismatch'));
+    const dv = el('div','dc-val');
+    dv.textContent = fired ? '1' : '0';
+    const dl = el('div','dc-label');
+    dl.textContent = `Filter ${ki + 1}`;
+    dc.appendChild(dv);
+    dc.appendChild(dl);
+    denseRow.appendChild(dc);
+  });
+  const matchCount = binaryFmaps.filter(fmap => fmap.flat().some(v => v === 1)).length;
+  const eq = $('denseEq');
+  eq.innerHTML = `<span class="eq-sum ${matchCount === 4 ? 'pass' : 'fail'}">${matchCount}/4</span> filters matched`;
 }
 
 function setStep(i, t){
@@ -1002,45 +918,16 @@ function setOn(id, on){
   e.classList.toggle('on', !!on);
 }
 function reset(){
-  ['bIn','bK','bP','bID','bTpl','bOut'].forEach(id => setOn(id,false));
-  ['a1','a2','a3','a4','a5'].forEach(id => $(id).classList.remove('on'));
-
-  for(let ki=0;ki<4;ki++){
-    $(`kbox${ki}`).classList.remove('active','hovered');
-  }
-
-  lastFmaps = null;
-  lastComb = null;
-  hoverDisabled = false;
-  hidePosTip();
-
+  ['bIn','bK','bP','bID','bL2K','bL2','bOut'].forEach(id => setOn(id,false));
+  ['a1','a2','a3','a4','a4b','a5'].forEach(id => $(id).classList.remove('on'));
+  for(let ki=0;ki<4;ki++) $(`kbox${ki}`).classList.remove('active');
   setStep(-1,'Choose an example and press Run');
   $('outV').textContent='?';
   $('outV').className='out';
-  $('outC').textContent='';
-
   renderInput(getInput());
-
-  // Reset kbox tooltips to generic text
-  KERNELS.forEach((k, ki) => {
-    const box = $(`kbox${ki}`);
-    const tip = box ? box.querySelector('.tip') : null;
-    if(!tip) return;
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
-    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
-<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
-<div class="tip-row">hover after Run to inspect the match</div>`;
-  });
-
-  clearPosGrid();
-  const idFace = $('idFace');
-  idFace.innerHTML = '';
-  for(let i=0;i<4;i++){
-    const q = el('div','q');
-    q.textContent = '·';
-    q.style.color = 'rgba(255,255,255,0.25)';
-    idFace.appendChild(q);
-  }
+  buildFmapPlaceholders(6, 6);
+  buildPoolPlaceholders(3, 3);
+  buildL2Placeholders();
 }
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -1048,26 +935,22 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 async function run(){
   if(busy) return;
   busy = true;
-  hoverDisabled = true;
-  lastFmaps = null;
-  lastComb = null;
-  hidePosTip();
 
   const inp = getInput();
 
+  // Step 0: Input
   setStep(0,'Input loaded');
   setOn('bIn', true);
   renderInput(inp);
   await wait(300);
 
+  // Step 1: Filters
   setStep(1,'Applying 4 filters...');
   $('a1').classList.add('on');
   setOn('bK', true);
 
-  // Compute real feature maps via convolution
   const fmaps = KERNELS.map(k => conv(inp, k.data));
 
-  // Animate filters one by one
   for(let ki=0;ki<4;ki++){
     $(`kbox${ki}`).classList.add('active');
     await wait(180);
@@ -1075,93 +958,101 @@ async function run(){
   }
   await wait(100);
 
-  const posMatrix = getPosMatrix();
-  const numRows = posMatrix.length;
-  const numCols = 4;
-
-  $('posLbl').textContent = `Filter positions ${numRows}×${numCols}`;
-  const posGrid = $('posGrid');
-  posGrid.className = `posGrid r${numRows} c${numCols}`;
-
-  posGrid.innerHTML = '';
-  for(let i=0; i<numRows*numCols; i++){
-    const c = el('div','pc');
-    posGrid.appendChild(c);
-  }
-
-  setStep(2,`Filter positions in ${numRows}×${numCols} feature map`);
+  // Step 2: Binary Feature Maps — 6×6
+  setStep(2,'Binary feature maps (6×6, 1 = perfect match)');
   $('a2').classList.add('on');
   setOn('bP', true);
 
-  const cells = [...posGrid.children];
+  const binaryFmaps = fmaps.map((fm, ki) => {
+    const ks = ksum(ki);
+    return fm.map(row => row.map(v => v === ks ? 1 : 0));
+  });
+  renderFeatureMaps(binaryFmaps);
+  await wait(400);
 
-  for(let i=0; i<numRows*numCols; i++){
-    const r = Math.floor(i/numCols);
-    const c = i % numCols;
-    const cell = cells[i];
-    const val = posMatrix[r][c];
-
-    if(val > 0){
-      cell.textContent = val;
-      cell.classList.add('hit', COLORS[val - 1]);
-      attachPcHover(cell, val - 1, r, c);
-    }
-    await wait(50);
-  }
-  await wait(120);
-
-  setStep(3,'Building ID matrix (winner per quadrant)');
+  // Step 3: Max Pooling 6×6 → 3×3
+  setStep(3,'Max pooling 6×6 → 3×3');
   $('a3').classList.add('on');
   setOn('bID', true);
 
-  const comb = getIDFromPosMatrix(posMatrix);
-  renderIDCube(comb);
+  const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
+  renderPooled(pooled);
+  await wait(400);
+
+  // Step 4: L2 Filter
+  setStep(4,'Applying L2 filter [[1,2],[3,4]]...');
+  $('a4').classList.add('on');
+  setOn('bL2K', true);
   await wait(300);
 
-  setStep(4,'Comparing with template');
-  $('a4').classList.add('on');
-  setOn('bTpl', true);
+  // Step 5: L2 Output Map
+  setStep(5,'L2 feature map (2×2)');
+  $('a4b').classList.add('on');
+  setOn('bL2', true);
+
+  const l2map = applyL2Filter(pooled);
+  renderL2Output(l2map);
+  await wait(400);
+
+  // Step 6: Output
   $('a5').classList.add('on');
   setOn('bOut', true);
 
-  const TEMPLATE = [[1,2],[3,4]];
-  const ok = same2x2(comb, TEMPLATE);
+  const ok = l2map.flat().some(v => v === 1);
 
   const outV = $('outV');
-  const outC = $('outC');
   outV.textContent = ok ? '1' : '0';
   outV.className = 'out ' + (ok ? 'y' : 'n');
-  outC.textContent = ok ? 'Match template (cup)' : 'No match';
-  outC.style.color = ok ? 'var(--accent)' : 'var(--hot)';
 
-  setStep(7, ok ? '✓ Output 1 — hover filters to explore' : '✗ Output 0 — hover filters to explore');
-
-  // Save results for interactive hover
-  lastFmaps = fmaps;
-  lastComb = comb;
-  hoverDisabled = false;
-
-  // Update kbox tooltips with actual match info
-  KERNELS.forEach((k, ki) => {
-    const box = $(`kbox${ki}`);
-    const tip = box.querySelector('.tip');
-    if(!tip) return;
-    const pos = getFilterBestPos(ki);
-    const colorClass = ['tip-hot','tip-cool','tip-purple','tip-pink'][ki];
-    const score = pos ? fmaps[ki][pos.r][pos.c] : 0;
-    const posStr = pos ? `row ${pos.r}, col ${pos.c}` : 'none';
-    tip.innerHTML = `<div class="tip-title"><span class="${colorClass}">Filter ${k.id}</span> — ${KERNEL_NAMES[ki]}</div>
-<div class="tip-row">pattern: ${KERNEL_DESC[ki]}</div>
-<div class="tip-row">best match: <span>${posStr}</span></div>
-<div class="tip-row">score: <span class="tip-accent">${score}/${ksum(ki)}</span></div>`;
-  });
+  setStep(7, ok ? '✓ Output 1' : '✗ Output 0');
 
   busy = false;
 }
 
+// === THEME ===
+function toggleTheme(){
+  document.body.classList.add('no-transition');
+  const isLight = document.body.classList.toggle('light-mode');
+  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+  setTimeout(() => document.body.classList.remove('no-transition'), 0);
+}
+
+// === EXPLANATIONS ===
+const EXPLANATIONS = {
+  bIn:  { title: 'Input',           text: 'An 8×8 binary grid representing a shape. Each cell is 1 (on) or 0 (off).' },
+  bK:   { title: 'Filters',         text: 'Four 3×3 learned kernels slide over the input, each detecting a different local edge or corner pattern.' },
+  bP:   { title: 'Feature Maps',    text: 'One 6×6 binary map per filter. A 1 marks every position where that filter found a perfect match.' },
+  bID:  { title: 'Max Pooling',     text: 'Each 2×2 region collapses to its maximum value, shrinking 6×6 maps to 3×3 and making detection shift-invariant.' },
+  bL2K: { title: 'L2 Filter',       text: 'A 2×2 meta-filter that checks for a specific spatial arrangement of activations across the four pooled maps.' },
+  bL2:  { title: 'L2 Feature Map',  text: 'Output of the L2 filter. A 1 means the full pattern signature was found at that spatial location.' },
+  bOut: { title: 'Output',          text: '1 if the L2 feature map contains at least one activation — the shape was recognised. 0 otherwise.' },
+};
+
+function explain(key){
+  const e = EXPLANATIONS[key];
+  if(!e) return;
+  document.getElementById('epTitle').textContent = e.title;
+  document.getElementById('epText').textContent = e.text;
+  document.getElementById('epDefault').classList.add('hidden');
+  document.getElementById('epBody').classList.add('visible');
+}
+
+function clearExplain(){
+  document.getElementById('epDefault').classList.remove('hidden');
+  document.getElementById('epBody').classList.remove('visible');
+}
+
+function initExplain(){
+  document.querySelectorAll('.block').forEach(el => {
+    el.addEventListener('mouseenter', () => explain(el.id));
+    el.addEventListener('mouseleave', clearExplain);
+  });
+}
+
 build();
 reset();
+initExplain();
+document.body.classList.add('ready');
 </script>
 </body>
 </html>
-
