@@ -12,7 +12,7 @@
       --surface2: #1a1a1a;
       --border: #222222;
       --text: #e0dff0;
-      --dim: #555566;
+      --dim: #8888aa;
       --accent: #00ffaa;
       --pink: #ff6b9d;
       --blue: #4fc3f7;
@@ -39,7 +39,7 @@
     }
     header { text-align: center; margin-bottom: 14px; }
     header h1 { font-size: 1.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
-    header p { color: var(--dim); font-size: 0.8rem; margin-top: 3px; }
+    header p { color: var(--dim); font-size: 0.85rem; margin-top: 3px; }
 
     .controls {
       display: flex; gap: 10px; margin-bottom: 16px;
@@ -59,7 +59,7 @@
     .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
     .dot.done { background: var(--accent); box-shadow: 0 0 6px rgba(0,255,170,0.4); }
     .dot.current { background: var(--accent); transform: scale(1.4); box-shadow: 0 0 10px rgba(0,255,170,0.6); }
-    .progress-label { font-size: 0.68rem; color: var(--dim); margin-left: 6px; letter-spacing: 0.5px; }
+    .progress-label { font-size: 0.74rem; color: var(--dim); margin-left: 6px; letter-spacing: 0.5px; }
 
     .step-card {
       width: 100%; max-width: 1280px; background: var(--surface);
@@ -80,7 +80,7 @@
       display: flex; align-items: center; gap: 10px;
       background: rgba(79,195,247,0.06); border: 1px solid rgba(79,195,247,0.25);
       border-radius: 7px; padding: 8px 14px; margin-bottom: 16px;
-      font-size: 0.72rem; color: var(--blue);
+      font-size: 0.78rem; color: var(--blue);
     }
     .repeat-banner strong { color: var(--blue); }
     .repeat-badge {
@@ -93,7 +93,7 @@
     .explanation {
       background: rgba(0,255,170,0.04); border: 1px solid rgba(0,255,170,0.18);
       border-radius: 8px; padding: 14px 18px; margin-top: 20px;
-      font-size: 0.82rem; line-height: 1.65; color: var(--text);
+      font-size: 0.88rem; line-height: 1.7; color: var(--text);
     }
     .explanation strong { color: var(--accent); }
     .explanation .highlight { color: var(--yellow); font-weight: 700; }
@@ -146,7 +146,7 @@
     .kcell.k1 { background: rgba(0,255,170,0.18); border-color: rgba(0,255,170,0.4); color: var(--accent); }
 
     .section-lbl {
-      font-size: 0.62rem; letter-spacing: 1.5px; text-transform: uppercase;
+      font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase;
       color: var(--dim); margin-bottom: 8px; text-align: center;
     }
     .section-lbl.accent { color: var(--accent); }
@@ -160,7 +160,7 @@
     .step-body { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
     .step-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-    .filter-name { font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+    .filter-name { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
     .filter-name.f1 { color: var(--accent); }
     .filter-name.f2 { color: var(--pink); }
     .filter-name.f3 { color: var(--blue); }
@@ -276,7 +276,7 @@
     .recap-summary { font-size: 0.82rem; line-height: 1.7; color: var(--text); background: rgba(0,255,170,0.03); border: 1px solid rgba(0,255,170,0.12); border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; }
     .recap-summary h3 { color: var(--accent); margin-bottom: 8px; font-size: 0.85rem; }
 
-    .size-badge { font-size: 0.6rem; color: var(--dim); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+    .size-badge { font-size: 0.65rem; color: var(--dim); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
 
     /* ===== CONV2 ANIMATION ===== */
     .ch-anim-container {
@@ -428,13 +428,6 @@ const EXAMPLES = [
       [[1,1,2,1,0],[3,3,3,3,2],[2,2,2,2,1],[2,2,2,2,1],[1,2,3,1,1]],
       [[1,1,1,1,0],[2,2,1,2,2],[3,2,2,2,3],[3,2,2,2,3],[3,3,3,1,3]],
     ],
-    conv2: [
-      [[57,63,52],[75,74,71],[74,71,67]],
-      [[75,73,70],[73,70,65],[82,79,71]],
-    ],
-    conv3: [[221,213],[237,228]], pool3_scalar: 237,
-    vec: [75, 82],
-    margin: 5,
   },
   {
     name: 'Upside-down house',
@@ -467,13 +460,6 @@ const EXAMPLES = [
       [[1,2,3,1,1],[2,2,2,2,1],[2,2,2,2,1],[3,3,3,3,2],[1,1,2,1,0]],
       [[3,3,3,1,3],[3,2,2,2,3],[3,2,2,2,3],[2,2,1,2,2],[1,1,1,1,0]],
     ],
-    conv2: [
-      [[82,79,71],[73,70,65],[75,73,70]],
-      [[74,71,67],[75,74,71],[57,63,52]],
-    ],
-    conv3: [[224,219],[189,200]], pool3_scalar: 224,
-    vec: [82, 75],
-    margin: 5,
   },
   {
     name: 'Flat-roof building',
@@ -506,13 +492,6 @@ const EXAMPLES = [
       [[3,3,3,3,2],[2,2,2,2,1],[3,2,2,2,1],[2,2,2,2,1],[1,2,3,1,1]],
       [[2,1,1,1,2],[3,2,2,2,3],[3,2,2,2,3],[3,2,2,2,3],[3,3,3,1,3]],
     ],
-    conv2: [
-      [[81,78,74],[63,59,58],[48,41,46]],
-      [[51,46,50],[57,49,50],[80,75,68]],
-    ],
-    conv3: [[165,144],[217,199]], pool3_scalar: 217,
-    vec: [81, 80],
-    margin: 5,
   },
 ];
 
@@ -527,13 +506,25 @@ const FM_DESCS   = ['Feature map 1: ↘ diagonals (left side of roof)','Feature 
 const FM_FCOLORS = ['fc1','fc2','fc3','fc4'];
 const FM_FNAMES  = ['f1','f2','f3','f4'];
 
+// Conv2: each filter has per-channel 2×2 weights (4 channels from Pool1)
+// In a real CNN, each filter has shape (kH × kW × C_in) — one 2D slice per input channel.
+// Here: same spatial pattern [[2,2],[1,1]] or [[1,1],[2,2]] applied to every channel.
 const FILTERS2 = [
-  { name:'Filter A — Top-heavy', color:'f1', weights:[[2,2],[1,1]], desc:'2×2 top-heavy filter: top row ×2, bottom row ×1' },
-  { name:'Filter B — Bottom-heavy', color:'f2', weights:[[1,1],[2,2]], desc:'2×2 bottom-heavy filter: top row ×1, bottom row ×2' },
+  { name:'Filter A — Top-heavy', color:'f1',
+    channelWeights:[[[2,2],[1,1]], [[2,2],[1,1]], [[2,2],[1,1]], [[2,2],[1,1]]],
+    desc:'2×2×4 filter: each channel slice has top row ×2, bottom row ×1 — responds to features concentrated in the upper part of the pooled maps' },
+  { name:'Filter B — Bottom-heavy', color:'f2',
+    channelWeights:[[[1,1],[2,2]], [[1,1],[2,2]], [[1,1],[2,2]], [[1,1],[2,2]]],
+    desc:'2×2×4 filter: each channel slice has top row ×1, bottom row ×2 — responds to features concentrated in the lower part of the pooled maps' },
 ];
 
-const CONV3_FILTER    = [[1,0],[2,0]]; // applied to Map B (conv2[1])
-let CONV3_THRESHOLD = 224;           // recomputed at runtime after conv2/conv3 dynamic outputs
+// Conv3: per-channel 2×2 weights (2 channels from Pool2: Map A + Map B)
+// This filter looks at the spatial relationship between top-heavy and bottom-heavy activations.
+const CONV3_FILTER = [
+  [[0,0],[2,0]],  // channel 0 (Map A — top-heavy): bottom-left ×2
+  [[0,2],[2,0]],  // channel 1 (Map B — bottom-heavy): top-right ×2, bottom-left ×2
+];
+let CONV3_THRESHOLD = 316;           // recomputed at runtime
 
 // ============================================================
 //  STATE
@@ -589,10 +580,24 @@ function makeGridWithMax(data, maxR, maxC, size='normal') {
 }
 
 function makeFilter(filt) {
-  let h=`<div class="grid" style="grid-template-columns:repeat(3,26px)">`;
-  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
+  const rows=filt.weights.length, cols=filt.weights[0].length;
+  let h=`<div class="grid" style="grid-template-columns:repeat(${cols},26px)">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
     const v=filt.weights[r][c];
     h+=`<div class="kcell${v===1?' k1':''}">${v}</div>`;
+  }
+  return h+`</div>`;
+}
+
+function makeKernelGrid(weights2D, size=26) {
+  const rows=weights2D.length, cols=weights2D[0].length;
+  let h=`<div class="grid" style="grid-template-columns:repeat(${cols},${size}px)">`;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const v=weights2D[r][c];
+    const bg=v===2?'background:rgba(0,255,170,0.3);border-color:rgba(0,255,170,0.6);color:var(--accent)':
+             v===1?'background:rgba(0,255,170,0.1);border-color:rgba(0,255,170,0.25);color:rgba(0,255,170,0.7)':
+                   'background:rgba(255,255,255,0.02);color:var(--dim)';
+    h+=`<div class="kcell" style="${bg};width:${size}px;height:${size}px">${v}</div>`;
   }
   return h+`</div>`;
 }
@@ -613,22 +618,25 @@ function convolveSingle(input, kernel) {
   }
   return out;
 }
-function convolveMulti(inputs, kernel) {
-  const kh = kernel.length, kw = kernel[0].length;
+// Multi-channel convolution: each input channel has its own 2D kernel slice.
+// kernelPerCh[ch] is a 2D array (kH × kW). All slices must have the same size.
+function convolveMultiCh(inputs, kernelPerCh) {
+  const kh = kernelPerCh[0].length, kw = kernelPerCh[0][0].length;
   const h = inputs[0].length, w = inputs[0][0].length;
   const oh = h - kh + 1, ow = w - kw + 1;
   const out = Array.from({length: oh}, () => Array(ow).fill(0));
   for (let r=0; r<oh; r++) for (let c=0; c<ow; c++) {
     let sum = 0;
     for (let ch=0; ch<inputs.length; ch++) {
-      for (let i=0; i<kh; i++) for (let j=0; j<kw; j++) sum += inputs[ch][r+i][c+j] * kernel[i][j];
+      for (let i=0; i<kh; i++) for (let j=0; j<kw; j++)
+        sum += inputs[ch][r+i][c+j] * kernelPerCh[ch][i][j];
     }
     out[r][c] = sum;
   }
   return out;
 }
 function getConv2Maps(ex) {
-  return FILTERS2.map(f => convolveMulti(ex.pool1, f.weights));
+  return FILTERS2.map(f => convolveMultiCh(ex.pool1, f.channelWeights));
 }
 function maxPool2x2Stride2(input) {
   const h=input.length, w=input[0].length;
@@ -644,8 +652,9 @@ function getPool2Maps(ex) {
   return getConv2Maps(ex).map(maxPool2x2Stride2);
 }
 function getConv3Map(ex) {
-  const mapBPool2 = getPool2Maps(ex)[1];
-  return convolveSingle(mapBPool2, CONV3_FILTER);
+  // Conv3 takes ALL Pool2 maps as input channels (proper multi-channel convolution)
+  const pool2Maps = getPool2Maps(ex);
+  return convolveMultiCh(pool2Maps, CONV3_FILTER);
 }
 function getPool3Scalar(ex) {
   return Math.max(...getConv3Map(ex).flat());
@@ -673,9 +682,9 @@ function renderStep(stepIdx) {
     'STEP 1 / 6 — INPUT (12×12)',
     'STEP 2 / 6 — CONVOLUTION LAYER 1 — 4 filters → 4 feature maps',
     'STEP 3 / 6 — MAX POOLING LAYER 1',
-    'STEP 4 / 6 — CONVOLUTION LAYER 2 — asymmetric filters (same mechanism, new filters)',
-    'STEP 5 / 6 — POOL2 (2×2) + CONVOLUTION LAYER 3',
-    'STEP 6 / 6 — MAX POOL 3 + THRESHOLD → OUTPUT',
+    'STEP 4 / 6 — CONVOLUTION LAYER 2 — per-channel 2×2×4 filters (top-heavy / bottom-heavy)',
+    'STEP 5 / 6 — POOL2 (2×2) + CONV3 (2×2×2 multi-channel)',
+    'STEP 6 / 6 — GLOBAL MAX POOL + THRESHOLD → OUTPUT',
   ];
   document.getElementById('step-label').textContent=labels[stepIdx];
   document.getElementById('step-content').innerHTML=steps[stepIdx](ex);
@@ -914,7 +923,7 @@ function p1ClearHover() {
 }
 
 // ============================================================
-//  STEP 3: CONV2 — animated channel combination
+//  STEP 3: CONV2 — per-channel filter visualization
 // ============================================================
 function renderConv2(ex) {
   const poolSize=ex.pool1[0].length;
@@ -925,7 +934,7 @@ function renderConv2(ex) {
   window._c2_activeFilter=0;
 
   let h=``;
-  h+=`<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Same mechanism as Step 2</strong> — sliding window + dot product. Now we have <strong>4 input channels</strong> (the pooled maps) and <strong>asymmetric filters</strong> that look at the spatial distribution of features. <span class="repeat-badge">conv2 ≡ conv1</span></div></div>`;
+  h+=`<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Same mechanism as Conv1</strong> — sliding window + dot product. Now the input has <strong>4 channels</strong> (the pooled maps), and each filter has a <strong>2×2 kernel per channel</strong> (shape 2×2×4). Each output cell = sum of all channel convolutions. <span class="repeat-badge">conv2 ≡ conv1</span></div></div>`;
 
   h+=`<div class="step-body" style="flex-wrap:wrap;gap:16px;align-items:flex-start">`;
 
@@ -945,9 +954,9 @@ function renderConv2(ex) {
 
   h+=makeArrow();
 
-  // Middle: filter selector + animated combination
-  h+=`<div class="step-col" style="gap:10px;min-width:310px">`;
-  h+=`<div class="section-lbl">Filter & Channel Combination</div>`;
+  // Middle: filter selector + per-channel kernel display + animation
+  h+=`<div class="step-col" style="gap:10px;min-width:340px">`;
+  h+=`<div class="section-lbl">Filter (2×2×4) — one kernel per channel</div>`;
 
   // Filter tabs
   h+=`<div class="conv2-filter-tabs">`;
@@ -955,30 +964,8 @@ function renderConv2(ex) {
   h+=`<button class="conv2-ftab"        id="c2tab1" onclick="c2SelectFilter(1)">Filter B — Bottom-heavy</button>`;
   h+=`</div>`;
 
-  // Filter weight grid + row-weight labels side by side
-  h+=`<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">`;
-  h+=`<div id="c2-filter-vis"></div>`;
-  h+=`<div id="c2-row-weights" style="font-size:0.65rem;line-height:2.2;color:var(--dim)"></div>`;
-  h+=`</div>`;
-
-  // Animated channel-by-channel accumulation
-  h+=`<div class="section-lbl" style="text-align:left;margin-top:2px">Combining all 4 channels:</div>`;
-  h+=`<div class="ch-anim-container" id="c2-anim">`;
-  for (let k=0;k<4;k++) {
-    h+=`<div class="ch-anim-row" id="c2-row${k}">`;
-    h+=`<span class="ch-lbl" id="c2-lbl${k}"></span>`;
-    h+=`<span class="ch-w-badge" id="c2-wb${k}"></span>`;
-    h+=`<span style="font-size:0.65rem;color:var(--dim);padding:0 3px">×</span>`;
-    h+=`<div class="ch-bar-wrap"><div class="ch-bar" id="c2-bar${k}"></div></div>`;
-    h+=`<span style="font-size:0.62rem;color:var(--dim);width:28px;text-align:right" id="c2-num${k}"></span>`;
-    h+=`</div>`;
-  }
-  h+=`<div class="ch-sum-line" id="c2-sumline">`;
-  h+=`<span style="font-size:0.62rem;color:var(--dim);width:80px;text-align:right">= sum at (r,c)</span>`;
-  h+=`<span class="ch-sum-val" id="c2-sumval">?</span>`;
-  h+=`<span style="font-size:0.6rem;color:var(--dim)">(one output cell)</span>`;
-  h+=`</div>`;
-  h+=`</div>`; // ch-anim-container
+  // Per-channel kernel slices display
+  h+=`<div id="c2-filter-vis" style="display:flex;flex-direction:column;gap:6px"></div>`;
 
   h+=`</div>`; // step-col middle
 
@@ -1002,7 +989,7 @@ function renderConv2(ex) {
 
   h+=`</div>`; // step-body
 
-  h+=`<div class="explanation"><strong>Asymmetric filters — the key to classification.</strong> Conv1 detected local features. Conv2 <em>combines them spatially</em>: sums contributions from all 4 channels, weighting rows differently.<br><br><strong>Filter A (top-heavy)</strong>: top row ×2, bottom row ×1 → fires when features cluster at the top of the pooled map.<br><strong>Filter B (bottom-heavy)</strong>: bottom row ×2, top row ×1 → fires when features cluster at the bottom of the pooled map — meaning the roof is at the <em>top</em> of the original image. ← <span class="highlight">this is the discrimination</span></div>`;
+  h+=`<div class="explanation"><strong>Per-channel convolution — the key to spatial reasoning.</strong> Each Conv2 filter has a separate 2×2 kernel for each of the 4 input channels. At each position, the dot product of each channel with its kernel is computed and summed across all channels.<br><br><strong>Filter A (top-heavy)</strong>: each channel slice = <code>[[2,2],[1,1]]</code> → fires strongly when features cluster in the <em>upper</em> rows of the pooled maps.<br><strong>Filter B (bottom-heavy)</strong>: each channel slice = <code>[[1,1],[2,2]]</code> → fires strongly when features cluster in the <em>lower</em> rows.<br><br><span class="highlight">This spatial asymmetry is what allows the network to distinguish roof position.</span></div>`;
 
   return h;
 }
@@ -1022,86 +1009,26 @@ function c2SelectFilter(fi) {
   document.getElementById('c2tab1').className='conv2-ftab'+(fi===1?' active':'');
 
   const filt=FILTERS2[fi];
+  const channelColors=['var(--accent)','var(--pink)','var(--blue)','var(--yellow)'];
+  const channelLabels=['ch1 (↘)','ch2 (↙)','ch3 (horiz)','ch4 (vert)'];
+  const channelNames=['channel 1 (↘)','channel 2 (↙)','channel 3 (horiz)','channel 4 (vert)'];
 
-  // update filter visualisation
+  // Show per-channel kernel slices
   const filterVis=document.getElementById('c2-filter-vis');
   if (filterVis) {
-    const fhCols=filt.weights[0].length, fhRows=filt.weights.length;
-    let fh=`<div class="grid" style="grid-template-columns:repeat(${fhCols},26px)">`;
-    for (let r=0;r<fhRows;r++) for (let c=0;c<fhCols;c++) {
-      const v=filt.weights[r][c];
-      const bg=v===2?'background:rgba(0,255,170,0.3);border-color:rgba(0,255,170,0.6);color:var(--accent)':
-               v===1?'background:rgba(0,255,170,0.1);border-color:rgba(0,255,170,0.25);color:rgba(0,255,170,0.7)':
-                     'background:rgba(255,255,255,0.02);color:var(--dim)';
-      fh+=`<div class="kcell" style="${bg}">${v}</div>`;
-    }
-    fh+=`</div>`;
+    let fh='';
+    filt.channelWeights.forEach((cw, ch) => {
+      fh+=`<div style="display:flex;align-items:center;gap:8px">`;
+      fh+=`<span style="font-size:0.55rem;color:${channelColors[ch]};width:70px;text-align:right;font-weight:700">${channelLabels[ch]}</span>`;
+      fh+=makeKernelGrid(cw, 22);
+      const rowW=cw.map(row=>row[0]);
+      fh+=`<span style="font-size:0.52rem;color:var(--dim)">top ×${rowW[0]}, bot ×${rowW[1]}</span>`;
+      fh+=`</div>`;
+    });
+    fh+=`<div style="font-size:0.55rem;color:var(--dim);margin-top:4px;font-style:italic">Shape: 2×2×4 — one 2×2 slice per input channel</div>`;
     filterVis.innerHTML=fh;
   }
 
-  // row weight labels
-  const rwEl=document.getElementById('c2-row-weights');
-  if (rwEl) {
-    const rowW=filt.weights.map(row=>row[0]);
-    const names=rowW.length===2?['top row','bottom row']:['top row','mid row','bot row'];
-    rwEl.innerHTML=names.map((n,i)=>`<div>${n}: <strong style="color:${rowW[i]===2?'var(--accent)':rowW[i]===1?'rgba(0,255,170,0.7)':'var(--dim)'}">${rowW[i]}×</strong></div>`).join('');
-  }
-
-  // Animate channel bars — use max value of pooled map as reference for bar width
-  // Show representative cell: max contribution across all channels at the peak position
-  const channelColors=['var(--accent)','var(--pink)','var(--blue)','var(--yellow)'];
-  const channelLabels=['channel 1 (↘)','channel 2 (↙)','channel 3 (horiz)','channel 4 (vert)'];
-  const rowW=filt.weights.map(row=>row[0]); // weight per row
-  // Compute a representative "contribution" for each channel at best matching position
-  // We use max of pooled map × row weight applied proportionally
-  const contributions=ex.pool1.map((pm,k)=>{
-    // weighted sum of rows for this channel at the densest column
-    const poolSize=pm.length;
-    let best=0;
-    for (let c=0;c<poolSize;c++) {
-      let s=0;
-      for (let r=0;r<Math.min(rowW.length,poolSize);r++) s+=pm[r][c]*rowW[r];
-      if (s>best) best=s;
-    }
-    return best;
-  });
-  const totalContrib=contributions.reduce((a,b)=>a+b,0);
-  const maxContrib=Math.max(...contributions,1);
-
-  // first hide all rows
-  for (let k=0;k<4;k++) {
-    const row=document.getElementById('c2-row'+k);
-    if (row) row.classList.remove('visible');
-    const bar=document.getElementById('c2-bar'+k);
-    if (bar) bar.style.width='0%';
-  }
-  const sumLine=document.getElementById('c2-sumline');
-  if (sumLine) sumLine.classList.remove('visible');
-
-  // animate rows one by one
-  for (let k=0;k<4;k++) {
-    setTimeout(()=>{
-      const row=document.getElementById('c2-row'+k);
-      const bar=document.getElementById('c2-bar'+k);
-      const lbl=document.getElementById('c2-lbl'+k);
-      const wb=document.getElementById('c2-wb'+k);
-      const num=document.getElementById('c2-num'+k);
-      if (!row) return;
-      const w=rowW[0]; // same weight for all cols in a row
-      if (lbl) lbl.textContent=channelLabels[k];
-      if (wb) { wb.textContent=w+'×'; wb.className=`ch-w-badge w${w}`; }
-      if (num) { num.textContent=Math.round(contributions[k]); num.style.color=channelColors[k]; }
-      if (bar) { bar.style.background=channelColors[k]; bar.style.width=(contributions[k]/maxContrib*100)+'%'; }
-      row.classList.add('visible');
-      if (k===3) {
-        setTimeout(()=>{
-          const sv=document.getElementById('c2-sumval');
-          if (sv) sv.textContent=Math.round(totalContrib);
-          if (sumLine) sumLine.classList.add('visible');
-        },400);
-      }
-    }, k*250);
-  }
 }
 
 // Hook into renderStep to trigger animation after DOM is painted
@@ -1128,9 +1055,9 @@ function renderConv2WithAnim(ex) {
       'STEP 1 / 6 — INPUT (12×12)',
       'STEP 2 / 6 — CONVOLUTION LAYER 1 — 4 filters → 4 feature maps',
       'STEP 3 / 6 — MAX POOLING LAYER 1',
-      'STEP 4 / 6 — CONVOLUTION LAYER 2 — asymmetric filters (same mechanism, new filters)',
-      'STEP 5 / 6 — POOL2 (2×2) + CONVOLUTION LAYER 3',
-      'STEP 6 / 6 — MAX POOL 3 + THRESHOLD → OUTPUT',
+      'STEP 4 / 6 — CONVOLUTION LAYER 2 — per-channel 2×2×4 filters (top-heavy / bottom-heavy)',
+      'STEP 5 / 6 — POOL2 (2×2) + CONV3 (2×2×2 multi-channel)',
+      'STEP 6 / 6 — GLOBAL MAX POOL + THRESHOLD → OUTPUT',
     ];
     document.getElementById('step-label').textContent=labels[stepIdx];
     document.getElementById('step-content').innerHTML=steps[stepIdx](ex);
@@ -1146,93 +1073,97 @@ function renderConv2WithAnim(ex) {
 })();
 
 // ============================================================
-//  STEP 4: CONV3 — 2×2 filter on Map B → 2×2 output
-//  Data stored in window globals before innerHTML is set
+//  STEP 4: POOL2 + CONV3 — pool both Conv2 maps, then multi-channel Conv3
 // ============================================================
 function renderConv3(ex) {
   const conv2Maps = getConv2Maps(ex);
-  const mapB = conv2Maps[1];
-  const mapBPool2 = maxPool2x2Stride2(mapB);
-  const conv3Map = convolveSingle(mapBPool2, CONV3_FILTER);
-  const mapBSize = mapB.length;
-  const pool2Size = mapBPool2.length;
+  const pool2Maps = conv2Maps.map(maxPool2x2Stride2);
+  const conv3Map = convolveMultiCh(pool2Maps, CONV3_FILTER);
+  const c2Size = conv2Maps[0].length;
+  const pool2Size = pool2Maps[0].length;
   const conv3Size = conv3Map.length;
   const conv3Scalar = conv3Map[0][0];
-  window._c3_input = mapBPool2;
-  window._c3_inputSize = pool2Size;
+  window._c3_pool2Maps = pool2Maps;
+  window._c3_pool2Size = pool2Size;
+
+  const channelColors = ['var(--accent)', 'var(--pink)'];
+  const mapNames = ['Map A (top-heavy)', 'Map B (bottom-heavy)'];
 
   let h = ``;
-  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Inserted Pooling 2×2 between Conv2 and Conv3</strong> — first we max-pool Map B (stride 2), then apply the Conv3 2×2 filter. <span class="repeat-badge">pool2 → conv3</span></div></div>`;
+  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Pool2 + Conv3</strong> — first we max-pool <strong>both</strong> Conv2 output maps (2×2, stride 2), then Conv3 applies a <strong>2×2×2</strong> filter (one 2×2 slice per channel) across both pooled maps. <span class="repeat-badge">pool2 → conv3</span></div></div>`;
 
   h += `<div class="step-body" style="flex-wrap:wrap;gap:16px;align-items:flex-start">`;
 
-  // Conv2 Map B
+  // Left: both Conv2 maps
   h += `<div class="step-col">`;
-  h += `<div class="section-lbl">Conv2 Map B (${mapBSize}×${mapBSize})</div>`;
-  h += makeGrid(mapB, 'normal');
-  h += `<div class="size-badge">from Conv2 (bottom-heavy)</div>`;
-  h += `</div>`;
+  h += `<div class="section-lbl">Conv2 Output (${c2Size}×${c2Size})</div>`;
+  h += `<div style="display:flex;flex-direction:column;gap:8px">`;
+  conv2Maps.forEach((cm, i) => {
+    h += `<div class="fm-box fm${i+1}" style="padding:5px 7px">`;
+    h += `<div class="filter-name f${i+1}" style="font-size:0.52rem;margin-bottom:3px">${mapNames[i]}</div>`;
+    h += makeGrid(cm, 'small', Math.max(...cm.flat(), 1));
+    h += `</div>`;
+  });
+  h += `<div class="size-badge">2 × ${c2Size}×${c2Size}</div>`;
+  h += `</div></div>`;
 
   h += makeArrow();
 
-  // Pool2 result
+  // Pool2: both pooled maps
   h += `<div class="step-col">`;
   h += `<div class="section-lbl">Pool2 (2×2, stride 2)</div>`;
-  h += `<div id="c3-mapb" class="grid" style="grid-template-columns:repeat(${pool2Size},var(--cell));gap:2px">`;
-  const maxP2 = Math.max(...mapBPool2.flat(),1);
-  for (let r = 0; r < pool2Size; r++) for (let c = 0; c < pool2Size; c++) {
-    const v = mapBPool2[r][c], cls = cellClass(v, maxP2);
-    h += `<div class="cell ${cls}" id="c3-src-${r}-${c}">${v}</div>`;
-  }
-  h += `</div>`;
-  h += `<div class="size-badge" style="margin-top:4px">${mapBSize}×${mapBSize} → ${pool2Size}×${pool2Size}</div>`;
-  h += `</div>`;
+  h += `<div style="display:flex;flex-direction:column;gap:8px">`;
+  pool2Maps.forEach((pm, i) => {
+    const maxP = Math.max(...pm.flat(), 1);
+    h += `<div class="fm-box fm${i+1}" style="padding:5px 7px">`;
+    h += `<div class="filter-name f${i+1}" style="font-size:0.52rem;margin-bottom:3px">Pool ${mapNames[i]}</div>`;
+    h += `<div class="grid" style="grid-template-columns:repeat(${pool2Size},var(--cell));gap:2px">`;
+    for (let r = 0; r < pool2Size; r++) for (let c = 0; c < pool2Size; c++) {
+      const v = pm[r][c], cls = cellClass(v, maxP);
+      h += `<div class="cell ${cls}" id="c3-src-${i}-${r}-${c}">${v}</div>`;
+    }
+    h += `</div>`;
+    h += `</div>`;
+  });
+  h += `<div class="size-badge">${c2Size}×${c2Size} → ${pool2Size}×${pool2Size} each</div>`;
+  h += `</div></div>`;
 
   h += makeArrow();
 
-  // Conv3 filter
+  // Conv3 filter (2×2×2) — show per-channel slices
   h += `<div class="step-col" style="gap:8px">`;
-  h += `<div class="section-lbl">Conv3 Filter (2×2)</div>`;
-  h += `<div class="grid" style="grid-template-columns:repeat(2,26px);gap:2px">`;
-  CONV3_FILTER.forEach(row => row.forEach(v => {
-    const bg = v === 2 ? 'background:rgba(0,255,170,0.3);border-color:rgba(0,255,170,0.6);color:var(--accent)'
-             : v === 1 ? 'background:rgba(0,255,170,0.1);border-color:rgba(0,255,170,0.25);color:rgba(0,255,170,0.7)'
-             : 'background:rgba(255,255,255,0.02);color:var(--dim)';
-    h += `<div class="kcell" style="${bg}">${v}</div>`;
-  }));
+  h += `<div class="section-lbl">Conv3 Filter (2×2×2)</div>`;
+  h += `<div style="display:flex;flex-direction:column;gap:6px">`;
+  CONV3_FILTER.forEach((cw, ch) => {
+    h += `<div style="display:flex;align-items:center;gap:8px">`;
+    h += `<span style="font-size:0.55rem;color:${channelColors[ch]};width:70px;text-align:right;font-weight:700">ch${ch+1}</span>`;
+    h += makeKernelGrid(cw, 22);
+    h += `</div>`;
+  });
   h += `</div>`;
-  h += `<div style="font-size:0.6rem;color:var(--dim);line-height:1.5;max-width:130px">Out = M[0][0] + 2·M[1][0]</div>`;
+  h += `<div style="font-size:0.55rem;color:var(--dim);margin-top:4px;font-style:italic">Shape: 2×2×2 — one slice per Pool2 channel</div>`;
   h += `</div>`;
 
   h += makeArrow();
 
-  // Conv3 output 1x1
+  // Conv3 output
   h += `<div class="step-col">`;
   h += `<div class="section-lbl">Conv3 Output (${conv3Size}×${conv3Size})</div>`;
   h += `<div class="grid" style="grid-template-columns:repeat(${conv3Size},var(--cell));gap:2px">`;
-  h += `<div class="cell c5 max-cell" onmouseenter="c3HoverOut(0,0)" onmouseleave="c3ClearHover()">${conv3Scalar}</div>`;
+  const maxC3 = Math.max(...conv3Map.flat(), 1);
+  for (let r = 0; r < conv3Size; r++) for (let c = 0; c < conv3Size; c++) {
+    const v = conv3Map[r][c], cls = cellClass(v, maxC3);
+    const isMax = v === Math.max(...conv3Map.flat()) ? ' max-cell' : '';
+    h += `<div class="cell ${cls}${isMax}">${v}</div>`;
+  }
   h += `</div>`;
-  h += `<div class="size-badge" style="margin-top:4px">single scalar (already 1×1)</div>`;
+  h += `<div class="size-badge" style="margin-top:4px">${conv3Size}×${conv3Size} → scalar via Pool3</div>`;
   h += `</div>`;
 
   h += `</div>`;
 
-  h += `<div class="explanation"><strong>Now the dimensions are consistent.</strong> After Conv2 (4×4), the added <strong>Pool2 2×2</strong> reduces Map B to <strong>2×2</strong>. Then Conv3 can safely apply its 2×2 filter and produce a <strong>1×1 scalar</strong> for the final threshold comparison.</div>`;
+  h += `<div class="explanation"><strong>Multi-channel Conv3 — combining spatial patterns.</strong> Pool2 reduces each Conv2 map from ${c2Size}×${c2Size} to ${pool2Size}×${pool2Size}. Then Conv3 applies a <strong>2×2×2 filter</strong> (one 2×2 kernel per channel) across both pooled maps, producing a ${conv3Size}×${conv3Size} output.<br><br>The Conv3 filter has been learned to detect the specific spatial relationship between the top-heavy and bottom-heavy activation maps that characterizes a house with the roof at the top.</div>`;
   return h;
-}
-
-function c3HoverOut(or, oc) {
-  // Highlight the 2×2 source window in Map B: rows [or, or+1], cols [oc, oc+1]
-  const sz = window._c3_inputSize || 0; for (let r = 0; r < sz; r++) for (let c = 0; c < sz; c++) {
-    const el = document.getElementById(`c3-src-${r}-${c}`);
-    if (el) el.classList.toggle('src-highlight', r >= or && r <= or+1 && c >= oc && c <= oc+1);
-  }
-}
-function c3ClearHover() {
-  const sz = window._c3_inputSize || 0; for (let r = 0; r < sz; r++) for (let c = 0; c < sz; c++) {
-    const el = document.getElementById(`c3-src-${r}-${c}`);
-    if (el) el.classList.remove('src-highlight');
-  }
 }
 
 // ============================================================
@@ -1247,7 +1178,7 @@ function renderThreshold(ex) {
   const conv3Size = conv3Map.length;
 
   let h = ``;
-  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Same mechanism as Pool1 &amp; Pool2</strong> — take the maximum value from the window. At this point Conv3 is already 1×1, so pooling is trivial (same value). Then compare to a fixed threshold. <span class="repeat-badge">pool3 ≡ pool1 ≡ pool2</span></div></div>`;
+  h += `<div class="repeat-banner"><span style="font-size:1rem">🔁</span><div><strong>Global Max Pooling + Threshold</strong> — take the maximum value from the Conv3 output map, then compare to a fixed threshold to produce the final binary classification. <span class="repeat-badge">pool3 → threshold</span></div></div>`;
 
   h += `<div class="step-body" style="flex-wrap:wrap;gap:20px;align-items:flex-start;justify-content:center">`;
 
@@ -1335,9 +1266,9 @@ function renderThreshold(ex) {
   h += `</div>`; // step-body
 
   h += `<div class="explanation"><strong>Pool3 → scalar ${scalar}, threshold ${CONV3_THRESHOLD}.</strong><br><br>`;
-  h += `The 2×2 map is collapsed to its maximum, giving a single number. That number is compared to the fixed threshold ${CONV3_THRESHOLD}.<br><br>`;
+  h += `The Conv3 output (${conv3Size}×${conv3Size}) is collapsed to its maximum, giving a single number. That number is compared to the fixed threshold ${CONV3_THRESHOLD}.<br><br>`;
   h += `<strong>Why only the normal house passes?</strong><br>`;
-  h += `Conv3's filter (left column, bottom row ×2) targets the bottom-left of Map B. Map B is the bottom-heavy conv2 output, which captures diagonal features from the <em>top</em> of the original image. Only when the triangular roof sits at the top (normal house) does this cell reach a high enough value to push the scalar above the threshold.</div>`;
+  h += `Conv2's top-heavy filter (A) fires strongly when features cluster in the <em>upper</em> pooled rows, and the bottom-heavy filter (B) fires when they cluster in the <em>lower</em> rows. Conv3 then combines both Pool2 maps: it has learned a spatial pattern that specifically matches the case where diagonal features (the roof) are at the top. Only the normal house produces a high enough scalar to exceed the threshold.</div>`;
   return h;
 }
 
@@ -1381,14 +1312,15 @@ function renderRecap() {
   h += `</div>`;
 
   // Pipeline flow — 8 stages with explicit POOL2
-  const maxMapB = Math.max(...conv2Cur[1].flat(), 1);
+  const pool2Cur = getPool2Maps(ex);
+  const p2Sz = pool2Cur[0].length;
   h += `<div class="pipeline-flow">`;
   const stages = [
     { title: 'INPUT',   size: `${inR}×${inC}`,           color: 'var(--accent)',                               thumb: makeInputThumb(ex.input) },
     { title: 'CONV1',   size: `4×${fmSz}×${fmSz}`,      color: 'var(--pink)',                                 thumb: makeGridThumb(ex.conv1[0], fmSz, 'green') },
     { title: 'POOL1',   size: `4×${poolSz}×${poolSz}`,   color: 'var(--blue)',                                 thumb: makeGridThumb(ex.pool1[0], poolSz, 'blue') },
     { title: 'CONV2',   size: `2×${c2Sz}×${c2Sz}`,      color: 'var(--pink)',                                 thumb: makeGridThumb(conv2Cur[0], c2Sz, 'pink') },
-    { title: 'POOL2',   size: `Map B (${c2Sz}×${c2Sz})`,              color: 'var(--blue)',                                 thumb: makeGridThumb(conv2Cur[1], c2Sz, 'blue') },
+    { title: 'POOL2',   size: `2×${p2Sz}×${p2Sz}`,      color: 'var(--blue)',                                 thumb: makeGridThumb(pool2Cur[0], p2Sz, 'blue') },
     { title: 'CONV3',   size: `1 filter → ${c3Sz}×${c3Sz}`,           color: 'var(--yellow)',                               thumb: makeConv3Thumb(ex) },
     { title: 'POOL3',   size: `max → ${scalarCur}`, color: 'var(--yellow)',                               thumb: makeScalarThumb(scalarCur) },
     { title: 'OUTPUT',  size: `${scalarCur} > ${CONV3_THRESHOLD}?`, color: isDetected ? 'var(--accent)' : 'var(--red)', thumb: makeOutputThumb(ex.output) },
@@ -1408,9 +1340,9 @@ function renderRecap() {
   h += `</div>`;
 
   h += `<div class="recap-summary"><h3>What did the CNN learn?</h3><p>`;
-  h += `<strong>Cycle 1 — Conv1 + Pool1</strong>: Conv1 slides 4 filters (↘ diagonal, ↙ diagonal, horizontal, vertical) over the 12×12 input → 4 feature maps 10×10. Pool1 (2×2 max) halves them to 4×5×5.<br>`;
-  h += `<strong>Cycle 2 — Conv2 + Pool2</strong>: Conv2 combines all 4 channels with 2 asymmetric 2×2 filters → 2 maps 4×4. Pool2 selects Map B (the bottom-heavy map that discriminates roof position).<br>`;
-  h += `<strong>Cycle 3 — Conv3 + Pool3 + Threshold</strong>: Conv3 applies a 2×2 filter to Map B → ${c3Sz}×${c3Sz} map. Pool3 (global max) → scalar ${scalarCur}. If scalar > ${CONV3_THRESHOLD} → <span style="color:${isDetected?'var(--accent)':'var(--red)'}">${isDetected?'house detected ✓':'not detected ✗'}</span>.`;
+  h += `<strong>Cycle 1 — Conv1 + Pool1</strong>: Conv1 slides 4 filters (3×3: ↘ diagonal, ↙ diagonal, horizontal, vertical) over the ${inR}×${inC} input → 4 feature maps ${fmSz}×${fmSz}. Pool1 (2×2 max) halves them to 4×${poolSz}×${poolSz}.<br>`;
+  h += `<strong>Cycle 2 — Conv2 + Pool2</strong>: Conv2 applies 2 per-channel filters (2×2×4: top-heavy + bottom-heavy) across all 4 Pool1 maps → 2 maps ${c2Sz}×${c2Sz}. Pool2 (2×2 max) reduces both to 2×${p2Sz}×${p2Sz}.<br>`;
+  h += `<strong>Cycle 3 — Conv3 + Pool3 + Threshold</strong>: Conv3 applies a 2×2×2 filter across both Pool2 maps → ${c3Sz}×${c3Sz} map. Pool3 (global max) → scalar ${scalarCur}. If scalar > ${CONV3_THRESHOLD} → <span style="color:${isDetected?'var(--accent)':'var(--red)'}">${isDetected?'house detected ✓':'not detected ✗'}</span>.`;
   h += `</p></div>`;
 
   h += `<div style="overflow-x:auto;margin-bottom:18px"><table style="font-size:0.75rem;border-collapse:collapse;width:100%">`;
@@ -1539,3 +1471,4 @@ loadExample(0);
 </script>
 </body>
 </html>
+
