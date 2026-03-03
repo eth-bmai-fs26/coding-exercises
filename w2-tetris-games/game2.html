@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reverse Convolution Puzzle — Find the Origins</title>
+    <title>Binary Feature Maps — Find the Origins</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap"
           rel="stylesheet">
     <style>
@@ -24,6 +24,42 @@
             --fmap-cell: clamp(18px, 3vh, 28px);
             --success: #4aff7a;
             --wrong: #ff4a4a;
+            --cell-hover: #1a1a2a;
+            --target-filled: #3a3a50;
+            --border-ring-bg: rgba(255,255,255,0.015);
+            --mini-cell-bg: rgba(255,255,255,0.03);
+            --mini-cell-border: rgba(255,255,255,0.04);
+            --slot-bg: rgba(255,255,255,0.02);
+            --slot-hover-bg: rgba(255,255,255,0.04);
+            --fm-cell-bg: rgba(255,255,255,0.02);
+            --fm-cell-border: rgba(255,255,255,0.04);
+            --fm-cell-text: rgba(255,255,255,0.3);
+        }
+
+        body.light-mode {
+            --bg: #f0f0f5;
+            --surface: #ffffff;
+            --border: #c8c8dc;
+            --text: #1a1a2a;
+            --dim: #7070a0;
+            --accent: #009fc0;
+            --piece0: #e85530;
+            --piece1: #009fc0;
+            --piece2: #c0a000;
+            --piece3: #8020d0;
+            --grid-line: #dcdcec;
+            --success: #1ab84a;
+            --wrong: #d03030;
+            --cell-hover: #e0e0ee;
+            --target-filled: #b0b0cc;
+            --border-ring-bg: rgba(0,0,0,0.04);
+            --mini-cell-bg: rgba(0,0,0,0.06);
+            --mini-cell-border: rgba(0,0,0,0.14);
+            --slot-bg: rgba(0,0,0,0.03);
+            --slot-hover-bg: rgba(0,0,0,0.06);
+            --fm-cell-bg: rgba(0,0,0,0.04);
+            --fm-cell-border: rgba(0,0,0,0.1);
+            --fm-cell-text: rgba(0,0,0,0.35);
         }
 
         * {
@@ -38,7 +74,9 @@
             font-family: 'Outfit', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
+            visibility: hidden;
         }
+        body.ready { visibility: visible; }
 
         body::before {
             content: '';
@@ -126,13 +164,13 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--slot-bg);
             width: calc(4 * var(--mini-cell) + 3 * 1px + 16px + 4px);
             height: calc(4 * var(--mini-cell) + 3 * 1px + 16px + 4px);
         }
 
         .piece-slot:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: var(--slot-hover-bg);
         }
 
         .piece-slot.selected {
@@ -173,8 +211,8 @@
             width: var(--mini-cell);
             height: var(--mini-cell);
             border-radius: 2px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: var(--mini-cell-bg);
+            border: 1px solid var(--mini-cell-border);
         }
 
         .piece-mini-grid .mini-cell.filled {
@@ -204,26 +242,26 @@
             height: var(--cell-size);
             background: var(--bg);
             cursor: pointer;
-            transition: background 0.15s, box-shadow 0.15s;
+            transition: box-shadow 0.15s;
             position: relative;
         }
 
         .board-grid .cell.border-ring {
-            background: rgba(255, 255, 255, 0.015);
+            background: var(--border-ring-bg);
         }
 
         .board-grid .cell:hover {
-            background: #1a1a2a;
+            background: var(--cell-hover);
         }
 
         .board-grid .cell.filled {
-            background: #3a3a50;
-            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.05);
+            background: var(--target-filled);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
         }
 
         .board-grid .cell.bbox-hint {
-            background: rgba(255, 255, 255, 0.02);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            background: var(--slot-bg);
+            box-shadow: inset 0 0 0 1px var(--mini-cell-border);
         }
 
         .board-grid .cell.preview {
@@ -403,16 +441,43 @@
             width: var(--fmap-cell);
             height: var(--fmap-cell);
             border-radius: 2px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: var(--fm-cell-bg);
+            border: 1px solid var(--fm-cell-border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Space Mono', monospace;
             font-size: 0.55rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--fm-cell-text);
         }
 
+
+        /* === THEME TOGGLE === */
+        #themeToggle {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--dim);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s;
+            text-transform: none;
+            letter-spacing: 0;
+            font-family: inherit;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        #themeToggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
 
         @media (max-width: 900px) {
             .game-layout {
@@ -434,7 +499,7 @@
 <body>
 <div class="app">
     <header>
-        <h1>⬛ Reverse Convolution</h1>
+        <h1>⬛ Binary Feature Maps</h1>
         <p>Find the top-left corner of each piece's 4×4 grid on the board</p>
     </header>
 
@@ -459,6 +524,7 @@
         <div class="fmap-header">
             <h2>Feature Map</h2>
             <div class="fmap-depth-label" id="fmapDepthLabel">Depth: 0 / 4</div>
+            <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
         </div>
         <div class="fmap-stack" id="fmapStack"></div>
     </div>
@@ -915,6 +981,12 @@
     }
 
     newGame();
+    document.body.classList.add('ready');
+
+    function toggleTheme() {
+        const isLight = document.body.classList.toggle('light-mode');
+        document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+    }
 </script>
 </body>
 </html>

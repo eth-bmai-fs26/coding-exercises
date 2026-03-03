@@ -20,6 +20,35 @@
     --grid-line: #1e1e2e;
     --cell-size: 52px;
     --success: #4aff7a;
+    --cell-hover: #1a1a2a;
+    --target-filled: #3a3a50;
+    --overlay-bg: rgba(13, 13, 18, 0.92);
+    --mini-cell-bg: rgba(255,255,255,0.03);
+    --mini-cell-border: rgba(255,255,255,0.04);
+    --slot-bg: rgba(255,255,255,0.02);
+    --slot-hover-bg: rgba(255,255,255,0.04);
+  }
+
+  body.light-mode {
+    --bg: #f0f0f5;
+    --surface: #ffffff;
+    --border: #c8c8dc;
+    --text: #1a1a2a;
+    --dim: #7070a0;
+    --accent: #e85530;
+    --piece0: #e85530;
+    --piece1: #009fc0;
+    --piece2: #c0a000;
+    --piece3: #8020d0;
+    --grid-line: #dcdcec;
+    --success: #1ab84a;
+    --cell-hover: #e0e0ee;
+    --target-filled: #b0b0cc;
+    --overlay-bg: rgba(240, 240, 245, 0.92);
+    --mini-cell-bg: rgba(0,0,0,0.06);
+    --mini-cell-border: rgba(0,0,0,0.14);
+    --slot-bg: rgba(0,0,0,0.03);
+    --slot-hover-bg: rgba(0,0,0,0.06);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,7 +59,9 @@
     font-family: 'Outfit', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    visibility: hidden;
   }
+  body.ready { visibility: visible; }
 
   /* Noise overlay */
   body::before {
@@ -45,7 +76,7 @@
   .app {
     max-width: 100%;
     margin: 0 auto;
-    padding: 20px 30px;
+    padding: 20px 30px 70px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -115,12 +146,11 @@
     width: 38px;
     height: 38px;
     background: var(--bg);
-    transition: background 0.2s;
   }
 
   .target-grid .cell.filled {
-    background: #3a3a50;
-    box-shadow: inset 0 0 8px rgba(255,255,255,0.05);
+    background: var(--target-filled);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
   }
 
   /* === MAIN BOARD === */
@@ -145,12 +175,12 @@
     height: var(--cell-size);
     background: var(--bg);
     cursor: pointer;
-    transition: background 0.15s, box-shadow 0.15s;
+    transition: box-shadow 0.15s;
     position: relative;
   }
 
   .board-grid .cell:hover {
-    background: #1a1a2a;
+    background: var(--cell-hover);
   }
 
   .board-grid .cell.preview {
@@ -214,13 +244,13 @@
     border: 2px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
-    background: rgba(255,255,255,0.02);
+    background: var(--slot-bg);
     width: calc(4 * 26px + 3 * 1px + 20px + 4px);
     height: calc(4 * 26px + 3 * 1px + 20px + 4px);
   }
 
   .piece-slot:hover {
-    background: rgba(255,255,255,0.04);
+    background: var(--slot-hover-bg);
   }
 
   .piece-slot.selected {
@@ -242,8 +272,8 @@
     width: 26px;
     height: 26px;
     border-radius: 2px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.04);
+    background: var(--mini-cell-bg);
+    border: 1px solid var(--mini-cell-border);
   }
 
   .piece-mini-grid .mini-cell.filled {
@@ -297,7 +327,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(13, 13, 18, 0.92);
+    background: var(--overlay-bg);
     z-index: 50;
     align-items: center;
     justify-content: center;
@@ -327,23 +357,68 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* === INSTRUCTIONS === */
-  .instructions {
-    text-align: center;
-    margin-top: auto;
-    padding: 20px 0;
-    color: var(--dim);
-    font-size: 0.82rem;
-    line-height: 1.7;
+  /* === BOTTOM BAR === */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 12px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    z-index: 50;
     font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
   }
 
-  .instructions kbd {
-    background: var(--surface);
+  .rule-text {
+    color: var(--dim);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .rule-text kbd {
+    background: var(--bg);
     border: 1px solid var(--border);
     padding: 2px 7px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+  }
+
+
+  /* === THEME TOGGLE === */
+  #themeToggle {
+    position: fixed;
+    bottom: 68px;
+    right: 20px;
+    z-index: 200;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--dim);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, color 0.15s;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: inherit;
+  }
+
+  #themeToggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: none;
+    transform: none;
   }
 
   /* responsive */
@@ -388,10 +463,15 @@
     </div>
   </div>
 
-  <div class="instructions">
-    <kbd>Click</kbd> a piece to select · <kbd>Click</kbd> the board to place
+</div>
+
+<div class="bottom-bar">
+  <div class="rule-text">
+    <kbd>Click</kbd> a piece to select &nbsp;·&nbsp; <kbd>Click</kbd> the board to place
   </div>
 </div>
+
+<button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
 
 <!-- Success Overlay -->
 <div class="success-overlay" id="successOverlay">
@@ -746,6 +826,14 @@ function newGame() {
   renderPieces();
 }
 
+// ============================
+// THEME TOGGLE
+// ============================
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
 });
@@ -754,6 +842,7 @@ document.addEventListener('keydown', (e) => {
 // INIT
 // ============================
 newGame();
+document.body.classList.add('ready');
 </script>
 </body>
 </html>

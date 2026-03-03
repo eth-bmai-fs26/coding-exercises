@@ -19,7 +19,32 @@
             --cool: #4a9eff;
             --purple: #a86eff;
             --cell: 44px;
+            --cell-bg: rgba(255,255,255,0.02);
+            --cell-border: rgba(255,255,255,0.04);
+            --cell-text: rgba(255,255,255,0.3);
+            --kcell-bg: rgba(255,255,255,0.03);
+            --kcell-border: rgba(255,255,255,0.05);
         }
+
+        body.light-mode {
+            --bg: #f0f0f5;
+            --surface: #ffffff;
+            --border: #c8c8dc;
+            --text: #1a1a2a;
+            --dim: #7070a0;
+            --accent: #00a872;
+            --hot: #cc2020;
+            --warm: #a06000;
+            --cool: #1a6ad0;
+            --purple: #6030b0;
+            --cell-bg: rgba(0,0,0,0.04);
+            --cell-border: rgba(0,0,0,0.1);
+            --cell-text: rgba(0,0,0,0.3);
+            --kcell-bg: rgba(0,0,0,0.04);
+            --kcell-border: rgba(0,0,0,0.1);
+        }
+
+        body.no-transition * { transition: none !important; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -42,7 +67,7 @@
 
         .app {
             max-width: 100%;
-            padding: 24px 30px;
+            padding: 24px 30px 70px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -132,6 +157,7 @@
             color: var(--dim);
             margin-bottom: 10px;
             transition: color 0.3s;
+            cursor: default;
         }
         .stage.active .stage-label { color: var(--accent); }
 
@@ -142,6 +168,7 @@
             padding: 0 16px;
             opacity: 0.15;
             transition: opacity 0.5s ease;
+            cursor: default;
         }
         .arrow.active { opacity: 1; }
         .arrow svg { width: 48px; height: 24px; }
@@ -168,15 +195,16 @@
             width: var(--cell);
             height: var(--cell);
             border-radius: 3px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: var(--cell-bg);
+            border: 1px solid var(--cell-border);
             transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--cell-text);
+            cursor: default;
         }
 
         .grid .cell.on {
@@ -290,6 +318,7 @@
             border-radius: 8px;
             padding: 8px;
             text-align: center;
+            cursor: default;
         }
         .kernel-card .kernel-title {
             font-family: 'JetBrains Mono', monospace;
@@ -304,19 +333,26 @@
             width: 22px;
             height: 22px;
             border-radius: 2px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--kcell-bg);
+            border: 1px solid var(--kcell-border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.55rem;
             color: var(--dim);
+            cursor: default;
         }
-        .kernel-grid .kcell.k-on {
-            background: rgba(0, 228, 160, 0.15);
-            border-color: rgba(0, 228, 160, 0.3);
-            color: var(--accent);
+        .kernel-grid .kcell.k-on-hot {
+            background: rgba(255, 92, 92, 0.15);
+            border-color: rgba(255, 92, 92, 0.3);
+            color: var(--hot);
+            font-weight: 700;
+        }
+        .kernel-grid .kcell.k-on-cool {
+            background: rgba(74, 158, 255, 0.15);
+            border-color: rgba(74, 158, 255, 0.3);
+            color: var(--cool);
             font-weight: 700;
         }
 
@@ -349,6 +385,7 @@
             padding: 4px 5px;
             border-radius: 4px;
             transition: all 0.3s ease;
+            cursor: default;
         }
 
         .dense-cell .dc-val {
@@ -365,17 +402,9 @@
             opacity: 0.6;
         }
 
-        .dense-cell.active-cell .dc-val {
-            color: var(--accent);
-        }
-
-        .dense-cell.hot-cell .dc-val {
-            color: var(--hot);
-        }
-
-        .dense-cell.cool-cell .dc-val {
-            color: var(--cool);
-        }
+        .dense-cell.active-cell .dc-val { color: var(--accent); }
+        .dense-cell.hot-cell .dc-val { color: var(--hot); }
+        .dense-cell.cool-cell .dc-val { color: var(--cool); }
 
         .dense-cell.perfect {
             background: rgba(0, 228, 160, 0.12);
@@ -384,9 +413,7 @@
             animation: perfectPulse 1.2s ease infinite;
         }
 
-        .dense-cell.perfect .dc-val {
-            color: var(--accent) !important;
-        }
+        .dense-cell.perfect .dc-val { color: var(--accent) !important; }
 
         @keyframes perfectPulse {
             0%, 100% { box-shadow: 0 0 14px rgba(0, 228, 160, 0.35); }
@@ -401,11 +428,7 @@
             line-height: 1.6;
         }
 
-        .dense-equation .eq-sum {
-            font-weight: 700;
-            font-size: 0.8rem;
-        }
-
+        .dense-equation .eq-sum { font-weight: 700; font-size: 0.8rem; }
         .dense-equation .eq-sum.pass { color: var(--accent); }
         .dense-equation .eq-sum.fail { color: var(--hot); }
 
@@ -428,6 +451,7 @@
             border: 2px solid var(--border);
             background: var(--surface);
             transition: all 0.5s ease;
+            cursor: default;
         }
         .result-value.is-one {
             color: var(--accent);
@@ -440,13 +464,6 @@
             border-color: var(--hot);
             box-shadow: 0 0 30px rgba(255, 92, 92, 0.2);
             background: rgba(255, 92, 92, 0.06);
-        }
-        .result-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
         .result-reason {
             font-size: 0.72rem;
@@ -469,15 +486,8 @@
             background: var(--border);
             transition: all 0.3s;
         }
-        .step-dot.done {
-            background: var(--accent);
-            box-shadow: 0 0 8px rgba(0, 228, 160, 0.4);
-        }
-        .step-dot.current {
-            background: var(--accent);
-            transform: scale(1.3);
-            box-shadow: 0 0 12px rgba(0, 228, 160, 0.5);
-        }
+        .step-dot.done { background: var(--accent); box-shadow: 0 0 8px rgba(0, 228, 160, 0.4); }
+        .step-dot.current { background: var(--accent); transform: scale(1.3); box-shadow: 0 0 12px rgba(0, 228, 160, 0.5); }
         .step-text {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
@@ -486,15 +496,72 @@
             transition: color 0.3s;
         }
 
-        .footer {
-            margin-top: auto;
-            padding: 16px 0;
-            text-align: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--dim);
-            line-height: 1.6;
+        /* === BOTTOM BAR === */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            padding: 12px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            z-index: 50;
         }
+
+        .rule-text, .explain-content {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.6;
+            text-align: center;
+            transition: opacity 0.15s ease;
+        }
+
+        .rule-text {
+            color: var(--dim);
+            opacity: 1;
+        }
+        .rule-text.hidden { opacity: 0; pointer-events: none; }
+
+        .explain-content {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .explain-content.visible { opacity: 1; }
+        .explain-title { color: var(--accent); font-weight: 700; white-space: nowrap; }
+        .explain-sep { color: var(--border); }
+        .explain-text { color: var(--dim); }
+
+        /* === THEME TOGGLE === */
+        #themeToggle {
+            position: fixed;
+            bottom: 68px;
+            right: 20px;
+            z-index: 200;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--dim);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        #themeToggle:hover { border-color: var(--accent); color: var(--accent); }
 
         @media (max-width: 1100px) {
             :root { --cell: 34px; }
@@ -521,7 +588,7 @@
 <div class="app">
     <header>
         <h1>CNN Pattern Classifier</h1>
-        <p>Watch convolution layers detect a Cross (+) or H in real time</p>
+        <p>Watch filter layers detect a Cross (+) or H in real time</p>
     </header>
 
     <div class="controls">
@@ -544,7 +611,7 @@
 
     <div class="pipeline">
         <div class="stage" id="stageInput">
-            <div class="stage-label">Input</div>
+            <div class="stage-label" data-explain="input">Input</div>
             <div class="grid-container">
                 <div class="grid" id="inputGrid" style="grid-template-columns: repeat(6, var(--cell));"></div>
             </div>
@@ -555,16 +622,16 @@
         </div>
 
         <div class="stage" id="stageKernels">
-            <div class="stage-label">Convolution</div>
+            <div class="stage-label" data-explain="filters">Filters</div>
             <div class="kernels-row" id="kernelsRow"></div>
         </div>
 
-        <div class="arrow" id="arrow1">
+        <div class="arrow" id="arrow1" >
             <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
         <div class="stage" id="stageFeatures">
-            <div class="stage-label">Feature Maps</div>
+            <div class="stage-label" data-explain="features">Feature Maps</div>
             <div class="fmap-stack">
                 <div class="grid-container fmap-back">
                     <div class="fmap-tag" style="color:var(--cool);">Right T</div>
@@ -578,12 +645,12 @@
             </div>
         </div>
 
-        <div class="arrow" id="arrow2">
+        <div class="arrow" id="arrow2" >
             <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
         <div class="stage" id="stagePooled">
-            <div class="stage-label">Max Pooling</div>
+            <div class="stage-label" data-explain="pooling">Max Pooling</div>
             <div class="fmap-stack fmap-stack-sm">
                 <div class="grid-container fmap-back">
                     <div class="fmap-tag" style="color:var(--cool);">Right T</div>
@@ -597,25 +664,24 @@
             </div>
         </div>
 
-        <div class="arrow" id="arrow3">
+        <div class="arrow" id="arrow3" >
             <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
-        <!-- Dense Layer stage -->
         <div class="stage" id="stageDense">
-            <div class="stage-label">Dense Layer</div>
+            <div class="stage-label" data-explain="dense">Dense Layer</div>
             <div class="dense-box" id="denseBox">
                 <div class="dense-row" id="denseRow"></div>
                 <div class="dense-equation" id="denseEquation"></div>
             </div>
         </div>
 
-        <div class="arrow" id="arrow4">
+        <div class="arrow" id="arrow4" >
             <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
         </div>
 
         <div class="stage" id="stageResult">
-            <div class="stage-label">Output</div>
+            <div class="stage-label" data-explain="output">Output</div>
             <div class="result-box">
                 <div class="result-value" id="resultValue">?</div>
                 <div class="result-reason" id="resultReason"></div>
@@ -623,15 +689,64 @@
         </div>
     </div>
 
-    <div class="footer">
+</div>
+
+<div class="bottom-bar">
+    <div class="rule-text" id="ruleText">
         Rule: flatten pooled values → if ≥ 2 values equal 1 → <span style="color:var(--accent);">1</span>
         (H or Cross detected), else <span style="color:var(--hot);">0</span>
     </div>
+    <div class="explain-content" id="explainPanel">
+        <span class="explain-title" id="explainTitle"></span>
+        <span class="explain-sep">—</span>
+        <span class="explain-text" id="explainText"></span>
+    </div>
 </div>
 
+<button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+
 <script>
+    // ============================
+    // EXPLANATIONS
+    // ============================
+    const EXPLANATIONS = {
+        'input':    { title: 'Input image',            text: 'A binary 6×6 grid fed raw into the CNN. Each cell is either 1 (pixel on) or 0 (pixel off) — the raw signal the network has to classify.' },
+        'filters':  { title: 'Convolutional filters',  text: 'Two 3×3 learned filters slide across every position of the input. At each position they compute a dot product with the local patch and produce a 1 only on a perfect match.' },
+        'features': { title: 'Feature maps',           text: 'One output map per filter. A highlighted 1 means that filter found its pattern starting at that location. The two maps together encode where each shape detector fired across the image.' },
+        'pooling':  { title: 'Max pooling (2×2)',       text: 'Each 2×2 region of a feature map is collapsed to a single value — its maximum. This halves the spatial size and makes detection shift-invariant: a match anywhere in the region is enough to keep a 1.' },
+        'dense':    { title: 'Dense layer',            text: 'All 8 pooled values (4 per filter) are flattened into a vector, multiplied by their weights (×1 here), and summed. If that sum reaches the threshold of 2 or more, the network outputs 1.' },
+        'output':   { title: 'Output',                 text: 'The final binary decision: 1 means a recognisable pattern (Cross or H) was detected, 0 means no match. It is determined entirely by whether the dense layer\'s sum crossed the threshold.' },
+    };
+
+    function explain(key) {
+        const e = EXPLANATIONS[key];
+        if (!e) return;
+        document.getElementById('explainTitle').textContent = e.title;
+        document.getElementById('explainText').textContent = e.text;
+        document.getElementById('ruleText').classList.add('hidden');
+        document.getElementById('explainPanel').classList.add('visible');
+    }
+
+    function clearExplain() {
+        document.getElementById('ruleText').classList.remove('hidden');
+        document.getElementById('explainPanel').classList.remove('visible');
+    }
+
+    // ============================
+    // STATIC HOVER LISTENERS
+    // ============================
+    function initStaticExplain() {
+        document.querySelectorAll('[data-explain]').forEach(el => {
+            el.addEventListener('mouseenter', () => explain(el.dataset.explain));
+            el.addEventListener('mouseleave', clearExplain);
+        });
+    }
+
+    // ============================
+    // CNN
+    // ============================
     const KERNELS = [
-        { name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot' },
+        { name: 'Left T',  data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot'  },
         { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
     ];
 
@@ -644,14 +759,14 @@
     function selectShape(type) {
         if (animating) return;
         currentShape = type;
-        document.getElementById('btnCross').className = 'btn' + (type === 'cross' ? ' active' : '');
-        document.getElementById('btnH').className = 'btn' + (type === 'H' ? ' active' : '');
+        document.getElementById('btnCross').className = 'btn' + (type === 'cross'  ? ' active' : '');
+        document.getElementById('btnH').className     = 'btn' + (type === 'H'      ? ' active' : '');
         document.getElementById('btnRandom').className = 'btn' + (type === 'random' ? ' active' : '');
         resetPipeline();
     }
 
     const BASE_SHAPES = {
-        H: [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
+        H:     [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
         cross: [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
     };
 
@@ -700,11 +815,7 @@
                     const coords = shapeToCoords(shape);
                     const abs = coords.map(([r, c]) => [r + offR, c + offC]);
                     const valid = abs.every(([r, c]) => r >= 1 && r <= 4 && c >= 1 && c <= 4 && grid[r][c] === 0);
-                    if (valid) {
-                        abs.forEach(([r, c]) => grid[r][c] = 1);
-                        placed = true;
-                        break;
-                    }
+                    if (valid) { abs.forEach(([r, c]) => grid[r][c] = 1); placed = true; break; }
                 }
                 if (!placed) { success = false; break; }
             }
@@ -746,35 +857,27 @@
         return result;
     }
 
-    function renderGrid(container, data, cols) {
-        container.innerHTML = '';
-        container.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
-        for (let r = 0; r < data.length; r++)
-            for (let c = 0; c < data[r].length; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.textContent = data[r][c];
-                container.appendChild(cell);
-            }
-    }
-
     function renderKernels() {
         const row = document.getElementById('kernelsRow');
         row.innerHTML = '';
         KERNELS.forEach(k => {
             const card = document.createElement('div');
             card.className = 'kernel-card';
+
             const title = document.createElement('div');
             title.className = 'kernel-title';
+            title.style.color = `var(--${k.color})`;
             title.textContent = k.name;
             card.appendChild(title);
+
             const grid = document.createElement('div');
             grid.className = 'kernel-grid';
             grid.style.gridTemplateColumns = `repeat(${k.data[0].length}, 22px)`;
             for (let r = 0; r < k.data.length; r++)
                 for (let c = 0; c < k.data[0].length; c++) {
                     const cell = document.createElement('div');
-                    cell.className = 'kcell' + (k.data[r][c] ? ' k-on' : '');
+                    const isOn = k.data[r][c] === 1;
+                    cell.className = 'kcell' + (isOn ? ` k-on-${k.color}` : '');
                     cell.textContent = k.data[r][c];
                     grid.appendChild(cell);
                 }
@@ -794,7 +897,19 @@
         document.getElementById('denseEquation').innerHTML = '';
 
         const input = getInput();
-        renderGrid(document.getElementById('inputGrid'), input, input[0].length);
+
+        // Render input grid with explain listeners
+        const inputGrid = document.getElementById('inputGrid');
+        inputGrid.innerHTML = '';
+        inputGrid.style.gridTemplateColumns = `repeat(${input[0].length}, var(--cell))`;
+        for (let r = 0; r < input.length; r++)
+            for (let c = 0; c < input[r].length; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = input[r][c];
+                inputGrid.appendChild(cell);
+            }
+
         renderKernels();
 
         function fillEmpty(id, cols, rows) {
@@ -812,7 +927,6 @@
         fillEmpty('pooledGrid0', 2, 2);
         fillEmpty('pooledGrid1', 2, 2);
 
-        // Pre-fill dense row with 8 placeholder cells
         const denseRow = document.getElementById('denseRow');
         denseRow.innerHTML = '';
         for (let i = 0; i < 8; i++) {
@@ -865,7 +979,7 @@
         await delay(800);
 
         // Step 1: Kernels
-        setStep(1, 'Applying convolution kernels...');
+        setStep(1, 'Applying filters...');
         document.getElementById('arrow0').classList.add('active');
         document.getElementById('stageKernels').classList.add('active');
         await delay(800);
@@ -894,9 +1008,10 @@
             for (let r = 0; r < fmRows; r++)
                 for (let c = 0; c < fmCols; c++) {
                     const cell = document.createElement('div');
+                    const isHit = fmap[r][c] === PERFECT_MATCH;
                     cell.className = 'cell';
                     cell.textContent = fmap[r][c];
-                    if (fmap[r][c] === PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
+                    if (isHit) cell.classList.add(colorClasses[ki]);
                     cell.classList.add('pop');
                     cell.style.animationDelay = `${(r * fmCols + c) * 60}ms`;
                     featureGrid.appendChild(cell);
@@ -904,7 +1019,7 @@
         }
         await delay(900);
 
-        // Step 3: Max Pool (2×2×2)
+        // Step 3: Max Pool
         setStep(3, 'Max pooling (2×2×2)...');
         document.getElementById('arrow2').classList.add('active');
         document.getElementById('stagePooled').classList.add('active');
@@ -934,16 +1049,17 @@
             for (let r = 0; r < pooled.length; r++)
                 for (let c = 0; c < pooled[0].length; c++) {
                     const cell = document.createElement('div');
+                    const isHit = pooled[r][c] === PERFECT_MATCH;
                     cell.className = 'cell pop';
                     cell.textContent = pooled[r][c];
                     cell.style.animationDelay = `${(r * 2 + c) * 150}ms`;
-                    if (pooled[r][c] === PERFECT_MATCH) cell.classList.add(colorClasses[ki]);
+                    if (isHit) cell.classList.add(colorClasses[ki]);
                     pooledGrid.appendChild(cell);
                 }
         }
         await delay(800);
 
-        // Step 4: Dense Layer — flatten + weighted sum
+        // Step 4: Dense Layer
         setStep(4, 'Flatten → weighted sum (dense layer)...');
         document.getElementById('arrow3').classList.add('active');
         document.getElementById('stageDense').classList.add('active');
@@ -953,28 +1069,23 @@
 
         const flatValues = [];
         const flatColors = [];
-        for (let ki = 0; ki < pooledResults.length; ki++) {
-            for (const row of pooledResults[ki]) {
+        for (let ki = 0; ki < pooledResults.length; ki++)
+            for (const row of pooledResults[ki])
                 for (const v of row) {
                     flatValues.push(v);
                     flatColors.push(ki === 0 ? 'hot' : 'cool');
                 }
-            }
-        }
 
         for (let i = 0; i < flatValues.length; i++) {
             const dc = document.createElement('div');
             dc.className = 'dense-cell pop ' + flatColors[i] + '-cell';
             dc.style.animationDelay = `${i * 80}ms`;
-
             const val = document.createElement('span');
             val.className = 'dc-val';
             val.textContent = flatValues[i];
-
             const weight = document.createElement('span');
             weight.className = 'dc-weight';
             weight.textContent = '×1';
-
             dc.appendChild(val);
             dc.appendChild(weight);
             denseRow.appendChild(dc);
@@ -985,33 +1096,35 @@
 
         await delay(600);
 
-        // Highlight the 1s
         const cells = denseRow.querySelectorAll('.dense-cell');
-        for (let i = 0; i < flatValues.length; i++) {
-            if (flatValues[i] === PERFECT_MATCH) {
-                cells[i].classList.add('perfect');
-            }
-        }
+        for (let i = 0; i < flatValues.length; i++)
+            if (flatValues[i] === PERFECT_MATCH) cells[i].classList.add('perfect');
 
         await delay(800);
 
-        // Step 5: Classification
+        // Step 5: Output
         setStep(5, 'Classifying...');
         document.getElementById('arrow4').classList.add('active');
         document.getElementById('stageResult').classList.add('active');
 
         const resultEl = document.getElementById('resultValue');
-        const reasonEl = document.getElementById('resultReason');
         await delay(400);
-
         resultEl.textContent = isDetected ? '1' : '0';
         resultEl.className = 'result-value ' + (isDetected ? 'is-one' : 'is-zero');
-        reasonEl.textContent = '';
 
         animating = false;
     }
 
     function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function toggleTheme() {
+        document.body.classList.add('no-transition');
+        const isLight = document.body.classList.toggle('light-mode');
+        document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+        setTimeout(() => document.body.classList.remove('no-transition'), 0);
+    }
+
+    initStaticExplain();
     resetPipeline();
 </script>
 </body>
