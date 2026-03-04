@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CNN Training: Filter Discovery</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a10;
+            --surface: #12121c;
+            --border: #222236;
+            --text: #e0dff0;
+            --dim: #5e5c78;
+            --accent: #00e4a0;
+            --hot: #ff5c5c;
+            --cool: #4a9eff;
+            --purple: #a86eff;
+            --pink: #ff6eb4;
+            --cell: 34px;
+            --kcell: 28px;
+            --fmcell: 22px;
+        }
+
+        body.light-mode {
+            --bg: #f0f2f8;
+            --surface: #ffffff;
+            --border: #d0d4e0;
+            --text: #1a1d27;
+            --dim: #6b7280;
+            --accent: #00c488;
+        }
+
+        body.no-transition * {
+            transition: none !important;
+        }
+
+        body {
+            visibility: hidden;
+        }
+
+        body.ready {
+            visibility: visible;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 10%, rgba(0, 228, 160, 0.04) 0%, transparent 55%),
+            radial-gradient(ellipse at 80% 85%, rgba(168, 110, 255, 0.04) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .app {
+            padding: 20px 28px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--dim);
+            font-size: 0.85rem;
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        /* ---- CONTROLS ---- */
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+
+        .btn.run {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+            padding: 8px 24px;
+        }
+
+        .btn.run:hover {
+            box-shadow: 0 0 20px rgba(0, 228, 160, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn.run.stop {
+            background: var(--hot);
+            border-color: var(--hot);
+        }
+
+        .btn.run.stop:hover {
+            box-shadow: 0 0 20px rgba(255, 92, 92, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+
+        /* ---- STATS BAR ---- */
+        .stats-bar {
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+            align-items: stretch;
+            justify-content: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 10px 20px;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            min-width: 52px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        #themeToggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.9rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            z-index: 100;
+        }
+
+        /* ---- PIPELINE ---- */
+        .pipeline {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: fit-content;
+            opacity: 0.3;
+            transition: opacity 0.4s ease;
+        }
+
+        .block.on {
+            opacity: 1;
+        }
+
+        .lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dim);
+            text-align: center;
+            white-space: nowrap;
+            transition: color 0.3s;
+        }
+
+        .block.on .lbl {
+            color: var(--accent);
+        }
+
+        .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            opacity: 0.15;
+            transition: opacity 0.4s ease;
+            min-width: fit-content;
+        }
+
+        .arrow.on {
+            opacity: 1;
+        }
+
+        .arrow svg {
+            width: 40px;
+            height: 20px;
+        }
+
+        .al {
+            stroke: var(--accent);
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            stroke-dashoffset: 0;
+        }
+
+        .arrow.on .al {
+            animation: df 0.8s linear infinite;
+        }
+
+        @keyframes df {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .ahead {
+            fill: var(--accent);
+        }
+
+        /* ---- INPUT GRID ---- */
+        .grid {
+            display: inline-grid;
+            gap: 2px;
+        }
+
+        .ic {
+            width: var(--cell);
+            height: var(--cell);
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.25);
+            transition: all 0.2s;
+        }
+
+        .ic.on {
+            background: var(--text);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .input-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        /* ---- FILTER WEIGHT CELLS ---- */
+        .filters-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .kbox {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 6px 8px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: border-color 0.35s, box-shadow 0.35s;
+            min-width: fit-content;
+        }
+
+        .kbox.active {
+            border-color: rgba(0, 228, 160, 0.4);
+            box-shadow: 0 0 12px rgba(0, 228, 160, 0.1);
+        }
+
+        .kbox.converged {
+            border-color: rgba(0, 228, 160, 0.7);
+            box-shadow: 0 0 18px rgba(0, 228, 160, 0.22);
+        }
+
+        .kbox-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .kname {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            text-align: center;
+            width: 100%;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+
+        .kg {
+            display: inline-grid;
+            gap: 2px;
+        }
+
+        /* Weight cell — the core new visual */
+        .wc {
+            width: var(--kcell);
+            height: var(--kcell);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            font-weight: 600;
+            transition: background 0.3s, color 0.1s;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.55);
+            position: relative;
+        }
+
+        .wc.hi {
+            color: rgba(0, 0, 0, 0.75);
+        }
+
+        @keyframes wflash {
+            0% {
+                outline: 2px solid rgba(255, 220, 50, 0.85);
+                outline-offset: 1px;
+            }
+            100% {
+                outline: 2px solid transparent;
+                outline-offset: 1px;
+            }
+        }
+
+        .wc.flash {
+            animation: wflash 0.35s ease-out;
+        }
+
+
+        /* ---- FEATURE MAP STACKS ---- */
+        #bP, #bID, #bL2K {
+            background: transparent;
+            border: none;
+            overflow: visible;
+        }
+
+        #bL2K .fmap-deck {
+            min-width: 95px;
+            min-height: 115px;
+        }
+
+        .fmap-deck {
+            position: relative;
+            cursor: pointer;
+            min-width: 148px;
+            min-height: 158px;
+        }
+
+        .fmap-deck.fmap-deck-sm {
+            min-width: 90px;
+            min-height: 100px;
+        }
+
+        .fmap-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .fmap-deck .fmap-card:nth-child(1) {
+            transform: translate(15px, 15px);
+            opacity: 0.25;
+        }
+
+        .fmap-deck .fmap-card:nth-child(2) {
+            transform: translate(10px, 10px);
+            opacity: 0.45;
+        }
+
+        .fmap-deck .fmap-card:nth-child(3) {
+            transform: translate(5px, 5px);
+            opacity: 0.65;
+        }
+
+        .fmap-deck .fmap-card:nth-child(4) {
+            transform: translate(0, 0);
+            opacity: 1;
+            box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        .fmap-deck:hover {
+            z-index: 10;
+        }
+
+        .fmap-deck:hover .fmap-card {
+            opacity: 1;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.35);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(1) {
+            transform: translate(55%, 55%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(2) {
+            transform: translate(-55%, 55%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(3) {
+            transform: translate(55%, -55%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(4) {
+            transform: translate(-55%, -55%);
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.35);
+        }
+
+        .fmap-hint {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.48rem;
+            color: var(--dim);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        .fmap-deck:hover .fmap-hint {
+            opacity: 0;
+        }
+
+        .fmap-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .fm-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .fm-cell {
+            width: var(--fmcell);
+            height: var(--fmcell);
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            color: rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .fm-cell.hot {
+            background: var(--hot);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 5px rgba(255, 92, 92, 0.3);
+        }
+
+        .fm-cell.cool {
+            background: var(--cool);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 5px rgba(74, 158, 255, 0.3);
+        }
+
+        .fm-cell.purple {
+            background: var(--purple);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 5px rgba(168, 110, 255, 0.3);
+        }
+
+        .fm-cell.pink {
+            background: var(--pink);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 5px rgba(255, 110, 180, 0.3);
+        }
+
+        .fm-cell.accent {
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 0 5px rgba(0, 228, 160, 0.3);
+        }
+
+        /* ---- DENSE LAYER ---- */
+        .dense-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dense-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .dense-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 3px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .dense-cell .dc-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.2);
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.3s;
+        }
+
+        .dense-cell .dc-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.44rem;
+            color: var(--dim);
+        }
+
+        .dense-cell.hot-cell .dc-val {
+            background: var(--hot);
+            color: #fff;
+            border-color: var(--hot);
+        }
+
+        .dense-cell.cool-cell .dc-val {
+            background: var(--cool);
+            color: #fff;
+            border-color: var(--cool);
+        }
+
+        .dense-cell.purple-cell .dc-val {
+            background: var(--purple);
+            color: #fff;
+            border-color: var(--purple);
+        }
+
+        .dense-cell.pink-cell .dc-val {
+            background: var(--pink);
+            color: #fff;
+            border-color: var(--pink);
+        }
+
+        .dense-cell.perfect .dc-val {
+            border-color: var(--accent);
+            box-shadow: 0 0 14px rgba(0, 228, 160, 0.4);
+            animation: perfectPulse 1.2s ease infinite;
+        }
+
+        .dense-cell.mismatch .dc-val {
+            opacity: 0.3;
+            border-color: rgba(255, 92, 92, 0.4);
+        }
+
+        @keyframes perfectPulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 228, 160, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 228, 160, 0.65);
+            }
+        }
+
+        .dense-equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--dim);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .dense-equation .eq-sum {
+            font-weight: 700;
+            font-size: 0.78rem;
+        }
+
+        .dense-equation .eq-sum.pass {
+            color: var(--accent);
+        }
+
+        .dense-equation .eq-sum.fail {
+            color: var(--hot);
+        }
+
+        /* ---- OUTPUT ---- */
+        .out {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 2.6rem;
+            transition: all 0.4s;
+        }
+
+        .out.y {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(0, 228, 160, 0.07);
+            box-shadow: 0 0 24px rgba(0, 228, 160, 0.2);
+        }
+
+        .out.n {
+            color: var(--hot);
+            border-color: var(--hot);
+            background: rgba(255, 92, 92, 0.05);
+            box-shadow: 0 0 24px rgba(255, 92, 92, 0.15);
+        }
+
+        /* ---- BOTTOM PANELS ---- */
+        .bottom-row {
+            display: flex;
+            gap: 14px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Loss canvas */
+        #lossCanvas {
+            border-radius: 4px;
+            display: block;
+        }
+
+
+        @media (max-width: 900px) {
+            .pipeline {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .arrow {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --cell: 28px;
+                --kcell: 22px;
+                --fmcell: 18px;
+            }
+
+            .app {
+                padding: 12px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <header>
+        <h1>CNN Training: Filter Discovery</h1>
+        <p>Filters start random — watch them learn to detect the rabbit shape through training</p>
+    </header>
+
+    <div class="controls">
+        <button class="btn run" onclick="startTraining()">↺ Restart</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-lbl">Epoch</div>
+            <div class="stat-val" id="epochVal">—</div>
+        </div>
+    </div>
+
+    <!-- Main pipeline -->
+    <div class="pipeline">
+
+        <!-- INPUT -->
+        <div class="block" id="bIn">
+            <div class="lbl">Training Input</div>
+            <div class="grid" id="inGrid"></div>
+            <div class="input-tag" id="inputTag">—</div>
+        </div>
+
+        <div class="arrow" id="a1">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- FILTERS — evolving weight heatmaps -->
+        <div class="block" id="bK">
+            <div class="lbl">Filters</div>
+            <div class="filters-col" id="kCol">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--dim);padding:8px 4px;text-align:center;">
+                    Click "Randomize Filters"
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow" id="a2">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- FEATURE MAPS -->
+        <div class="block" id="bP">
+            <div class="lbl">Feature Maps</div>
+            <div class="fmap-deck">
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+                    <div class="fm-grid" id="fmapGrid3"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+                    <div class="fm-grid" id="fmapGrid2"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+                    <div class="fm-grid" id="fmapGrid1"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+                    <div class="fm-grid" id="fmapGrid0"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
+
+        <div class="arrow" id="a3">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- MAX POOLING -->
+        <div class="block" id="bID">
+            <div class="lbl">Max Pooling</div>
+            <div class="fmap-deck fmap-deck-sm">
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+                    <div class="fm-grid" id="poolGrid3"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+                    <div class="fm-grid" id="poolGrid2"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+                    <div class="fm-grid" id="poolGrid1"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+                    <div class="fm-grid" id="poolGrid0"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
+
+        <div class="arrow" id="a4">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- L2 FILTER -->
+        <div class="block" id="bL2K">
+            <div class="lbl">Filter</div>
+            <div class="fmap-deck fmap-deck-sm" id="l2FilterDeck">
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
+
+        <div class="arrow" id="a4b">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- L2 OUTPUT MAP -->
+        <div class="block" id="bL2">
+            <div class="lbl">L2 Feature Map</div>
+            <div class="fm-grid" id="l2Grid"></div>
+        </div>
+
+        <div class="arrow" id="a4c">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- DENSE LAYER -->
+        <div class="block" id="bTpl">
+            <div class="lbl">Dense Layer</div>
+            <div class="dense-box">
+                <div class="dense-row" id="denseRow"></div>
+                <div class="dense-equation" id="denseEq"></div>
+            </div>
+        </div>
+
+        <div class="arrow" id="a5">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="block" id="bOut">
+            <div class="lbl">Output</div>
+            <div class="out" id="outV">?</div>
+        </div>
+
+    </div><!-- /pipeline -->
+
+    <!-- Loss graph + Accuracy -->
+    <div class="bottom-row" id="plotsRow" style="visibility:hidden">
+        <div class="panel">
+            <div class="lbl">Training Loss (smoothed)</div>
+            <canvas id="lossCanvas" width="260" height="80"></canvas>
+        </div>
+        <div class="panel">
+            <div class="lbl">Accuracy (rolling 50)</div>
+            <canvas id="accCanvas" width="260" height="80"></canvas>
+        </div>
+    </div>
+
+
+</div><!-- /app -->
+
+<button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+
+<script>
+    const KS = 3;
+    const CSS_COLORS = ['var(--hot)', 'var(--cool)', 'var(--purple)', 'var(--pink)'];
+    const COLORS = ['hot', 'cool', 'purple', 'pink'];
+
+    // The four target filters the model needs to discover
+    const TARGET = [
+        [[1, 0, 0], [1, 1, 0], [1, 0, 0]],
+        [[0, 1, 0], [1, 1, 0], [0, 1, 0]],
+        [[1, 0, 0], [1, 1, 1], [0, 0, 0]],
+        [[0, 0, 1], [1, 1, 1], [0, 0, 0]]
+    ];
+
+    const RABBIT_SHAPE = [
+        [0, 1, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 0],
+        [1, 1, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1]
+    ];
+
+    const TARGET_L2 = [[1, 2], [3, 4]];
+    const SPEED_DELAY = 450;
+    const SPEED_BATCH = 1;
+
+    // ── state ──────────────────────────────────────────────────────────────────
+    let filterWeights = null;   // float[4][3][3]  0–1
+    let l2Weights = null;       // float[2][2]  values in [1,4], rounded to filter index
+    let epoch = 0;
+    let lossHistory = [];
+    let accHistory = [];
+    let recentResults = [];     // 1=correct, 0=wrong (last 50)
+    let lastInput = null;
+    let lastLabel = null;
+    let autoRunning = false;
+    let autoTimer = null;
+    let initialized = false;
+
+    const $ = id => document.getElementById(id);
+    const el = (tag, cls) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        return e;
+    };
+
+    // ── training helpers ────────────────────────────────────────────────────────
+    function initWeights() {
+        stopAuto();
+        filterWeights = TARGET.map(() =>
+            Array.from({length: KS}, () => Array.from({length: KS}, () => Math.random()))
+        );
+        l2Weights = TARGET_L2.map(row => row.map(() => Math.random() * 3 + 1));
+        epoch = 0;
+        lossHistory = [];
+        accHistory = [];
+        recentResults = [];
+        initialized = true;
+
+        $('plotsRow').style.visibility = 'hidden';
+        buildFilterWeightCells();
+        buildL2FilterDisplay();
+        renderL2FilterDisplay();
+        buildL2Placeholders();
+        renderFilterWeights(null);
+        drawLossGraph();
+        drawAccGraph();
+
+        lastInput = generateRabbit();
+        lastLabel = 1;
+        renderInput(lastInput, lastLabel);
+
+        ['bIn', 'bK'].forEach(id => setOn(id, true));
+        setOn('bP', false);
+        setOn('bID', false);
+        setOn('bL2K', false);
+        setOn('bL2', false);
+        setOn('bTpl', false);
+        setOn('bOut', false);
+        ['a1', 'a2', 'a3', 'a4', 'a4b', 'a4c', 'a5'].forEach(id => $(id).classList.remove('on'));
+        $('outV').textContent = '?';
+        $('outV').className = 'out';
+        $('denseRow').innerHTML = '';
+        $('denseEq').innerHTML = '';
+
+        updateStats();
+    }
+
+    function generateRabbit() {
+        const sR = RABBIT_SHAPE.length, sC = RABBIT_SHAPE[0].length;
+        const rO = Math.floor(Math.random() * (8 - sR + 1));
+        const cO = Math.floor(Math.random() * (8 - sC + 1));
+        const g = Array.from({length: 8}, () => Array(8).fill(0));
+        RABBIT_SHAPE.forEach((row, r) => row.forEach((v, c) => {
+            if (v) g[rO + r][cO + c] = 1;
+        }));
+        return g;
+    }
+
+    function generateNoise() {
+        return Array.from({length: 8}, () =>
+            Array.from({length: 8}, () => Math.random() > 0.55 ? 1 : 0)
+        );
+    }
+
+    function conv(inp, kern) {
+        const outR = inp.length - KS + 1;
+        const outC = inp[0].length - KS + 1;
+        return Array.from({length: outR}, (_, r) =>
+            Array.from({length: outC}, (_, c) => {
+                let s = 0;
+                for (let kr = 0; kr < KS; kr++) for (let kc = 0; kc < KS; kc++) s += inp[r + kr][c + kc] * kern[kr][kc];
+                return s;
+            })
+        );
+    }
+
+    function maxpool(fm) {
+        const oR = Math.floor(fm.length / 2), oC = Math.floor(fm[0].length / 2);
+        return Array.from({length: oR}, (_, R) =>
+            Array.from({length: oC}, (_, C) =>
+                Math.max(fm[R * 2][C * 2], fm[R * 2][C * 2 + 1], fm[R * 2 + 1][C * 2], fm[R * 2 + 1][C * 2 + 1])
+            )
+        );
+    }
+
+    function thresh(fw) {
+        return fw.map(row => row.map(v => v >= 0.5 ? 1 : 0));
+    }
+
+    function ksum(tw) {
+        return tw.flat().reduce((a, b) => a + b, 0);
+    }
+
+    function forwardPass(input) {
+        const tw = filterWeights.map(thresh);
+        const fmaps = tw.map(k => conv(input, k));
+        const binaryFmaps = fmaps.map((fm, ki) => {
+            const ks = ksum(tw[ki]);
+            return fm.map(row => row.map(v => ks > 0 && v === ks ? 1 : 0));
+        });
+        const pooled = binaryFmaps.map(bfm => maxpool(bfm));
+        const l2map = applyL2Filter(pooled);
+        const pred = l2map.flat().some(v => v === 1) ? 1 : 0;
+        return {binaryFmaps, pooled, l2map, pred};
+    }
+
+    // One gradient-descent step:
+    // On error → nudge each weight toward its TARGET value.
+    // On correct → tiny noise only (simulates stochastic updates).
+    function trainOneStep() {
+        const isPos = Math.random() < 0.7;
+        const input = isPos ? generateRabbit() : generateNoise();
+        const label = isPos ? 1 : 0;
+        lastInput = input;
+        lastLabel = label;
+
+        const {binaryFmaps, pooled, l2map, pred} = forwardPass(input);
+        const loss = pred !== label ? 1 : 0;
+
+        lossHistory.push(loss);
+        if (lossHistory.length > 160) lossHistory.shift();
+        recentResults.push(pred === label ? 1 : 0);
+        if (recentResults.length > 50) recentResults.shift();
+
+        const acc = recentResults.reduce((a, b) => a + b, 0) / recentResults.length;
+        accHistory.push(acc);
+        if (accHistory.length > 160) accHistory.shift();
+
+        epoch++;
+
+        const prev = filterWeights.map(fw => fw.map(row => [...row]));
+        const lr = 0.13;
+        const noise = 0.012;
+
+        filterWeights = filterWeights.map((fw, ki) =>
+            fw.map((row, r) => row.map((w, c) => {
+                let d = (Math.random() - 0.5) * noise;
+                if (loss > 0) d += lr * (TARGET[ki][r][c] - w);
+                return Math.max(0, Math.min(1, w + d));
+            }))
+        );
+
+        const l2lr = 0.15;
+        const l2noise = 0.01;
+        l2Weights = l2Weights.map((row, r) => row.map((w, c) => {
+            let d = (Math.random() - 0.5) * l2noise;
+            if (loss > 0) d += l2lr * (TARGET_L2[r][c] - w);
+            return Math.max(1, Math.min(4, w + d));
+        }));
+
+        return {binaryFmaps, pooled, l2map, pred, label, loss, prev};
+    }
+
+    // ── public controls ─────────────────────────────────────────────────────────
+    function startTraining() {
+        initWeights();
+        autoRunning = true;
+        tick();
+    }
+
+    function stopAuto() {
+        autoRunning = false;
+        clearTimeout(autoTimer);
+        autoTimer = null;
+    }
+
+    function tick() {
+        if (!autoRunning) return;
+        let last;
+        for (let i = 0; i < SPEED_BATCH; i++) last = trainOneStep();
+        renderStep(last);
+
+        const acc = recentResults.length > 0
+            ? recentResults.reduce((a, b) => a + b, 0) / recentResults.length * 100
+            : 0;
+        if (epoch >= 100 || (epoch >= 50 && acc >= 90)) {
+            stopAuto();
+        } else {
+            autoTimer = setTimeout(tick, SPEED_DELAY);
+        }
+    }
+
+
+    // ── render ───────────────────────────────────────────────────────────────────
+    function renderStep({binaryFmaps, pooled, l2map, pred, label, loss, prev}) {
+        renderFilterWeights(prev);
+        renderInput(lastInput, lastLabel);
+        renderFeatureMaps(binaryFmaps);
+        renderPooled(pooled);
+        renderL2FilterDisplay();
+        renderL2Output(l2map);
+        renderDense(binaryFmaps);
+
+        const outV = $('outV');
+        outV.textContent = pred;
+        outV.className = 'out ' + (pred ? 'y' : 'n');
+
+        ['bIn', 'bK', 'bP', 'bID', 'bL2K', 'bL2', 'bTpl', 'bOut'].forEach(id => setOn(id, true));
+        ['a1', 'a2', 'a3', 'a4', 'a4b', 'a4c', 'a5'].forEach(id => $(id).classList.add('on'));
+
+        updateStats();
+
+        if (epoch >= 50) $('plotsRow').style.visibility = 'visible';
+        drawLossGraph();
+        drawAccGraph();
+    }
+
+    function setOn(id, on) {
+        const e = $(id);
+        if (e) e.classList.toggle('on', on);
+    }
+
+    function renderInput(inp, label) {
+        if (!inp) return;
+        const inG = $('inGrid');
+        const nR = inp.length, nC = inp[0].length;
+        if (inG.children.length !== nR * nC) {
+            inG.style.gridTemplateColumns = `repeat(${nC}, var(--cell))`;
+            inG.innerHTML = '';
+            for (let i = 0; i < nR * nC; i++) inG.appendChild(el('div', 'ic'));
+        }
+        let idx = 0;
+        for (let r = 0; r < nR; r++) for (let c = 0; c < nC; c++) {
+            const ce = inG.children[idx++];
+            ce.className = 'ic' + (inp[r][c] ? ' on' : '');
+            ce.textContent = inp[r][c] || '';
+        }
+        const tag = $('inputTag');
+        if (tag) {
+            tag.textContent = label === 1 ? '✓ Rabbit (positive)' : '✗ Noise (negative)';
+            tag.style.color = label === 1 ? 'var(--accent)' : 'var(--hot)';
+        }
+    }
+
+    // ── filter weight heatmap ──────────────────────────────────────────────────
+    function buildFilterWeightCells() {
+        const kCol = $('kCol');
+        kCol.innerHTML = '';
+        TARGET.forEach((_, ki) => {
+            const box = el('div', 'kbox');
+            box.id = `kbox${ki}`;
+
+            const hdr = el('div', 'kbox-header');
+            const nm = el('div', 'kname');
+            nm.textContent = `Filter ${ki + 1}`;
+            nm.style.color = CSS_COLORS[ki];
+            hdr.appendChild(nm);
+            box.appendChild(hdr);
+
+            const kg = el('div', 'kg');
+            kg.id = `kg${ki}`;
+            kg.style.gridTemplateColumns = `repeat(${KS}, var(--kcell))`;
+            for (let r = 0; r < KS; r++) for (let c = 0; c < KS; c++) {
+                const ce = el('div', 'wc');
+                ce.id = `wc${ki}_${r}_${c}`;
+                kg.appendChild(ce);
+            }
+            box.appendChild(kg);
+            kCol.appendChild(box);
+        });
+    }
+
+    // Color for a weight 0→1: dark ⟶ accent green
+    function wColor(w) {
+        const r = Math.round(10 + (1 - w) * 8);
+        const g = Math.round(10 + w * 218);
+        const b = Math.round(16 + w * 144);
+        return `rgb(${r},${g},${b})`;
+    }
+
+    function renderFilterWeights(prev) {
+        if (!filterWeights) return;
+        filterWeights.forEach((fw, ki) => {
+            const converged = fw.every((row, r) => row.every((v, c) => (v >= 0.5 ? 1 : 0) === TARGET[ki][r][c]));
+
+            const kbox = $(`kbox${ki}`);
+            if (kbox) kbox.className = `kbox${converged ? ' converged' : ''}`;
+
+            fw.forEach((row, r) => row.forEach((w, c) => {
+                const ce = $(`wc${ki}_${r}_${c}`);
+                if (!ce) return;
+                ce.style.background = wColor(w);
+                ce.textContent = w.toFixed(1);
+                ce.className = `wc${w >= 0.5 ? ' hi' : ''}`;
+
+                if (prev && Math.abs(w - prev[ki][r][c]) > 0.03) {
+                    ce.classList.add('flash');
+                    setTimeout(() => ce.classList.remove('flash'), 380);
+                }
+            }));
+        });
+    }
+
+    // ── feature maps / pool / dense ────────────────────────────────────────────
+    function buildFmapPlaceholders(rows, cols) {
+        ['fmapGrid0', 'fmapGrid1', 'fmapGrid2', 'fmapGrid3'].forEach(id => {
+            const g = $(id);
+            g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+            g.innerHTML = '';
+            for (let i = 0; i < rows * cols; i++) g.appendChild(el('div', 'fm-cell'));
+        });
+    }
+
+    function buildPoolPlaceholders(rows, cols) {
+        ['poolGrid0', 'poolGrid1', 'poolGrid2', 'poolGrid3'].forEach(id => {
+            const g = $(id);
+            g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+            g.innerHTML = '';
+            for (let i = 0; i < rows * cols; i++) g.appendChild(el('div', 'fm-cell'));
+        });
+    }
+
+    function renderFeatureMaps(binaryFmaps) {
+        binaryFmaps.forEach((fmap, ki) => {
+            const cells = $('fmapGrid' + ki).querySelectorAll('.fm-cell');
+            fmap.forEach((row, r) => row.forEach((v, c) => {
+                const cell = cells[r * fmap[0].length + c];
+                cell.className = `fm-cell${v ? ' ' + COLORS[ki] : ''}`;
+                cell.textContent = v || '';
+            }));
+        });
+    }
+
+    function renderPooled(pooledMaps) {
+        pooledMaps.forEach((pool, ki) => {
+            const cells = $('poolGrid' + ki).querySelectorAll('.fm-cell');
+            pool.forEach((row, r) => row.forEach((v, c) => {
+                const cell = cells[r * pool[0].length + c];
+                cell.className = `fm-cell${v ? ' ' + COLORS[ki] : ''}`;
+                cell.textContent = v || '';
+            }));
+        });
+    }
+
+    function applyL2Filter(pooledMaps) {
+        const outRows = pooledMaps[0].length - TARGET_L2.length + 1;
+        const outCols = pooledMaps[0][0].length - TARGET_L2[0].length + 1;
+        const out = [];
+        for (let R = 0; R < outRows; R++) {
+            const row = [];
+            for (let C = 0; C < outCols; C++) {
+                const match = l2Weights.every((wrow, dr) =>
+                    wrow.every((w, dc) => {
+                        const filterNum = Math.round(Math.max(1, Math.min(4, w)));
+                        return pooledMaps[filterNum - 1][R + dr][C + dc] === 1;
+                    })
+                );
+                row.push(match ? 1 : 0);
+            }
+            out.push(row);
+        }
+        return out;
+    }
+
+    function buildL2FilterDisplay() {
+        const deck = $('l2FilterDeck');
+        deck.innerHTML = '';
+        [4, 3, 2, 1].forEach(filterNum => {
+            const card = el('div', 'fmap-card');
+            const tag = el('div', 'fmap-tag');
+            tag.textContent = `Filter ${filterNum}`;
+            tag.style.color = CSS_COLORS[filterNum - 1];
+            card.appendChild(tag);
+            const grid = el('div', 'kg');
+            grid.style.gridTemplateColumns = `repeat(2, var(--kcell))`;
+            TARGET_L2.forEach((row, r) => row.forEach((_, c) => {
+                const cell = el('div', 'wc');
+                cell.id = `l2cell_${filterNum}_${r}_${c}`;
+                grid.appendChild(cell);
+            }));
+            card.appendChild(grid);
+            deck.appendChild(card);
+        });
+        const hint = el('span', 'fmap-hint');
+        hint.textContent = 'hover to inspect';
+        deck.appendChild(hint);
+    }
+
+    function renderL2FilterDisplay() {
+        if (!l2Weights) return;
+        [1, 2, 3, 4].forEach(filterNum => {
+            l2Weights.forEach((row, r) => row.forEach((w, c) => {
+                const cell = $(`l2cell_${filterNum}_${r}_${c}`);
+                if (!cell) return;
+                const closeness = Math.max(0, 1 - Math.abs(w - filterNum));
+                cell.style.background = wColor(closeness);
+                cell.textContent = closeness.toFixed(1);
+                cell.className = `wc${closeness >= 0.5 ? ' hi' : ''}`;
+            }));
+        });
+    }
+
+    function buildL2Placeholders() {
+        const g = $('l2Grid');
+        g.style.gridTemplateColumns = `repeat(${TARGET_L2[0].length}, var(--fmcell))`;
+        g.innerHTML = '';
+        for (let i = 0; i < TARGET_L2.length * TARGET_L2[0].length; i++)
+            g.appendChild(el('div', 'fm-cell'));
+    }
+
+    function renderL2Output(l2map) {
+        const cols = l2map[0].length;
+        const cells = $('l2Grid').querySelectorAll('.fm-cell');
+        l2map.forEach((row, r) => row.forEach((v, c) => {
+            const cell = cells[r * cols + c];
+            cell.className = `fm-cell${v ? ' accent' : ''}`;
+            cell.textContent = v || '';
+        }));
+    }
+
+    function renderDense(binaryFmaps) {
+        const denseRow = $('denseRow');
+        denseRow.innerHTML = '';
+        binaryFmaps.forEach((fmap, ki) => {
+            const fired = fmap.flat().some(v => v === 1);
+            const dc = el('div', `dense-cell ${COLORS[ki]}-cell${fired ? ' perfect' : ' mismatch'}`);
+            const dv = el('div', 'dc-val');
+            dv.textContent = fired ? '1' : '0';
+            const dl = el('div', 'dc-label');
+            dl.textContent = `F${ki + 1}`;
+            dc.appendChild(dv);
+            dc.appendChild(dl);
+            denseRow.appendChild(dc);
+        });
+        const mc = binaryFmaps.filter(fm => fm.flat().some(v => v === 1)).length;
+        $('denseEq').innerHTML = `<span class="eq-sum ${mc === 4 ? 'pass' : 'fail'}">${mc}/4</span> matched`;
+    }
+
+    // ── stats bar ───────────────────────────────────────────────────────────────
+    function updateStats() {
+        if (!initialized) return;
+        $('epochVal').textContent = epoch;
+    }
+
+    function toggleTheme() {
+        document.body.classList.add('no-transition');
+        const isLight = document.body.classList.toggle('light-mode');
+        $('themeToggle').textContent = isLight ? '🌙' : '☀';
+        setTimeout(() => document.body.classList.remove('no-transition'), 0);
+        drawLossGraph();
+        drawAccGraph();
+    }
+
+    // ── loss graph ───────────────────────────────────────────────────────────────
+    function drawLossGraph() {
+        const canvas = $('lossCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        ctx.fillStyle = document.body.classList.contains('light-mode') ? '#f0f2f8' : '#0a0a10';
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        [0.1, 0.35, 0.6, 0.85].forEach(y => {
+            ctx.beginPath();
+            ctx.moveTo(0, H * y);
+            ctx.lineTo(W, H * y);
+            ctx.stroke();
+        });
+
+        if (lossHistory.length < 3) return;
+
+        // Rolling 10-step average
+        const smooth = lossHistory.map((_, i) => {
+            const sl = lossHistory.slice(Math.max(0, i - 9), i + 1);
+            return sl.reduce((a, b) => a + b, 0) / sl.length;
+        });
+
+        // Area fill
+        ctx.beginPath();
+        smooth.forEach((v, i) => {
+            const x = (i / (smooth.length - 1)) * (W - 2) + 1;
+            const y = H - 4 - v * (H - 8);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.lineTo(W - 1, H);
+        ctx.lineTo(1, H);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0,228,160,0.07)';
+        ctx.fill();
+
+        // Line
+        ctx.beginPath();
+        smooth.forEach((v, i) => {
+            const x = (i / (smooth.length - 1)) * (W - 2) + 1;
+            const y = H - 4 - v * (H - 8);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = '#00e4a0';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Endpoint dot
+        const lx = W - 1, ly = H - 4 - smooth[smooth.length - 1] * (H - 8);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#00e4a0';
+        ctx.fill();
+
+        // Axis labels
+        ctx.fillStyle = 'rgba(94,92,120,0.8)';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText('1.0', 4, 12);
+        ctx.fillText('0.0', 4, H - 3);
+    }
+
+
+    function drawMetricGraph(canvasId, history, lineColor, fillColor) {
+        const canvas = $(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        ctx.fillStyle = document.body.classList.contains('light-mode') ? '#f0f2f8' : '#0a0a10';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        [0.1, 0.35, 0.6, 0.85].forEach(y => {
+            ctx.beginPath();
+            ctx.moveTo(0, H * y);
+            ctx.lineTo(W, H * y);
+            ctx.stroke();
+        });
+
+        if (history.length < 3) return;
+
+        const smooth = history.map((_, i) => {
+            const sl = history.slice(Math.max(0, i - 9), i + 1);
+            return sl.reduce((a, b) => a + b, 0) / sl.length;
+        });
+
+        ctx.beginPath();
+        smooth.forEach((v, i) => {
+            const x = (i / (smooth.length - 1)) * (W - 2) + 1;
+            const y = H - 4 - v * (H - 8);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.lineTo(W - 1, H);
+        ctx.lineTo(1, H);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+        ctx.beginPath();
+        smooth.forEach((v, i) => {
+            const x = (i / (smooth.length - 1)) * (W - 2) + 1;
+            const y = H - 4 - v * (H - 8);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const lx = W - 1, ly = H - 4 - smooth[smooth.length - 1] * (H - 8);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+        ctx.fillStyle = lineColor;
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(94,92,120,0.8)';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText('1.0', 4, 12);
+        ctx.fillText('0.0', 4, H - 3);
+    }
+
+    function drawAccGraph() {
+        drawMetricGraph('accCanvas', accHistory, '#4a9eff', 'rgba(74,158,255,0.07)');
+    }
+
+    // ── bootstrap ────────────────────────────────────────────────────────────────
+    function boot() {
+        // Input placeholder grid (8×8)
+        const inG = $('inGrid');
+        inG.style.gridTemplateColumns = `repeat(8, var(--cell))`;
+        for (let i = 0; i < 64; i++) inG.appendChild(el('div', 'ic'));
+
+        buildFmapPlaceholders(6, 6);
+        buildPoolPlaceholders(3, 3);
+        initWeights();
+        drawLossGraph();
+        drawAccGraph();
+        document.body.classList.add('ready');
+    }
+
+    boot();
+</script>
+</body>
+</html>

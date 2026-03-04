@@ -1,848 +1,897 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Convolution Puzzle — Tetris Pieces</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0d0d12;
-    --surface: #16161e;
-    --border: #2a2a3a;
-    --text: #e8e6f0;
-    --dim: #6b6888;
-    --accent: #ff6b4a;
-    --piece0: #ff6b4a;
-    --piece1: #4ae0ff;
-    --piece2: #ffe04a;
-    --piece3: #b04aff;
-    --grid-line: #1e1e2e;
-    --cell-size: 52px;
-    --success: #4aff7a;
-    --cell-hover: #1a1a2a;
-    --target-filled: #3a3a50;
-    --overlay-bg: rgba(13, 13, 18, 0.92);
-    --mini-cell-bg: rgba(255,255,255,0.03);
-    --mini-cell-border: rgba(255,255,255,0.04);
-    --slot-bg: rgba(255,255,255,0.02);
-    --slot-hover-bg: rgba(255,255,255,0.04);
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convolution Puzzle — Tetris Pieces</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d12;
+            --surface: #16161e;
+            --border: #2a2a3a;
+            --text: #e8e6f0;
+            --dim: #6b6888;
+            --accent: #ff6b4a;
+            --piece0: #ff6b4a;
+            --piece1: #4ae0ff;
+            --piece2: #ffe04a;
+            --piece3: #b04aff;
+            --grid-line: #1e1e2e;
+            --cell-size: 52px;
+            --success: #4aff7a;
+            --cell-hover: #1a1a2a;
+            --target-filled: #3a3a50;
+            --overlay-bg: rgba(13, 13, 18, 0.92);
+            --mini-cell-bg: rgba(255, 255, 255, 0.03);
+            --mini-cell-border: rgba(255, 255, 255, 0.04);
+            --slot-bg: rgba(255, 255, 255, 0.02);
+            --slot-hover-bg: rgba(255, 255, 255, 0.04);
+        }
 
-  body.light-mode {
-    --bg: #f0f0f5;
-    --surface: #ffffff;
-    --border: #c8c8dc;
-    --text: #1a1a2a;
-    --dim: #7070a0;
-    --accent: #e85530;
-    --piece0: #e85530;
-    --piece1: #009fc0;
-    --piece2: #c0a000;
-    --piece3: #8020d0;
-    --grid-line: #dcdcec;
-    --success: #1ab84a;
-    --cell-hover: #e0e0ee;
-    --target-filled: #b0b0cc;
-    --overlay-bg: rgba(240, 240, 245, 0.92);
-    --mini-cell-bg: rgba(0,0,0,0.06);
-    --mini-cell-border: rgba(0,0,0,0.14);
-    --slot-bg: rgba(0,0,0,0.03);
-    --slot-hover-bg: rgba(0,0,0,0.06);
-  }
+        body.light-mode {
+            --bg: #f0f0f5;
+            --surface: #ffffff;
+            --border: #c8c8dc;
+            --text: #1a1a2a;
+            --dim: #7070a0;
+            --accent: #e85530;
+            --piece0: #e85530;
+            --piece1: #009fc0;
+            --piece2: #c0a000;
+            --piece3: #8020d0;
+            --grid-line: #dcdcec;
+            --success: #1ab84a;
+            --cell-hover: #e0e0ee;
+            --target-filled: #b0b0cc;
+            --overlay-bg: rgba(240, 240, 245, 0.92);
+            --mini-cell-bg: rgba(0, 0, 0, 0.06);
+            --mini-cell-border: rgba(0, 0, 0, 0.14);
+            --slot-bg: rgba(0, 0, 0, 0.03);
+            --slot-hover-bg: rgba(0, 0, 0, 0.06);
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    visibility: hidden;
-  }
-  body.ready { visibility: visible; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            visibility: hidden;
+        }
 
-  /* Noise overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 100;
-  }
+        body.ready {
+            visibility: visible;
+        }
 
-  .app {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 20px 30px 70px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+        /* Noise overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 100;
+        }
 
-  header {
-    text-align: center;
-    margin-bottom: 20px;
-  }
+        .app {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 30px 70px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-  header h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, var(--accent), var(--piece1));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-  header p {
-    font-weight: 300;
-    color: var(--dim);
-    margin-top: 6px;
-    font-size: 0.95rem;
-  }
+        header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), var(--piece1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-  .game-layout {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 40px;
-    align-items: center;
-    flex: 1;
-    width: 100%;
-  }
+        header p {
+            font-weight: 300;
+            color: var(--dim);
+            margin-top: 6px;
+            font-size: 0.95rem;
+        }
 
-  /* === TARGET SHAPE === */
-  .target-panel {
-    justify-self: end;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-  }
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 40px;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+        }
 
-  .target-panel h2 {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--dim);
-    margin-bottom: 14px;
-  }
+        /* === TARGET SHAPE === */
+        .target-panel {
+            justify-self: end;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
 
-  .target-grid {
-    display: inline-grid;
-    gap: 1px;
-    background: var(--grid-line);
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
+        .target-panel h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-bottom: 14px;
+        }
 
-  .target-grid .cell {
-    width: 38px;
-    height: 38px;
-    background: var(--bg);
-  }
+        .target-grid {
+            display: inline-grid;
+            gap: 1px;
+            background: var(--grid-line);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
 
-  .target-grid .cell.filled {
-    background: var(--target-filled);
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
-  }
+        .target-grid .cell {
+            width: 38px;
+            height: 38px;
+            background: var(--bg);
+        }
 
-  /* === MAIN BOARD === */
-  .board-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+        .target-grid .cell.filled {
+            background: var(--target-filled);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.08);
+        }
 
-  .board-grid {
-    display: inline-grid;
-    gap: 1px;
-    background: var(--grid-line);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-  }
+        /* === MAIN BOARD === */
+        .board-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-  .board-grid .cell {
-    width: var(--cell-size);
-    height: var(--cell-size);
-    background: var(--bg);
-    cursor: pointer;
-    transition: box-shadow 0.15s;
-    position: relative;
-  }
+        .board-grid {
+            display: inline-grid;
+            gap: 1px;
+            background: var(--grid-line);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
 
-  .board-grid .cell:hover {
-    background: var(--cell-hover);
-  }
+        .board-grid .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background: var(--bg);
+            cursor: pointer;
+            transition: box-shadow 0.15s;
+            position: relative;
+        }
 
-  .board-grid .cell.preview {
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 12px rgba(255,255,255,0.04);
-  }
+        .board-grid .cell:hover {
+            background: var(--cell-hover);
+        }
 
-  .board-grid .cell.bbox-hint {
-    background: rgba(255, 255, 255, 0.02);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
-  }
+        .board-grid .cell.preview {
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.04);
+        }
 
-  .board-grid .cell.placed {
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
-  }
+        .board-grid .cell.bbox-hint {
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
 
-  .board-grid .cell.conflict {
-    background: #ff2020 !important;
-    animation: pulse-conflict 0.4s ease;
-  }
+        .board-grid .cell.placed {
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
 
-  @keyframes pulse-conflict {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
+        .board-grid .cell.conflict {
+            background: #ff2020 !important;
+            animation: pulse-conflict 0.4s ease;
+        }
 
-  /* === PIECES PANEL === */
-  .pieces-panel {
-    justify-self: start;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    width: fit-content;
-  }
+        @keyframes pulse-conflict {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
 
-  .pieces-panel h2 {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--dim);
-    margin-bottom: 14px;
-    text-align: center;
-  }
+        /* === PIECES PANEL === */
+        .pieces-panel {
+            justify-self: start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            width: fit-content;
+        }
 
-  .piece-slots {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    align-items: center;
-  }
+        .pieces-panel h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-bottom: 14px;
+            text-align: center;
+        }
 
-  .piece-slot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--slot-bg);
-    width: calc(4 * 26px + 3 * 1px + 20px + 4px);
-    height: calc(4 * 26px + 3 * 1px + 20px + 4px);
-  }
+        .piece-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
 
-  .piece-slot:hover {
-    background: var(--slot-hover-bg);
-  }
+        .piece-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--slot-bg);
+            width: calc(4 * 26px + 3 * 1px + 20px + 4px);
+            height: calc(4 * 26px + 3 * 1px + 20px + 4px);
+        }
 
-  .piece-slot.selected {
-    border-color: var(--accent);
-    background: rgba(255, 107, 74, 0.08);
-  }
+        .piece-slot:hover {
+            background: var(--slot-hover-bg);
+        }
 
-  .piece-slot.used {
-    opacity: 0.3;
-    pointer-events: none;
-  }
+        .piece-slot.selected {
+            border-color: var(--accent);
+            background: rgba(255, 107, 74, 0.08);
+        }
 
-  .piece-mini-grid {
-    display: inline-grid;
-    gap: 1px;
-  }
+        .piece-slot.used {
+            opacity: 0.3;
+            pointer-events: none;
+        }
 
-  .piece-mini-grid .mini-cell {
-    width: 26px;
-    height: 26px;
-    border-radius: 2px;
-    background: var(--mini-cell-bg);
-    border: 1px solid var(--mini-cell-border);
-  }
+        .piece-mini-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
 
-  .piece-mini-grid .mini-cell.filled {
-    border: none;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3);
-  }
+        .piece-mini-grid .mini-cell {
+            width: 26px;
+            height: 26px;
+            border-radius: 2px;
+            background: var(--mini-cell-bg);
+            border: 1px solid var(--mini-cell-border);
+        }
 
-  /* === BUTTONS === */
-  .actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+        .piece-mini-grid .mini-cell.filled {
+            border: none;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        }
 
-  .btn {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    padding: 10px 22px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+        /* === BUTTONS === */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
-  .btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 20px rgba(255, 107, 74, 0.1);
-  }
+        .btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            padding: 10px 22px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
-  .btn.primary {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
-    font-weight: 700;
-  }
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 107, 74, 0.1);
+        }
 
-  .btn.primary:hover {
-    box-shadow: 0 0 30px rgba(255, 107, 74, 0.3);
-    transform: translateY(-1px);
-  }
+        .btn.primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
 
-  /* === SUCCESS OVERLAY === */
-  .success-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: var(--overlay-bg);
-    z-index: 50;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 20px;
-    animation: fadeIn 0.3s ease;
-  }
+        .btn.primary:hover {
+            box-shadow: 0 0 30px rgba(255, 107, 74, 0.3);
+            transform: translateY(-1px);
+        }
 
-  .success-overlay.show { display: flex; }
+        /* === SUCCESS OVERLAY === */
+        .success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--overlay-bg);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s ease;
+        }
 
-  .success-overlay h2 {
-    font-family: 'Space Mono', monospace;
-    font-size: 2.5rem;
-    color: var(--success);
-    animation: successPop 0.5s ease;
-  }
+        .success-overlay.show {
+            display: flex;
+        }
 
-  .success-overlay p {
-    color: var(--dim);
-    font-size: 1.1rem;
-  }
+        .success-overlay h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            color: var(--success);
+            animation: successPop 0.5s ease;
+        }
 
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes successPop {
-    0% { transform: scale(0.5); opacity: 0; }
-    70% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-  }
+        .success-overlay p {
+            color: var(--dim);
+            font-size: 1.1rem;
+        }
 
-  /* === BOTTOM BAR === */
-  .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    padding: 12px 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 48px;
-    z-index: 50;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
-  }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
 
-  .rule-text {
-    color: var(--dim);
-    text-align: center;
-    line-height: 1.6;
-  }
+        @keyframes successPop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
 
-  .rule-text kbd {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-  }
+        /* === BOTTOM BAR === */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            padding: 12px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            z-index: 50;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .rule-text {
+            color: var(--dim);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .rule-text kbd {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
 
 
-  /* === THEME TOGGLE === */
-  #themeToggle {
-    position: fixed;
-    bottom: 68px;
-    right: 20px;
-    z-index: 200;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--dim);
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.15s, color 0.15s;
-    text-transform: none;
-    letter-spacing: 0;
-    font-family: inherit;
-  }
+        /* === THEME TOGGLE === */
+        #themeToggle {
+            position: fixed;
+            bottom: 68px;
+            right: 20px;
+            z-index: 200;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--dim);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s;
+            text-transform: none;
+            letter-spacing: 0;
+            font-family: inherit;
+        }
 
-  #themeToggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: none;
-    transform: none;
-  }
+        #themeToggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: none;
+            transform: none;
+        }
 
-  /* responsive */
-  @media (max-width: 900px) {
-    .game-layout {
-      grid-template-columns: 1fr;
-      justify-items: center;
-    }
-    .target-panel, .pieces-panel { justify-self: center; }
-    :root { --cell-size: 36px; }
-  }
-</style>
+        /* responsive */
+        @media (max-width: 900px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
+
+            .target-panel, .pieces-panel {
+                justify-self: center;
+            }
+
+            :root {
+                --cell-size: 36px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <h1>⬛ Convolution Puzzle</h1>
-    <p>Place all 4 pieces on the board to recreate the target shape</p>
-  </header>
+    <header>
+        <h1>⬛ Convolution Puzzle</h1>
+        <p>Place all 4 pieces on the board to recreate the target shape</p>
+    </header>
 
-  <div class="game-layout">
-    <!-- Target -->
-    <div class="target-panel">
-      <h2>Target Shape</h2>
-      <div class="target-grid" id="targetGrid"></div>
-    </div>
+    <div class="game-layout">
+        <!-- Target -->
+        <div class="target-panel">
+            <h2>Target Shape</h2>
+            <div class="target-grid" id="targetGrid"></div>
+        </div>
 
-    <!-- Board (center column) -->
-    <div class="board-panel">
-      <div class="board-grid" id="boardGrid"></div>
-      <div class="actions">
-        <button class="btn" onclick="undoLast()">↩ Undo</button>
-        <button class="btn" onclick="clearBoard()">✕ Clear</button>
-        <button class="btn primary" onclick="newGame()">▶ New Game</button>
-      </div>
-    </div>
+        <!-- Board (center column) -->
+        <div class="board-panel">
+            <div class="board-grid" id="boardGrid"></div>
+            <div class="actions">
+                <button class="btn" onclick="undoLast()">↩ Undo</button>
+                <button class="btn" onclick="clearBoard()">✕ Clear</button>
+                <button class="btn primary" onclick="newGame()">▶ New Game</button>
+            </div>
+        </div>
 
-    <!-- Pieces -->
-    <div class="pieces-panel">
-      <h2>Pieces</h2>
-      <div class="piece-slots" id="pieceSlots"></div>
+        <!-- Pieces -->
+        <div class="pieces-panel">
+            <h2>Pieces</h2>
+            <div class="piece-slots" id="pieceSlots"></div>
+        </div>
     </div>
-  </div>
 
 </div>
 
 <div class="bottom-bar">
-  <div class="rule-text">
-    <kbd>Click</kbd> a piece to select &nbsp;·&nbsp; <kbd>Click</kbd> the board to place
-  </div>
+    <div class="rule-text">
+        <kbd>Click</kbd> a piece to select &nbsp;·&nbsp; <kbd>Click</kbd> the board to place
+    </div>
 </div>
 
 <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
 
 <!-- Success Overlay -->
 <div class="success-overlay" id="successOverlay">
-  <h2>🎉 Solved!</h2>
-  <p>You reconstructed the shape perfectly.</p>
-  <button class="btn primary" onclick="newGame()" style="margin-top:10px;">Play Again</button>
+    <h2>🎉 Solved!</h2>
+    <p>You reconstructed the shape perfectly.</p>
+    <button class="btn primary" onclick="newGame()" style="margin-top:10px;">Play Again</button>
 </div>
 
 <script>
-// ============================
-// TETROMINO DEFINITIONS
-// ============================
-const TETROMINOES = {
-  I: [[1,1,1,1]],
-  O: [[1,1],[1,1]],
-  T: [[1,1,1],[0,1,0]],
-  S: [[0,1,1],[1,1,0]],
-  Z: [[1,1,0],[0,1,1]],
-  L: [[1,0],[1,0],[1,1]],
-  J: [[0,1],[0,1],[1,1]],
-};
-
-const PIECE_NAMES = Object.keys(TETROMINOES);
-const COLORS = ['var(--piece0)', 'var(--piece1)', 'var(--piece2)', 'var(--piece3)'];
-const BOARD_SIZE = 8;
-
-let boardState = []; // 0 = empty, or pieceIndex+1
-let pieces = [];     // [{shape, color, placed, cells, originalShape}]
-let selectedPiece = -1;
-let placementHistory = []; // stack of piece indices for undo
-let targetShape = []; // 2D array of the target on the board
-
-// ============================
-// UTILITIES
-// ============================
-function deepCopy(arr) { return arr.map(r => [...r]); }
-
-function rotateCW(shape) {
-  const rows = shape.length, cols = shape[0].length;
-  const result = [];
-  for (let c = 0; c < cols; c++) {
-    const row = [];
-    for (let r = rows - 1; r >= 0; r--) row.push(shape[r][c]);
-    result.push(row);
-  }
-  return result;
-}
-
-function flipH(shape) { return shape.map(r => [...r].reverse()); }
-
-function shapeToCoords(shape) {
-  const coords = [];
-  for (let r = 0; r < shape.length; r++)
-    for (let c = 0; c < shape[r].length; c++)
-      if (shape[r][c]) coords.push([r, c]);
-  return coords;
-}
-
-function normalizeCoords(coords) {
-  const minR = Math.min(...coords.map(c => c[0]));
-  const minC = Math.min(...coords.map(c => c[1]));
-  return coords.map(([r, c]) => [r - minR, c - minC]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-}
-
-function randInt(n) { return Math.floor(Math.random() * n); }
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = randInt(i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// ============================
-// PUZZLE GENERATION
-// ============================
-function generatePuzzle() {
-  // Pick 4 unique random tetrominoes (no duplicates)
-  const shuffled = shuffle([...PIECE_NAMES]);
-  const pickedNames = shuffled.slice(0, 4);
-  const chosen = pickedNames.map(name => {
-    let shape = deepCopy(TETROMINOES[name]);
-    const rots = randInt(4);
-    for (let r = 0; r < rots; r++) shape = rotateCW(shape);
-    if (Math.random() > 0.5) shape = flipH(shape);
-    return shape;
-  });
-
-  // Ensure no two pieces look the same after rotation/flip
-  function shapeKey(shape) {
-    return shape.map(r => r.join('')).join('|');
-  }
-  const keys = new Set();
-  for (const s of chosen) {
-    const k = shapeKey(s);
-    if (keys.has(k)) return null; // retry
-    keys.add(k);
-  }
-
-  // Try to place them all on the board without overlap
-  const board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
-  const placements = []; // [{coords on board}]
-
-  for (let i = 0; i < 4; i++) {
-    let placed = false;
-    // Try random positions (brute force with retries)
-    for (let attempt = 0; attempt < 200; attempt++) {
-      const coords = shapeToCoords(chosen[i]);
-      const offR = randInt(BOARD_SIZE);
-      const offC = randInt(BOARD_SIZE);
-      const absolute = coords.map(([r, c]) => [r + offR, c + offC]);
-
-      // Check bounds and overlap
-      const valid = absolute.every(([r, c]) =>
-        r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 0
-      );
-
-      if (valid) {
-        absolute.forEach(([r, c]) => board[r][c] = i + 1);
-        placements.push(absolute);
-        placed = true;
-        break;
-      }
-    }
-
-    if (!placed) return null; // retry entire puzzle
-  }
-
-  return { board, chosen, placements };
-}
-
-function initGame() {
-  let puzzle = null;
-  for (let tries = 0; tries < 50; tries++) {
-    puzzle = generatePuzzle();
-    if (puzzle) break;
-  }
-  if (!puzzle) { alert('Failed to generate, try again.'); return; }
-
-  targetShape = puzzle.board;
-
-  // Pieces the player gets — give them in new random rotations so it's a challenge
-  pieces = puzzle.chosen.map((shape, i) => {
-    return {
-      shape: deepCopy(shape),
-      color: COLORS[i],
-      placed: false,
-      cells: null,
+    // ============================
+    // TETROMINO DEFINITIONS
+    // ============================
+    const TETROMINOES = {
+        I: [[1, 1, 1, 1]],
+        O: [[1, 1], [1, 1]],
+        T: [[1, 1, 1], [0, 1, 0]],
+        S: [[0, 1, 1], [1, 1, 0]],
+        Z: [[1, 1, 0], [0, 1, 1]],
+        L: [[1, 0], [1, 0], [1, 1]],
+        J: [[0, 1], [0, 1], [1, 1]],
     };
-  });
 
-  boardState = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
-  selectedPiece = -1;
-  placementHistory = [];
-}
+    const PIECE_NAMES = Object.keys(TETROMINOES);
+    const COLORS = ['var(--piece0)', 'var(--piece1)', 'var(--piece2)', 'var(--piece3)'];
+    const BOARD_SIZE = 8;
 
-// ============================
-// RENDERING
-// ============================
-function renderTarget() {
-  const grid = document.getElementById('targetGrid');
-  grid.innerHTML = '';
-  grid.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 38px)`;
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell' + (targetShape[r][c] ? ' filled' : '');
-      grid.appendChild(cell);
+    let boardState = []; // 0 = empty, or pieceIndex+1
+    let pieces = [];     // [{shape, color, placed, cells, originalShape}]
+    let selectedPiece = -1;
+    let placementHistory = []; // stack of piece indices for undo
+    let targetShape = []; // 2D array of the target on the board
+
+    // ============================
+    // UTILITIES
+    // ============================
+    function deepCopy(arr) {
+        return arr.map(r => [...r]);
     }
-  }
-}
 
-function renderBoard() {
-  const grid = document.getElementById('boardGrid');
-  grid.innerHTML = '';
-  grid.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, var(--cell-size))`;
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      const val = boardState[r][c];
-      if (val > 0) {
-        cell.classList.add('placed');
-        cell.style.background = pieces[val - 1].color;
-      }
-      cell.addEventListener('click', () => placeSelectedPiece(r, c));
-      cell.addEventListener('mouseenter', () => showPreview(r, c));
-      cell.addEventListener('mouseleave', clearPreview);
-      grid.appendChild(cell);
+    function rotateCW(shape) {
+        const rows = shape.length, cols = shape[0].length;
+        const result = [];
+        for (let c = 0; c < cols; c++) {
+            const row = [];
+            for (let r = rows - 1; r >= 0; r--) row.push(shape[r][c]);
+            result.push(row);
+        }
+        return result;
     }
-  }
-}
 
-function renderPieces() {
-  const slots = document.getElementById('pieceSlots');
-  slots.innerHTML = '';
-  pieces.forEach((piece, i) => {
-    const slot = document.createElement('div');
-    slot.className = 'piece-slot' + (selectedPiece === i ? ' selected' : '') + (piece.placed ? ' used' : '');
-    slot.addEventListener('click', () => selectPiece(i));
-
-    // Mini grid — always 4x4
-    const miniGrid = document.createElement('div');
-    miniGrid.className = 'piece-mini-grid';
-    miniGrid.style.gridTemplateColumns = `repeat(4, 26px)`;
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 4; c++) {
-        const mc = document.createElement('div');
-        const isFilled = r < piece.shape.length && c < piece.shape[0].length && piece.shape[r][c];
-        mc.className = 'mini-cell' + (isFilled ? ' filled' : '');
-        if (isFilled) mc.style.background = piece.color;
-        miniGrid.appendChild(mc);
-      }
+    function flipH(shape) {
+        return shape.map(r => [...r].reverse());
     }
-    slot.appendChild(miniGrid);
 
-    slots.appendChild(slot);
-  });
-}
+    function shapeToCoords(shape) {
+        const coords = [];
+        for (let r = 0; r < shape.length; r++)
+            for (let c = 0; c < shape[r].length; c++)
+                if (shape[r][c]) coords.push([r, c]);
+        return coords;
+    }
 
-// ============================
-// INTERACTION
-// ============================
-function selectPiece(i) {
-  if (pieces[i].placed) return;
-  selectedPiece = (selectedPiece === i) ? -1 : i;
-  renderPieces();
-}
+    function normalizeCoords(coords) {
+        const minR = Math.min(...coords.map(c => c[0]));
+        const minC = Math.min(...coords.map(c => c[1]));
+        return coords.map(([r, c]) => [r - minR, c - minC]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    }
 
-function placeSelectedPiece(boardR, boardC) {
-  if (selectedPiece < 0) return;
-  const piece = pieces[selectedPiece];
-  if (piece.placed) return;
+    function randInt(n) {
+        return Math.floor(Math.random() * n);
+    }
 
-  const coords = shapeToCoords(piece.shape);
-  const absolute = coords.map(([r, c]) => [r + boardR, c + boardC]);
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = randInt(i + 1);
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
 
-  // Check bounds
-  if (!absolute.every(([r, c]) => r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE)) return;
+    // ============================
+    // PUZZLE GENERATION
+    // ============================
+    function generatePuzzle() {
+        // Pick 4 unique random tetrominoes (no duplicates)
+        const shuffled = shuffle([...PIECE_NAMES]);
+        const pickedNames = shuffled.slice(0, 4);
+        const chosen = pickedNames.map(name => {
+            let shape = deepCopy(TETROMINOES[name]);
+            const rots = randInt(4);
+            for (let r = 0; r < rots; r++) shape = rotateCW(shape);
+            if (Math.random() > 0.5) shape = flipH(shape);
+            return shape;
+        });
 
-  // Check overlap
-  if (!absolute.every(([r, c]) => boardState[r][c] === 0)) {
-    // Flash conflict
-    const grid = document.getElementById('boardGrid');
-    absolute.forEach(([r, c]) => {
-      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && boardState[r][c] !== 0) {
-        grid.children[r * BOARD_SIZE + c].classList.add('conflict');
-        setTimeout(() => grid.children[r * BOARD_SIZE + c].classList.remove('conflict'), 400);
-      }
+        // Ensure no two pieces look the same after rotation/flip
+        function shapeKey(shape) {
+            return shape.map(r => r.join('')).join('|');
+        }
+
+        const keys = new Set();
+        for (const s of chosen) {
+            const k = shapeKey(s);
+            if (keys.has(k)) return null; // retry
+            keys.add(k);
+        }
+
+        // Try to place them all on the board without overlap
+        const board = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+        const placements = []; // [{coords on board}]
+
+        for (let i = 0; i < 4; i++) {
+            let placed = false;
+            // Try random positions (brute force with retries)
+            for (let attempt = 0; attempt < 200; attempt++) {
+                const coords = shapeToCoords(chosen[i]);
+                const offR = randInt(BOARD_SIZE);
+                const offC = randInt(BOARD_SIZE);
+                const absolute = coords.map(([r, c]) => [r + offR, c + offC]);
+
+                // Check bounds and overlap
+                const valid = absolute.every(([r, c]) =>
+                    r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 0
+                );
+
+                if (valid) {
+                    absolute.forEach(([r, c]) => board[r][c] = i + 1);
+                    placements.push(absolute);
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed) return null; // retry entire puzzle
+        }
+
+        return {board, chosen, placements};
+    }
+
+    function initGame() {
+        let puzzle = null;
+        for (let tries = 0; tries < 50; tries++) {
+            puzzle = generatePuzzle();
+            if (puzzle) break;
+        }
+        if (!puzzle) {
+            alert('Failed to generate, try again.');
+            return;
+        }
+
+        targetShape = puzzle.board;
+
+        // Pieces the player gets — give them in new random rotations so it's a challenge
+        pieces = puzzle.chosen.map((shape, i) => {
+            return {
+                shape: deepCopy(shape),
+                color: COLORS[i],
+                placed: false,
+                cells: null,
+            };
+        });
+
+        boardState = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+        selectedPiece = -1;
+        placementHistory = [];
+    }
+
+    // ============================
+    // RENDERING
+    // ============================
+    function renderTarget() {
+        const grid = document.getElementById('targetGrid');
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 38px)`;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell' + (targetShape[r][c] ? ' filled' : '');
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function renderBoard() {
+        const grid = document.getElementById('boardGrid');
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, var(--cell-size))`;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                const val = boardState[r][c];
+                if (val > 0) {
+                    cell.classList.add('placed');
+                    cell.style.background = pieces[val - 1].color;
+                }
+                cell.addEventListener('click', () => placeSelectedPiece(r, c));
+                cell.addEventListener('mouseenter', () => showPreview(r, c));
+                cell.addEventListener('mouseleave', clearPreview);
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function renderPieces() {
+        const slots = document.getElementById('pieceSlots');
+        slots.innerHTML = '';
+        pieces.forEach((piece, i) => {
+            const slot = document.createElement('div');
+            slot.className = 'piece-slot' + (selectedPiece === i ? ' selected' : '') + (piece.placed ? ' used' : '');
+            slot.addEventListener('click', () => selectPiece(i));
+
+            // Mini grid — always 4x4
+            const miniGrid = document.createElement('div');
+            miniGrid.className = 'piece-mini-grid';
+            miniGrid.style.gridTemplateColumns = `repeat(4, 26px)`;
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const mc = document.createElement('div');
+                    const isFilled = r < piece.shape.length && c < piece.shape[0].length && piece.shape[r][c];
+                    mc.className = 'mini-cell' + (isFilled ? ' filled' : '');
+                    if (isFilled) mc.style.background = piece.color;
+                    miniGrid.appendChild(mc);
+                }
+            }
+            slot.appendChild(miniGrid);
+
+            slots.appendChild(slot);
+        });
+    }
+
+    // ============================
+    // INTERACTION
+    // ============================
+    function selectPiece(i) {
+        if (pieces[i].placed) return;
+        selectedPiece = (selectedPiece === i) ? -1 : i;
+        renderPieces();
+    }
+
+    function placeSelectedPiece(boardR, boardC) {
+        if (selectedPiece < 0) return;
+        const piece = pieces[selectedPiece];
+        if (piece.placed) return;
+
+        const coords = shapeToCoords(piece.shape);
+        const absolute = coords.map(([r, c]) => [r + boardR, c + boardC]);
+
+        // Check bounds
+        if (!absolute.every(([r, c]) => r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE)) return;
+
+        // Check overlap
+        if (!absolute.every(([r, c]) => boardState[r][c] === 0)) {
+            // Flash conflict
+            const grid = document.getElementById('boardGrid');
+            absolute.forEach(([r, c]) => {
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && boardState[r][c] !== 0) {
+                    grid.children[r * BOARD_SIZE + c].classList.add('conflict');
+                    setTimeout(() => grid.children[r * BOARD_SIZE + c].classList.remove('conflict'), 400);
+                }
+            });
+            return;
+        }
+
+        // Place
+        const idx = selectedPiece;
+        absolute.forEach(([r, c]) => boardState[r][c] = idx + 1);
+        piece.placed = true;
+        piece.cells = absolute;
+        placementHistory.push(idx);
+        selectedPiece = -1;
+
+        renderBoard();
+        renderPieces();
+        checkWin();
+    }
+
+    function showPreview(boardR, boardC) {
+        if (selectedPiece < 0) return;
+        const piece = pieces[selectedPiece];
+        if (piece.placed) return;
+
+        const coords = shapeToCoords(piece.shape);
+        const absolute = coords.map(([r, c]) => [r + boardR, c + boardC]);
+        const grid = document.getElementById('boardGrid');
+
+        // Show 4x4 bounding box hint
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                const br = boardR + r;
+                const bc = boardC + c;
+                if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE && boardState[br][bc] === 0) {
+                    grid.children[br * BOARD_SIZE + bc].classList.add('bbox-hint');
+                }
+            }
+        }
+
+        // Show piece cells on top
+        absolute.forEach(([r, c]) => {
+            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                const cell = grid.children[r * BOARD_SIZE + c];
+                if (boardState[r][c] === 0) {
+                    cell.classList.remove('bbox-hint');
+                    cell.classList.add('preview');
+                    cell.style.boxShadow = `inset 0 0 12px ${piece.color}40`;
+                }
+            }
+        });
+    }
+
+    function clearPreview() {
+        const grid = document.getElementById('boardGrid');
+        for (const cell of grid.children) {
+            cell.classList.remove('preview');
+            cell.classList.remove('bbox-hint');
+            if (!cell.classList.contains('placed')) cell.style.boxShadow = '';
+        }
+    }
+
+    function undoLast() {
+        if (placementHistory.length === 0) return;
+        const idx = placementHistory.pop();
+        const piece = pieces[idx];
+        if (piece.cells) {
+            piece.cells.forEach(([r, c]) => boardState[r][c] = 0);
+        }
+        piece.placed = false;
+        piece.cells = null;
+        selectedPiece = -1;
+        renderBoard();
+        renderPieces();
+    }
+
+    function clearBoard() {
+        pieces.forEach(p => {
+            p.placed = false;
+            p.cells = null;
+        });
+        boardState = Array.from({length: BOARD_SIZE}, () => Array(BOARD_SIZE).fill(0));
+        placementHistory = [];
+        selectedPiece = -1;
+        renderBoard();
+        renderPieces();
+    }
+
+    function checkWin() {
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const target = targetShape[r][c] > 0;
+                const actual = boardState[r][c] > 0;
+                if (target !== actual) return;
+            }
+        }
+        // Win!
+        setTimeout(() => {
+            document.getElementById('successOverlay').classList.add('show');
+        }, 200);
+    }
+
+    function newGame() {
+        document.getElementById('successOverlay').classList.remove('show');
+        initGame();
+        renderTarget();
+        renderBoard();
+        renderPieces();
+    }
+
+    // ============================
+    // THEME TOGGLE
+    // ============================
+    function toggleTheme() {
+        const isLight = document.body.classList.toggle('light-mode');
+        document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
     });
-    return;
-  }
 
-  // Place
-  const idx = selectedPiece;
-  absolute.forEach(([r, c]) => boardState[r][c] = idx + 1);
-  piece.placed = true;
-  piece.cells = absolute;
-  placementHistory.push(idx);
-  selectedPiece = -1;
-
-  renderBoard();
-  renderPieces();
-  checkWin();
-}
-
-function showPreview(boardR, boardC) {
-  if (selectedPiece < 0) return;
-  const piece = pieces[selectedPiece];
-  if (piece.placed) return;
-
-  const coords = shapeToCoords(piece.shape);
-  const absolute = coords.map(([r, c]) => [r + boardR, c + boardC]);
-  const grid = document.getElementById('boardGrid');
-
-  // Show 4x4 bounding box hint
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const br = boardR + r;
-      const bc = boardC + c;
-      if (br >= 0 && br < BOARD_SIZE && bc >= 0 && bc < BOARD_SIZE && boardState[br][bc] === 0) {
-        grid.children[br * BOARD_SIZE + bc].classList.add('bbox-hint');
-      }
-    }
-  }
-
-  // Show piece cells on top
-  absolute.forEach(([r, c]) => {
-    if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
-      const cell = grid.children[r * BOARD_SIZE + c];
-      if (boardState[r][c] === 0) {
-        cell.classList.remove('bbox-hint');
-        cell.classList.add('preview');
-        cell.style.boxShadow = `inset 0 0 12px ${piece.color}40`;
-      }
-    }
-  });
-}
-
-function clearPreview() {
-  const grid = document.getElementById('boardGrid');
-  for (const cell of grid.children) {
-    cell.classList.remove('preview');
-    cell.classList.remove('bbox-hint');
-    if (!cell.classList.contains('placed')) cell.style.boxShadow = '';
-  }
-}
-
-function undoLast() {
-  if (placementHistory.length === 0) return;
-  const idx = placementHistory.pop();
-  const piece = pieces[idx];
-  if (piece.cells) {
-    piece.cells.forEach(([r, c]) => boardState[r][c] = 0);
-  }
-  piece.placed = false;
-  piece.cells = null;
-  selectedPiece = -1;
-  renderBoard();
-  renderPieces();
-}
-
-function clearBoard() {
-  pieces.forEach(p => { p.placed = false; p.cells = null; });
-  boardState = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
-  placementHistory = [];
-  selectedPiece = -1;
-  renderBoard();
-  renderPieces();
-}
-
-function checkWin() {
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      const target = targetShape[r][c] > 0;
-      const actual = boardState[r][c] > 0;
-      if (target !== actual) return;
-    }
-  }
-  // Win!
-  setTimeout(() => {
-    document.getElementById('successOverlay').classList.add('show');
-  }, 200);
-}
-
-function newGame() {
-  document.getElementById('successOverlay').classList.remove('show');
-  initGame();
-  renderTarget();
-  renderBoard();
-  renderPieces();
-}
-
-// ============================
-// THEME TOGGLE
-// ============================
-function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-mode');
-  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
-}
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-});
-
-// ============================
-// INIT
-// ============================
-newGame();
-document.body.classList.add('ready');
+    // ============================
+    // INIT
+    // ============================
+    newGame();
+    document.body.classList.add('ready');
 </script>
 </body>
 </html>

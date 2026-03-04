@@ -26,14 +26,14 @@
             --wrong: #ff4a4a;
             --cell-hover: #1a1a2a;
             --target-filled: #3a3a50;
-            --border-ring-bg: rgba(255,255,255,0.015);
-            --mini-cell-bg: rgba(255,255,255,0.03);
-            --mini-cell-border: rgba(255,255,255,0.04);
-            --slot-bg: rgba(255,255,255,0.02);
-            --slot-hover-bg: rgba(255,255,255,0.04);
-            --fm-cell-bg: rgba(255,255,255,0.02);
-            --fm-cell-border: rgba(255,255,255,0.04);
-            --fm-cell-text: rgba(255,255,255,0.3);
+            --border-ring-bg: rgba(255, 255, 255, 0.015);
+            --mini-cell-bg: rgba(255, 255, 255, 0.03);
+            --mini-cell-border: rgba(255, 255, 255, 0.04);
+            --slot-bg: rgba(255, 255, 255, 0.02);
+            --slot-hover-bg: rgba(255, 255, 255, 0.04);
+            --fm-cell-bg: rgba(255, 255, 255, 0.02);
+            --fm-cell-border: rgba(255, 255, 255, 0.04);
+            --fm-cell-text: rgba(255, 255, 255, 0.3);
         }
 
         body.light-mode {
@@ -52,14 +52,14 @@
             --wrong: #d03030;
             --cell-hover: #e0e0ee;
             --target-filled: #b0b0cc;
-            --border-ring-bg: rgba(0,0,0,0.04);
-            --mini-cell-bg: rgba(0,0,0,0.06);
-            --mini-cell-border: rgba(0,0,0,0.14);
-            --slot-bg: rgba(0,0,0,0.03);
-            --slot-hover-bg: rgba(0,0,0,0.06);
-            --fm-cell-bg: rgba(0,0,0,0.04);
-            --fm-cell-border: rgba(0,0,0,0.1);
-            --fm-cell-text: rgba(0,0,0,0.35);
+            --border-ring-bg: rgba(0, 0, 0, 0.04);
+            --mini-cell-bg: rgba(0, 0, 0, 0.06);
+            --mini-cell-border: rgba(0, 0, 0, 0.14);
+            --slot-bg: rgba(0, 0, 0, 0.03);
+            --slot-hover-bg: rgba(0, 0, 0, 0.06);
+            --fm-cell-bg: rgba(0, 0, 0, 0.04);
+            --fm-cell-border: rgba(0, 0, 0, 0.1);
+            --fm-cell-text: rgba(0, 0, 0, 0.35);
         }
 
         * {
@@ -76,7 +76,10 @@
             overflow-x: hidden;
             visibility: hidden;
         }
-        body.ready { visibility: visible; }
+
+        body.ready {
+            visibility: visible;
+        }
 
         body::before {
             content: '';
@@ -256,7 +259,7 @@
 
         .board-grid .cell.filled {
             background: var(--target-filled);
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.08);
         }
 
         .board-grid .cell.bbox-hint {
@@ -341,7 +344,6 @@
         }
 
 
-
         /* === FEATURE MAP PANEL === */
         .fmap-panel {
             background: var(--surface);
@@ -401,9 +403,17 @@
         }
 
         @keyframes layerPop {
-            0% { transform: translateY(-50%) scale(0.7); opacity: 0; }
-            70% { transform: translateY(-50%) scale(1.05); }
-            100% { transform: translateY(-50%) scale(1); opacity: 1; }
+            0% {
+                transform: translateY(-50%) scale(0.7);
+                opacity: 0;
+            }
+            70% {
+                transform: translateY(-50%) scale(1.05);
+            }
+            100% {
+                transform: translateY(-50%) scale(1);
+                opacity: 1;
+            }
         }
 
         .fmap-layer-tag {
@@ -430,7 +440,9 @@
             white-space: nowrap;
         }
 
-        .fmap-stack:hover .fmap-hint { opacity: 0; }
+        .fmap-stack:hover .fmap-hint {
+            opacity: 0;
+        }
 
         .fmap-grid {
             display: inline-grid;
@@ -491,8 +503,13 @@
                 justify-content: center;
             }
 
-            .pieces-panel { padding: 10px; }
-            .pieces-panel h2 { margin-bottom: 8px; }
+            .pieces-panel {
+                padding: 10px;
+            }
+
+            .pieces-panel h2 {
+                margin-bottom: 8px;
+            }
         }
     </style>
 </head>
@@ -543,8 +560,8 @@
     };
 
     const KERNELS = [
-        { name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot' },
-        { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
+        {name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot'},
+        {name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool'},
     ];
 
     function convolve(input, kernel) {
@@ -948,7 +965,11 @@
             // Correct!
             piece.found = true;
             foundCount++;
-            boardSnapshots.push({ board: getPieceSnapshot(selectedPiece), color: piece.rawColor, pieceIdx: selectedPiece });
+            boardSnapshots.push({
+                board: getPieceSnapshot(selectedPiece),
+                color: piece.rawColor,
+                pieceIdx: selectedPiece
+            });
             selectedPiece = -1;
             renderBoard();
             renderPieces();
