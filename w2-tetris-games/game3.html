@@ -19,11 +19,11 @@
             --cool: #4a9eff;
             --purple: #a86eff;
             --cell: 44px;
-            --cell-bg: rgba(255,255,255,0.02);
-            --cell-border: rgba(255,255,255,0.04);
-            --cell-text: rgba(255,255,255,0.3);
-            --kcell-bg: rgba(255,255,255,0.03);
-            --kcell-border: rgba(255,255,255,0.05);
+            --cell-bg: rgba(255, 255, 255, 0.02);
+            --cell-border: rgba(255, 255, 255, 0.04);
+            --cell-text: rgba(255, 255, 255, 0.3);
+            --kcell-bg: rgba(255, 255, 255, 0.03);
+            --kcell-border: rgba(255, 255, 255, 0.05);
         }
 
         body.light-mode {
@@ -37,16 +37,22 @@
             --warm: #a06000;
             --cool: #1a6ad0;
             --purple: #6030b0;
-            --cell-bg: rgba(0,0,0,0.04);
-            --cell-border: rgba(0,0,0,0.1);
-            --cell-text: rgba(0,0,0,0.3);
-            --kcell-bg: rgba(0,0,0,0.04);
-            --kcell-border: rgba(0,0,0,0.1);
+            --cell-bg: rgba(0, 0, 0, 0.04);
+            --cell-border: rgba(0, 0, 0, 0.1);
+            --cell-text: rgba(0, 0, 0, 0.3);
+            --kcell-bg: rgba(0, 0, 0, 0.04);
+            --kcell-border: rgba(0, 0, 0, 0.1);
         }
 
-        body.no-transition * { transition: none !important; }
+        body.no-transition * {
+            transition: none !important;
+        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: var(--bg);
@@ -74,7 +80,11 @@
             align-items: center;
         }
 
-        header { text-align: center; margin-bottom: 16px; }
+        header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
         header h1 {
             font-family: 'JetBrains Mono', monospace;
             font-size: 1.6rem;
@@ -82,6 +92,7 @@
             letter-spacing: -0.5px;
             color: var(--accent);
         }
+
         header p {
             font-weight: 300;
             color: var(--dim);
@@ -111,13 +122,19 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-        .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         .btn.active {
             background: var(--accent);
             color: var(--bg);
             border-color: var(--accent);
             font-weight: 700;
         }
+
         .btn.run {
             background: var(--accent);
             color: var(--bg);
@@ -125,6 +142,7 @@
             font-weight: 700;
             padding: 9px 28px;
         }
+
         .btn.run:hover {
             box-shadow: 0 0 24px rgba(0, 228, 160, 0.3);
             transform: translateY(-1px);
@@ -147,7 +165,10 @@
             transition: opacity 0.5s ease;
             position: relative;
         }
-        .stage.active { opacity: 1; }
+
+        .stage.active {
+            opacity: 1;
+        }
 
         .stage-label {
             font-family: 'JetBrains Mono', monospace;
@@ -161,7 +182,10 @@
             width: 100%;
             text-align: center;
         }
-        .stage.active .stage-label { color: var(--accent); }
+
+        .stage.active .stage-label {
+            color: var(--accent);
+        }
 
         .arrow {
             display: flex;
@@ -172,17 +196,36 @@
             transition: opacity 0.5s ease;
             cursor: default;
         }
-        .arrow.active { opacity: 1; }
-        .arrow svg { width: 48px; height: 24px; }
+
+        .arrow.active {
+            opacity: 1;
+        }
+
+        .arrow svg {
+            width: 48px;
+            height: 24px;
+        }
+
         .arrow-line {
             stroke: var(--accent);
             stroke-width: 2;
             stroke-dasharray: 6 4;
             stroke-dashoffset: 0;
         }
-        .arrow.active .arrow-line { animation: dashFlow 0.8s linear infinite; }
-        @keyframes dashFlow { to { stroke-dashoffset: -10; } }
-        .arrow-head { fill: var(--accent); }
+
+        .arrow.active .arrow-line {
+            animation: dashFlow 0.8s linear infinite;
+        }
+
+        @keyframes dashFlow {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .arrow-head {
+            fill: var(--accent);
+        }
 
         .grid-container {
             background: var(--surface);
@@ -192,7 +235,11 @@
             position: relative;
         }
 
-        .grid { display: inline-grid; gap: 2px; }
+        .grid {
+            display: inline-grid;
+            gap: 2px;
+        }
+
         .grid .cell {
             width: var(--cell);
             height: var(--cell);
@@ -215,35 +262,51 @@
             color: var(--bg);
             font-weight: 700;
         }
+
         .grid .cell.hot {
             background: var(--hot);
             box-shadow: 0 0 16px rgba(255, 92, 92, 0.3);
             color: #fff;
             font-weight: 700;
         }
+
         .grid .cell.warm {
             background: var(--warm);
             box-shadow: 0 0 14px rgba(255, 179, 71, 0.25);
             color: var(--bg);
             font-weight: 700;
         }
+
         .grid .cell.cool {
             background: var(--cool);
             box-shadow: 0 0 14px rgba(74, 158, 255, 0.25);
             color: #fff;
             font-weight: 700;
         }
+
         .grid .cell.accent {
             background: var(--accent);
             box-shadow: 0 0 18px rgba(0, 228, 160, 0.35);
             color: var(--bg);
             font-weight: 700;
         }
-        .grid .cell.pop { animation: cellPop 0.4s ease; }
+
+        .grid .cell.pop {
+            animation: cellPop 0.4s ease;
+        }
+
         @keyframes cellPop {
-            0% { transform: scale(0.5); opacity: 0; }
-            70% { transform: scale(1.15); }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .fmap-stack {
@@ -252,37 +315,47 @@
             min-width: calc(4 * var(--cell) + 36px);
             min-height: calc(4 * var(--cell) + 36px);
         }
+
         .fmap-stack.fmap-stack-sm {
             min-width: calc(2 * var(--cell) + 32px);
             min-height: calc(2 * var(--cell) + 32px);
         }
+
         .fmap-back, .fmap-front {
             position: absolute;
             transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
         }
+
         .fmap-back {
             top: 18px;
             left: 18px;
             opacity: 0.5;
             z-index: 1;
         }
+
         .fmap-front {
             top: 0;
             left: 0;
             z-index: 2;
             box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4);
         }
-        .fmap-stack:hover { z-index: 10; }
+
+        .fmap-stack:hover {
+            z-index: 10;
+        }
+
         .fmap-stack:hover .fmap-front {
             transform: translateX(-55%);
             box-shadow: none;
         }
+
         .fmap-stack:hover .fmap-back {
             transform: translateX(55%);
             opacity: 1;
             top: 0;
             left: 0;
         }
+
         .fmap-hint {
             position: absolute;
             bottom: -28px;
@@ -297,7 +370,10 @@
             transition: opacity 0.3s;
             white-space: nowrap;
         }
-        .fmap-stack:hover .fmap-hint { opacity: 0; }
+
+        .fmap-stack:hover .fmap-hint {
+            opacity: 0;
+        }
 
         .fmap-tag {
             font-family: 'JetBrains Mono', monospace;
@@ -314,6 +390,7 @@
             flex-wrap: wrap;
             justify-content: center;
         }
+
         .kernel-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -322,6 +399,7 @@
             text-align: center;
             cursor: default;
         }
+
         .kernel-card .kernel-title {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem;
@@ -330,7 +408,12 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .kernel-grid { display: inline-grid; gap: 1px; }
+
+        .kernel-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
         .kernel-grid .kcell {
             width: 22px;
             height: 22px;
@@ -345,12 +428,14 @@
             color: var(--dim);
             cursor: default;
         }
+
         .kernel-grid .kcell.k-on-hot {
             background: rgba(255, 92, 92, 0.15);
             border-color: rgba(255, 92, 92, 0.3);
             color: var(--hot);
             font-weight: 700;
         }
+
         .kernel-grid .kcell.k-on-cool {
             background: rgba(74, 158, 255, 0.15);
             border-color: rgba(74, 158, 255, 0.3);
@@ -404,9 +489,17 @@
             opacity: 0.6;
         }
 
-        .dense-cell.active-cell .dc-val { color: var(--accent); }
-        .dense-cell.hot-cell .dc-val { color: var(--hot); }
-        .dense-cell.cool-cell .dc-val { color: var(--cool); }
+        .dense-cell.active-cell .dc-val {
+            color: var(--accent);
+        }
+
+        .dense-cell.hot-cell .dc-val {
+            color: var(--hot);
+        }
+
+        .dense-cell.cool-cell .dc-val {
+            color: var(--cool);
+        }
 
         .dense-cell.perfect {
             background: rgba(0, 228, 160, 0.12);
@@ -415,11 +508,17 @@
             animation: perfectPulse 1.2s ease infinite;
         }
 
-        .dense-cell.perfect .dc-val { color: var(--accent) !important; }
+        .dense-cell.perfect .dc-val {
+            color: var(--accent) !important;
+        }
 
         @keyframes perfectPulse {
-            0%, 100% { box-shadow: 0 0 14px rgba(0, 228, 160, 0.35); }
-            50% { box-shadow: 0 0 22px rgba(0, 228, 160, 0.55); }
+            0%, 100% {
+                box-shadow: 0 0 14px rgba(0, 228, 160, 0.35);
+            }
+            50% {
+                box-shadow: 0 0 22px rgba(0, 228, 160, 0.55);
+            }
         }
 
         .dense-equation {
@@ -430,9 +529,18 @@
             line-height: 1.6;
         }
 
-        .dense-equation .eq-sum { font-weight: 700; font-size: 0.8rem; }
-        .dense-equation .eq-sum.pass { color: var(--accent); }
-        .dense-equation .eq-sum.fail { color: var(--hot); }
+        .dense-equation .eq-sum {
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .dense-equation .eq-sum.pass {
+            color: var(--accent);
+        }
+
+        .dense-equation .eq-sum.fail {
+            color: var(--hot);
+        }
 
         .result-box {
             display: flex;
@@ -440,6 +548,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .result-value {
             font-family: 'JetBrains Mono', monospace;
             font-size: 3rem;
@@ -455,18 +564,21 @@
             transition: all 0.5s ease;
             cursor: default;
         }
+
         .result-value.is-one {
             color: var(--accent);
             border-color: var(--accent);
             box-shadow: 0 0 30px rgba(0, 228, 160, 0.25);
             background: rgba(0, 228, 160, 0.08);
         }
+
         .result-value.is-zero {
             color: var(--hot);
             border-color: var(--hot);
             box-shadow: 0 0 30px rgba(255, 92, 92, 0.2);
             background: rgba(255, 92, 92, 0.06);
         }
+
         .result-reason {
             font-size: 0.72rem;
             color: var(--dim);
@@ -481,6 +593,7 @@
             margin-bottom: 16px;
             align-items: center;
         }
+
         .step-dot {
             width: 10px;
             height: 10px;
@@ -488,8 +601,18 @@
             background: var(--border);
             transition: all 0.3s;
         }
-        .step-dot.done { background: var(--accent); box-shadow: 0 0 8px rgba(0, 228, 160, 0.4); }
-        .step-dot.current { background: var(--accent); transform: scale(1.3); box-shadow: 0 0 12px rgba(0, 228, 160, 0.5); }
+
+        .step-dot.done {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(0, 228, 160, 0.4);
+        }
+
+        .step-dot.current {
+            background: var(--accent);
+            transform: scale(1.3);
+            box-shadow: 0 0 12px rgba(0, 228, 160, 0.5);
+        }
+
         .step-text {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
@@ -508,12 +631,17 @@
             line-height: 1.4;
             position: relative;
         }
+
         .ep-default {
             color: var(--dim);
             opacity: 0.5;
             transition: opacity 0.15s;
         }
-        .ep-default.hidden { opacity: 0; }
+
+        .ep-default.hidden {
+            opacity: 0;
+        }
+
         .ep-body {
             position: absolute;
             inset: 0;
@@ -527,10 +655,23 @@
             transition: opacity 0.15s;
             white-space: nowrap;
         }
-        .ep-body.visible { opacity: 1; }
-        .ep-title { color: var(--accent); font-weight: 700; }
-        .ep-sep { color: var(--dim); }
-        .ep-text { color: var(--text); }
+
+        .ep-body.visible {
+            opacity: 1;
+        }
+
+        .ep-title {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .ep-sep {
+            color: var(--dim);
+        }
+
+        .ep-text {
+            color: var(--text);
+        }
 
         /* === THEME TOGGLE === */
         #themeToggle {
@@ -549,26 +690,71 @@
             transition: border-color 0.15s, color 0.15s;
             flex-shrink: 0;
         }
-        #themeToggle:hover { border-color: var(--accent); color: var(--accent); }
+
+        #themeToggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
 
         @media (max-width: 1100px) {
-            :root { --cell: 34px; }
-            .arrow { padding: 0 8px; }
-            .arrow svg { width: 32px; }
+            :root {
+                --cell: 34px;
+            }
+
+            .arrow {
+                padding: 0 8px;
+            }
+
+            .arrow svg {
+                width: 32px;
+            }
         }
+
         @media (max-width: 900px) {
-            :root { --cell: 30px; }
-            .pipeline { flex-wrap: wrap; gap: 20px; }
-            .arrow { display: none; }
+            :root {
+                --cell: 30px;
+            }
+
+            .pipeline {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .arrow {
+                display: none;
+            }
         }
+
         @media (max-width: 600px) {
-            :root { --cell: 26px; }
-            .app { padding: 16px 12px; }
-            header h1 { font-size: 1.2rem; }
-            header p { font-size: 0.78rem; }
-            .dense-cell { padding: 3px 4px; }
-            .dense-cell .dc-val { font-size: 0.65rem; }
-            .result-value { width: 70px; height: 70px; font-size: 2.4rem; }
+            :root {
+                --cell: 26px;
+            }
+
+            .app {
+                padding: 16px 12px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            header p {
+                font-size: 0.78rem;
+            }
+
+            .dense-cell {
+                padding: 3px 4px;
+            }
+
+            .dense-cell .dc-val {
+                font-size: 0.65rem;
+            }
+
+            .result-value {
+                width: 70px;
+                height: 70px;
+                font-size: 2.4rem;
+            }
         }
     </style>
 </head>
@@ -607,7 +793,10 @@
         </div>
 
         <div class="arrow" id="arrow0">
-            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
         </div>
 
         <div class="stage" id="stageKernels">
@@ -615,8 +804,11 @@
             <div class="kernels-row" id="kernelsRow"></div>
         </div>
 
-        <div class="arrow" id="arrow1" >
-            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+        <div class="arrow" id="arrow1">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
         </div>
 
         <div class="stage" id="stageFeatures">
@@ -634,8 +826,11 @@
             </div>
         </div>
 
-        <div class="arrow" id="arrow2" >
-            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+        <div class="arrow" id="arrow2">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
         </div>
 
         <div class="stage" id="stagePooled">
@@ -653,8 +848,11 @@
             </div>
         </div>
 
-        <div class="arrow" id="arrow3" >
-            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+        <div class="arrow" id="arrow3">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
         </div>
 
         <div class="stage" id="stageDense">
@@ -665,8 +863,11 @@
             </div>
         </div>
 
-        <div class="arrow" id="arrow4" >
-            <svg viewBox="0 0 48 24"><line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/><polygon class="arrow-head" points="36,6 48,12 36,18"/></svg>
+        <div class="arrow" id="arrow4">
+            <svg viewBox="0 0 48 24">
+                <line class="arrow-line" x1="0" y1="12" x2="38" y2="12"/>
+                <polygon class="arrow-head" points="36,6 48,12 36,18"/>
+            </svg>
         </div>
 
         <div class="stage" id="stageResult">
@@ -694,12 +895,30 @@
     // EXPLANATIONS
     // ============================
     const EXPLANATIONS = {
-        stageInput:    { title: 'Input image',           text: 'A binary 6×6 grid fed raw into the CNN. Each cell is 1 (pixel on) or 0 (off) — the raw signal the network has to classify.' },
-        stageKernels:  { title: 'Convolutional filters', text: 'Two 3×3 learned filters slide across every position of the input and produce a 1 only where they find a perfect match.' },
-        stageFeatures: { title: 'Feature maps',          text: 'One output map per filter. A highlighted 1 means that filter found its pattern at that location in the image.' },
-        stagePooled:   { title: 'Max pooling (2×2)',     text: 'Each 2×2 region of a feature map is collapsed to its maximum value, making detection shift-invariant.' },
-        stageDense:    { title: 'Dense layer',           text: 'All 8 pooled values are flattened and summed. If the sum reaches 2 or more, the network fires a positive output.' },
-        stageResult:   { title: 'Output',                text: 'The final binary decision: 1 means a pattern (Cross or H) was detected, 0 means no match.' },
+        stageInput: {
+            title: 'Input image',
+            text: 'A binary 6×6 grid fed raw into the CNN. Each cell is 1 (pixel on) or 0 (off) — the raw signal the network has to classify.'
+        },
+        stageKernels: {
+            title: 'Convolutional filters',
+            text: 'Two 3×3 learned filters slide across every position of the input and produce a 1 only where they find a perfect match.'
+        },
+        stageFeatures: {
+            title: 'Feature maps',
+            text: 'One output map per filter. A highlighted 1 means that filter found its pattern at that location in the image.'
+        },
+        stagePooled: {
+            title: 'Max pooling (2×2)',
+            text: 'Each 2×2 region of a feature map is collapsed to its maximum value, making detection shift-invariant.'
+        },
+        stageDense: {
+            title: 'Dense layer',
+            text: 'All 8 pooled values are flattened and summed. If the sum reaches 2 or more, the network fires a positive output.'
+        },
+        stageResult: {
+            title: 'Output',
+            text: 'The final binary decision: 1 means a pattern (Cross or H) was detected, 0 means no match.'
+        },
     };
 
     function explain(key) {
@@ -727,8 +946,8 @@
     // CNN
     // ============================
     const KERNELS = [
-        { name: 'Left T',  data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot'  },
-        { name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool' },
+        {name: 'Left T', data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]], color: 'hot'},
+        {name: 'Right T', data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]], color: 'cool'},
     ];
 
     const PERFECT_MATCH = 1;
@@ -740,14 +959,14 @@
     function selectShape(type) {
         if (animating) return;
         currentShape = type;
-        document.getElementById('btnCross').className = 'btn' + (type === 'cross'  ? ' active' : '');
-        document.getElementById('btnH').className     = 'btn' + (type === 'H'      ? ' active' : '');
+        document.getElementById('btnCross').className = 'btn' + (type === 'cross' ? ' active' : '');
+        document.getElementById('btnH').className = 'btn' + (type === 'H' ? ' active' : '');
         document.getElementById('btnRandom').className = 'btn' + (type === 'random' ? ' active' : '');
         resetPipeline();
     }
 
     const BASE_SHAPES = {
-        H:     [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
+        H: [[1, 0, 1], [1, 1, 1], [1, 0, 1]],
         cross: [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
     };
 
@@ -796,16 +1015,28 @@
                     const coords = shapeToCoords(shape);
                     const abs = coords.map(([r, c]) => [r + offR, c + offC]);
                     const valid = abs.every(([r, c]) => r >= 1 && r <= 4 && c >= 1 && c <= 4 && grid[r][c] === 0);
-                    if (valid) { abs.forEach(([r, c]) => grid[r][c] = 1); placed = true; break; }
+                    if (valid) {
+                        abs.forEach(([r, c]) => grid[r][c] = 1);
+                        placed = true;
+                        break;
+                    }
                 }
-                if (!placed) { success = false; break; }
+                if (!placed) {
+                    success = false;
+                    break;
+                }
             }
             if (!success) continue;
             return grid;
         }
         const grid = Array.from({length: 6}, () => Array(6).fill(0));
-        grid[1][1] = 1; grid[1][2] = 1; grid[2][1] = 1; grid[2][2] = 1;
-        grid[3][3] = 1; grid[3][4] = 1; grid[4][4] = 1;
+        grid[1][1] = 1;
+        grid[1][2] = 1;
+        grid[2][1] = 1;
+        grid[2][2] = 1;
+        grid[3][3] = 1;
+        grid[3][4] = 1;
+        grid[4][4] = 1;
         return grid;
     }
 
@@ -903,6 +1134,7 @@
                 grid.appendChild(cell);
             }
         }
+
         fillEmpty('featureGrid0', 4, 4);
         fillEmpty('featureGrid1', 4, 4);
         fillEmpty('pooledGrid0', 2, 2);
@@ -1096,7 +1328,9 @@
         animating = false;
     }
 
-    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function delay(ms) {
+        return new Promise(r => setTimeout(r, ms));
+    }
 
     function toggleTheme() {
         document.body.classList.add('no-transition');

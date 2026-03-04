@@ -1,1058 +1,1505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CNN Pipeline</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#0a0a10;
-      --surface:#12121c;
-      --border:#222236;
-      --text:#e0dff0;
-      --dim:#5e5c78;
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CNN Pipeline</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a10;
+            --surface: #12121c;
+            --border: #222236;
+            --text: #e0dff0;
+            --dim: #5e5c78;
 
-      --accent:#00e4a0;
-      --hot:#ff5c5c;
-      --cool:#4a9eff;
-      --purple:#a86eff;
-      --pink:#ff6eb4;
+            --accent: #00e4a0;
+            --hot: #ff5c5c;
+            --cool: #4a9eff;
+            --purple: #a86eff;
+            --pink: #ff6eb4;
 
-      --cell:38px;
-      --kcell:22px;
-      --fmcell:26px;
+            --cell: 38px;
+            --kcell: 22px;
+            --fmcell: 26px;
 
-      --cell-bg: rgba(255,255,255,0.02);
-      --cell-border: rgba(255,255,255,0.04);
-      --cell-text: rgba(255,255,255,0.3);
-      --fm-bg: rgba(255,255,255,0.03);
-      --fm-border: rgba(255,255,255,0.05);
-      --fm-text: rgba(255,255,255,0.25);
-      --kbox-border: rgba(255,255,255,0.06);
-    }
+            --cell-bg: rgba(255, 255, 255, 0.02);
+            --cell-border: rgba(255, 255, 255, 0.04);
+            --cell-text: rgba(255, 255, 255, 0.3);
+            --fm-bg: rgba(255, 255, 255, 0.03);
+            --fm-border: rgba(255, 255, 255, 0.05);
+            --fm-text: rgba(255, 255, 255, 0.25);
+            --kbox-border: rgba(255, 255, 255, 0.06);
+        }
 
-    body.light-mode {
-      --bg: #f0f0f5;
-      --surface: #ffffff;
-      --border: #c8c8dc;
-      --text: #1a1a2a;
-      --dim: #7070a0;
-      --accent: #00a872;
-      --hot: #cc2020;
-      --cool: #1a6ad0;
-      --purple: #6030b0;
-      --pink: #c0306e;
-      --cell-bg: rgba(0,0,0,0.04);
-      --cell-border: rgba(0,0,0,0.1);
-      --cell-text: rgba(0,0,0,0.3);
-      --fm-bg: rgba(0,0,0,0.04);
-      --fm-border: rgba(0,0,0,0.08);
-      --fm-text: rgba(0,0,0,0.25);
-      --kbox-border: rgba(0,0,0,0.12);
-    }
+        body.light-mode {
+            --bg: #f0f0f5;
+            --surface: #ffffff;
+            --border: #c8c8dc;
+            --text: #1a1a2a;
+            --dim: #7070a0;
+            --accent: #00a872;
+            --hot: #cc2020;
+            --cool: #1a6ad0;
+            --purple: #6030b0;
+            --pink: #c0306e;
+            --cell-bg: rgba(0, 0, 0, 0.04);
+            --cell-border: rgba(0, 0, 0, 0.1);
+            --cell-text: rgba(0, 0, 0, 0.3);
+            --fm-bg: rgba(0, 0, 0, 0.04);
+            --fm-border: rgba(0, 0, 0, 0.08);
+            --fm-text: rgba(0, 0, 0, 0.25);
+            --kbox-border: rgba(0, 0, 0, 0.12);
+        }
 
-    body.no-transition * { transition: none !important; }
+        body.no-transition * {
+            transition: none !important;
+        }
 
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-      background:var(--bg); color:var(--text);
-      font-family:'Sora',sans-serif;
-      min-height:100vh; overflow-x:hidden;
-      visibility:hidden;
-    }
-    body.ready{ visibility:visible; }
-    body::before{
-      content:''; position:fixed; inset:0;
-      background:
-        radial-gradient(ellipse at 30% 20%, rgba(0,228,160,0.03) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 80%, rgba(168,110,255,0.03) 0%, transparent 60%);
-      pointer-events:none;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .app{
-      padding:24px 30px;
-      min-height:100vh;
-      display:flex; flex-direction:column; align-items:center;
-    }
-    header{ text-align:center; margin-bottom:16px; }
-    header h1{
-      font-family:'JetBrains Mono',monospace;
-      font-size:1.6rem; font-weight:700;
-      letter-spacing:-0.5px; color:var(--accent);
-    }
-    header p{ color:var(--dim); font-size:0.88rem; margin-top:4px; font-weight:300; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            visibility: hidden;
+        }
 
-    .controls{
-      display:flex; gap:12px; margin-bottom:20px;
-      align-items:center; flex-wrap:wrap; justify-content:center;
-    }
-    .btn{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.75rem; padding:9px 20px;
-      border:1px solid var(--border); border-radius:6px;
-      background:var(--surface); color:var(--text);
-      cursor:pointer; transition:all 0.2s;
-      letter-spacing:0.5px; text-transform:uppercase;
-    }
-    .btn:hover{ border-color:var(--accent); color:var(--accent); }
-    .btn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:700; }
-    .btn.run{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:700; padding:9px 28px; }
-    .btn.run:hover{ box-shadow:0 0 24px rgba(0,228,160,0.3); transform:translateY(-1px); }
+        body.ready {
+            visibility: visible;
+        }
 
-    .step-bar{ display:flex; gap:8px; margin-bottom:16px; align-items:center; }
-    .step-dot{ width:10px; height:10px; border-radius:50%; background:var(--border); transition:all 0.3s; }
-    .step-dot.done{ background:var(--accent); box-shadow:0 0 8px rgba(0,228,160,0.4); }
-    .step-dot.current{ background:var(--accent); transform:scale(1.3); box-shadow:0 0 12px rgba(0,228,160,0.5); }
-    .step-text{ font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--dim); margin-left:8px; transition:color 0.3s; }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0, 228, 160, 0.03) 0%, transparent 60%),
+            radial-gradient(ellipse at 70% 80%, rgba(168, 110, 255, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
 
-    .pipeline{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:0;
-      flex-wrap:nowrap;
-      overflow-x:auto;
-      padding-bottom:8px;
-    }
-    .block{
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-      min-width: fit-content;
-      opacity:0.3;
-      transition: opacity 0.5s ease;
-    }
-    .block.on{ opacity:1; }
+        .app {
+            padding: 24px 30px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .lbl{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.65rem;
-      letter-spacing:1.5px;
-      text-transform:uppercase;
-      color:var(--dim);
-      text-align:center;
-      white-space:nowrap;
-      transition: color 0.3s;
-    }
-    .block.on .lbl{ color:var(--accent); }
+        header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
 
-    .arrow{
-      display:flex; align-items:center; justify-content:center;
-      padding:0 16px;
-      opacity:0.15;
-      transition: opacity 0.5s ease;
-      min-width: fit-content;
-    }
-    .arrow.on{ opacity:1; }
-    .arrow svg{ width:48px; height:24px; }
-    .al{ stroke:var(--accent); stroke-width:2; stroke-dasharray:6 4; stroke-dashoffset:0; }
-    .arrow.on .al{ animation: df 0.8s linear infinite; }
-    @keyframes df{ to{ stroke-dashoffset:-10; } }
-    .ahead{ fill:var(--accent); }
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--accent);
+        }
 
-    .grid{ display:inline-grid; gap:2px; }
-    .ic{
-      width:var(--cell); height:var(--cell);
-      border-radius:3px;
-      background:var(--cell-bg);
-      border:1px solid var(--cell-border);
-      display:flex; align-items:center; justify-content:center;
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.7rem;
-      color:var(--cell-text);
-      transition:all 0.25s ease;
-    }
-    .ic.on{ background:var(--text); color:var(--bg); font-weight:700; box-shadow:0 0 12px rgba(224,223,240,0.15); }
+        header p {
+            color: var(--dim);
+            font-size: 0.88rem;
+            margin-top: 4px;
+            font-weight: 300;
+        }
 
-    .filters-col{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:center;
-      overflow: visible;
-    }
-    .kbox{
-      width: max-content;
-      border:1px solid var(--kbox-border);
-      border-radius:8px;
-      padding:6px 8px 8px;
-      background:var(--cell-bg);
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-    .kbox.active{
-      border-color: rgba(0,228,160,0.5);
-      box-shadow: 0 0 14px rgba(0,228,160,0.12);
-    }
-    .kname{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.6rem;
-      letter-spacing:1px;
-      text-transform:uppercase;
-      margin-bottom:5px;
-      text-align:center;
-      font-weight:700;
-    }
-    .kg{ display:inline-grid; gap:1px; }
-    .kc{
-      width:var(--kcell); height:var(--kcell);
-      border-radius:2px;
-      background:var(--fm-bg);
-      border:1px solid var(--fm-border);
-      display:flex; align-items:center; justify-content:center;
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem;
-      color:var(--dim);
-    }
-    .kc.k-hot    { background:rgba(255,92,92,0.15);   border-color:rgba(255,92,92,0.3);   color:var(--hot);    font-weight:700; }
-    .kc.k-cool   { background:rgba(74,158,255,0.15);  border-color:rgba(74,158,255,0.3);  color:var(--cool);   font-weight:700; }
-    .kc.k-purple { background:rgba(168,110,255,0.15); border-color:rgba(168,110,255,0.3); color:var(--purple); font-weight:700; }
-    .kc.k-pink   { background:rgba(255,110,180,0.15); border-color:rgba(255,110,180,0.3); color:var(--pink);   font-weight:700; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-    /* === FEATURE MAP STACKS === */
-    #bP, #bID, #bL2K{
-      background:transparent;
-      border:none;
-      overflow:visible;
-    }
-    .fmap-deck{
-      position:relative;
-      cursor:pointer;
-      min-width:183px;
-      min-height:214px;
-    }
-    .fmap-deck.fmap-deck-sm{
-      min-width:102px;
-      min-height:128px;
-    }
-    #bL2K .fmap-deck{
-      min-width:73px;
-      min-height:100px;
-    }
-    .fmap-card{
-      position:absolute;
-      top:0; left:0;
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:6px;
-      transition:transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
-    }
-    /* Default stack: Filter 4 deepest, Filter 1 on top */
-    .fmap-deck .fmap-card:nth-child(1){ transform:translate(18px,18px); opacity:0.25; }
-    .fmap-deck .fmap-card:nth-child(2){ transform:translate(12px,12px); opacity:0.45; }
-    .fmap-deck .fmap-card:nth-child(3){ transform:translate(6px,6px);   opacity:0.65; }
-    .fmap-deck .fmap-card:nth-child(4){ transform:translate(0,0);        opacity:1; box-shadow:4px 4px 16px rgba(0,0,0,0.4); }
-    /* Hover: fan out into 2×2 */
-    .fmap-deck:hover{ z-index:10; }
-    .fmap-deck:hover .fmap-card{ opacity:1; box-shadow:3px 3px 12px rgba(0,0,0,0.35); }
-    .fmap-deck:hover .fmap-card:nth-child(1){ transform:translate(60%, 60%); }
-    .fmap-deck:hover .fmap-card:nth-child(2){ transform:translate(-60%,60%); }
-    .fmap-deck:hover .fmap-card:nth-child(3){ transform:translate(60%,-60%); }
-    .fmap-deck:hover .fmap-card:nth-child(4){ transform:translate(-60%,-60%); box-shadow:3px 3px 12px rgba(0,0,0,0.35); }
-    .fmap-hint{
-      position:absolute;
-      bottom:-24px; left:50%;
-      transform:translateX(-50%);
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.5rem;
-      color:var(--dim);
-      opacity:0.5;
-      text-transform:uppercase;
-      letter-spacing:1px;
-      transition:opacity 0.3s;
-      white-space:nowrap;
-    }
-    .fmap-deck:hover .fmap-hint{ opacity:0; }
-    .fmap-tag{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem;
-      text-align:center;
-      text-transform:uppercase;
-      letter-spacing:1px;
-      font-weight:700;
-    }
-    .fm-grid{ display:inline-grid; gap:1px; }
-    .fm-cell{
-      width:var(--fmcell); height:var(--fmcell);
-      border-radius:2px;
-      background:var(--fm-bg);
-      border:1px solid var(--fm-border);
-      display:flex; align-items:center; justify-content:center;
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.55rem;
-      color:var(--fm-text);
-      transition:all 0.25s ease;
-    }
-    .fm-cell.hot  { background:var(--hot);    color:#fff; font-weight:700; box-shadow:0 0 6px rgba(255,92,92,0.35); }
-    .fm-cell.cool { background:var(--cool);   color:#fff; font-weight:700; box-shadow:0 0 6px rgba(74,158,255,0.35); }
-    .fm-cell.purple{ background:var(--purple);color:#fff; font-weight:700; box-shadow:0 0 6px rgba(168,110,255,0.35); }
-    .fm-cell.pink { background:var(--pink);   color:#fff; font-weight:700; box-shadow:0 0 6px rgba(255,110,180,0.35); }
-    .fm-cell.accent{ background:var(--accent); color:var(--bg); font-weight:700; box-shadow:0 0 6px rgba(0,228,160,0.4); }
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 9px 20px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
 
-    /* === DENSE LAYER === */
-    .dense-box{
-      display:flex; flex-direction:column; align-items:center; gap:8px;
-    }
-    .dense-row{
-      display:flex; gap:6px; align-items:flex-end; justify-content:center;
-    }
-    .dense-cell{
-      display:flex; flex-direction:column; align-items:center; gap:3px;
-      padding:4px 5px; border-radius:4px;
-      transition:all 0.3s ease;
-    }
-    .dense-cell .dc-val{
-      font-family:'JetBrains Mono',monospace;
-      font-size:1.1rem; font-weight:700;
-      color:var(--cell-text);
-      width:38px; height:38px;
-      display:flex; align-items:center; justify-content:center;
-      border-radius:6px;
-      border:1px solid var(--cell-border);
-      background:var(--cell-bg);
-      transition:all 0.3s ease;
-    }
-    .dense-cell .dc-label{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.48rem; color:var(--dim);
-    }
-    .dense-cell.hot-cell  .dc-val{ background:var(--hot);    color:#fff; box-shadow:0 0 14px rgba(255,92,92,0.3); border-color:var(--hot); }
-    .dense-cell.cool-cell .dc-val{ background:var(--cool);   color:#fff; box-shadow:0 0 14px rgba(74,158,255,0.3); border-color:var(--cool); }
-    .dense-cell.purple-cell .dc-val{ background:var(--purple);color:#fff; box-shadow:0 0 14px rgba(168,110,255,0.3); border-color:var(--purple); }
-    .dense-cell.pink-cell .dc-val{ background:var(--pink);   color:#fff; box-shadow:0 0 14px rgba(255,110,180,0.3); border-color:var(--pink); }
-    .dense-cell.perfect .dc-val{
-      border-color:var(--accent);
-      box-shadow:0 0 16px rgba(0,228,160,0.45);
-      animation:perfectPulse 1.2s ease infinite;
-    }
-    .dense-cell.mismatch .dc-val{ opacity:0.4; border-color:var(--hot); }
-    @keyframes perfectPulse{
-      0%,100%{ box-shadow:0 0 14px rgba(0,228,160,0.35); }
-      50%    { box-shadow:0 0 24px rgba(0,228,160,0.6); }
-    }
-    .dense-equation{
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.65rem; color:var(--dim); text-align:center; line-height:1.6;
-    }
-    .dense-equation .eq-sum{ font-weight:700; font-size:0.8rem; }
-    .dense-equation .eq-sum.pass{ color:var(--accent); }
-    .dense-equation .eq-sum.fail{ color:var(--hot); }
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
 
-    .out{
-      width:90px; height:90px;
-      border-radius:12px;
-      border:2px solid var(--border);
-      background:var(--surface);
-      display:flex; align-items:center; justify-content:center;
-      font-family:'JetBrains Mono',monospace;
-      font-weight:700;
-      font-size:3rem;
-      transition: all 0.5s ease;
-    }
-    .out.y{
-      color:var(--accent); border-color:var(--accent);
-      background: rgba(0,228,160,0.08);
-      box-shadow: 0 0 30px rgba(0,228,160,0.25);
-    }
-    .out.n{
-      color:var(--hot); border-color:var(--hot);
-      background: rgba(255,92,92,0.06);
-      box-shadow: 0 0 30px rgba(255,92,92,0.2);
-    }
+        .btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
 
-    .footer{
-      margin-top:auto;
-      padding:16px 0; text-align:center;
-      font-family:'JetBrains Mono',monospace;
-      font-size:0.7rem; color:var(--dim); line-height:1.6;
-    }
+        .btn.run {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+            padding: 9px 28px;
+        }
 
-    /* === THEME TOGGLE === */
-    #themeToggle {
-      width:32px; height:32px; padding:0;
-      border-radius:50%;
-      border:1px solid var(--border);
-      background:var(--surface);
-      color:var(--dim);
-      font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      transition:border-color 0.15s, color 0.15s;
-      flex-shrink:0;
-    }
-    #themeToggle:hover{ border-color:var(--accent); color:var(--accent); }
+        .btn.run:hover {
+            box-shadow: 0 0 24px rgba(0, 228, 160, 0.3);
+            transform: translateY(-1px);
+        }
 
-    /* === EXPLAIN PANEL === */
-    .explain-panel {
-      margin-top: 208px;
-      min-height: 24px;
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      line-height: 1.4;
-      position: relative;
-    }
-    .ep-default {
-      color: var(--dim);
-      opacity: 0.5;
-      transition: opacity 0.15s;
-    }
-    .ep-default.hidden { opacity: 0; }
-    .ep-body {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      flex-wrap: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-    }
-    .ep-body.visible { opacity: 1; }
-    .ep-title { color: var(--accent); font-weight: 700; }
-    .ep-sep { color: var(--dim); }
-    .ep-text { color: var(--text); }
+        .step-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
 
-    @media (max-width: 1100px){
-      :root{ --cell:32px; }
-      .arrow{ padding:0 8px; }
-      .arrow svg{ width:32px; }
-    }
-    @media (max-width: 900px){
-      :root{ --cell:28px; }
-      .pipeline{ flex-wrap:wrap; gap:20px; }
-      .arrow{ display:none; }
-    }
-    @media (max-width: 600px){
-      :root{ --cell:24px; }
-      .app{ padding:16px 12px; }
-      header h1{ font-size:1.2rem; }
-      .out{ width:70px; height:70px; font-size:2.4rem; }
-    }
-  </style>
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.done {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(0, 228, 160, 0.4);
+        }
+
+        .step-dot.current {
+            background: var(--accent);
+            transform: scale(1.3);
+            box-shadow: 0 0 12px rgba(0, 228, 160, 0.5);
+        }
+
+        .step-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--dim);
+            margin-left: 8px;
+            transition: color 0.3s;
+        }
+
+        .pipeline {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: fit-content;
+            opacity: 0.3;
+            transition: opacity 0.5s ease;
+        }
+
+        .block.on {
+            opacity: 1;
+        }
+
+        .lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dim);
+            text-align: center;
+            white-space: nowrap;
+            transition: color 0.3s;
+        }
+
+        .block.on .lbl {
+            color: var(--accent);
+        }
+
+        .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+            min-width: fit-content;
+        }
+
+        .arrow.on {
+            opacity: 1;
+        }
+
+        .arrow svg {
+            width: 48px;
+            height: 24px;
+        }
+
+        .al {
+            stroke: var(--accent);
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            stroke-dashoffset: 0;
+        }
+
+        .arrow.on .al {
+            animation: df 0.8s linear infinite;
+        }
+
+        @keyframes df {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .ahead {
+            fill: var(--accent);
+        }
+
+        .grid {
+            display: inline-grid;
+            gap: 2px;
+        }
+
+        .ic {
+            width: var(--cell);
+            height: var(--cell);
+            border-radius: 3px;
+            background: var(--cell-bg);
+            border: 1px solid var(--cell-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--cell-text);
+            transition: all 0.25s ease;
+        }
+
+        .ic.on {
+            background: var(--text);
+            color: var(--bg);
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(224, 223, 240, 0.15);
+        }
+
+        .filters-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            overflow: visible;
+        }
+
+        .kbox {
+            width: max-content;
+            border: 1px solid var(--kbox-border);
+            border-radius: 8px;
+            padding: 6px 8px 8px;
+            background: var(--cell-bg);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .kbox.active {
+            border-color: rgba(0, 228, 160, 0.5);
+            box-shadow: 0 0 14px rgba(0, 228, 160, 0.12);
+        }
+
+        .kname {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .kg {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .kc {
+            width: var(--kcell);
+            height: var(--kcell);
+            border-radius: 2px;
+            background: var(--fm-bg);
+            border: 1px solid var(--fm-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--dim);
+        }
+
+        .kc.k-hot {
+            background: rgba(255, 92, 92, 0.15);
+            border-color: rgba(255, 92, 92, 0.3);
+            color: var(--hot);
+            font-weight: 700;
+        }
+
+        .kc.k-cool {
+            background: rgba(74, 158, 255, 0.15);
+            border-color: rgba(74, 158, 255, 0.3);
+            color: var(--cool);
+            font-weight: 700;
+        }
+
+        .kc.k-purple {
+            background: rgba(168, 110, 255, 0.15);
+            border-color: rgba(168, 110, 255, 0.3);
+            color: var(--purple);
+            font-weight: 700;
+        }
+
+        .kc.k-pink {
+            background: rgba(255, 110, 180, 0.15);
+            border-color: rgba(255, 110, 180, 0.3);
+            color: var(--pink);
+            font-weight: 700;
+        }
+
+        /* === FEATURE MAP STACKS === */
+        #bP, #bID, #bL2K {
+            background: transparent;
+            border: none;
+            overflow: visible;
+        }
+
+        .fmap-deck {
+            position: relative;
+            cursor: pointer;
+            min-width: 183px;
+            min-height: 214px;
+        }
+
+        .fmap-deck.fmap-deck-sm {
+            min-width: 102px;
+            min-height: 128px;
+        }
+
+        #bL2K .fmap-deck {
+            min-width: 73px;
+            min-height: 100px;
+        }
+
+        .fmap-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        /* Default stack: Filter 4 deepest, Filter 1 on top */
+        .fmap-deck .fmap-card:nth-child(1) {
+            transform: translate(18px, 18px);
+            opacity: 0.25;
+        }
+
+        .fmap-deck .fmap-card:nth-child(2) {
+            transform: translate(12px, 12px);
+            opacity: 0.45;
+        }
+
+        .fmap-deck .fmap-card:nth-child(3) {
+            transform: translate(6px, 6px);
+            opacity: 0.65;
+        }
+
+        .fmap-deck .fmap-card:nth-child(4) {
+            transform: translate(0, 0);
+            opacity: 1;
+            box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Hover: fan out into 2×2 */
+        .fmap-deck:hover {
+            z-index: 10;
+        }
+
+        .fmap-deck:hover .fmap-card {
+            opacity: 1;
+            box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(1) {
+            transform: translate(60%, 60%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(2) {
+            transform: translate(-60%, 60%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(3) {
+            transform: translate(60%, -60%);
+        }
+
+        .fmap-deck:hover .fmap-card:nth-child(4) {
+            transform: translate(-60%, -60%);
+            box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        .fmap-hint {
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            color: var(--dim);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .fmap-deck:hover .fmap-hint {
+            opacity: 0;
+        }
+
+        .fmap-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .fm-grid {
+            display: inline-grid;
+            gap: 1px;
+        }
+
+        .fm-cell {
+            width: var(--fmcell);
+            height: var(--fmcell);
+            border-radius: 2px;
+            background: var(--fm-bg);
+            border: 1px solid var(--fm-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--fm-text);
+            transition: all 0.25s ease;
+        }
+
+        .fm-cell.hot {
+            background: var(--hot);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 6px rgba(255, 92, 92, 0.35);
+        }
+
+        .fm-cell.cool {
+            background: var(--cool);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 6px rgba(74, 158, 255, 0.35);
+        }
+
+        .fm-cell.purple {
+            background: var(--purple);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 6px rgba(168, 110, 255, 0.35);
+        }
+
+        .fm-cell.pink {
+            background: var(--pink);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 6px rgba(255, 110, 180, 0.35);
+        }
+
+        .fm-cell.accent {
+            background: var(--accent);
+            color: var(--bg);
+            font-weight: 700;
+            box-shadow: 0 0 6px rgba(0, 228, 160, 0.4);
+        }
+
+        /* === DENSE LAYER === */
+        .dense-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dense-row {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .dense-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 4px 5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .dense-cell .dc-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--cell-text);
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid var(--cell-border);
+            background: var(--cell-bg);
+            transition: all 0.3s ease;
+        }
+
+        .dense-cell .dc-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.48rem;
+            color: var(--dim);
+        }
+
+        .dense-cell.hot-cell .dc-val {
+            background: var(--hot);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(255, 92, 92, 0.3);
+            border-color: var(--hot);
+        }
+
+        .dense-cell.cool-cell .dc-val {
+            background: var(--cool);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(74, 158, 255, 0.3);
+            border-color: var(--cool);
+        }
+
+        .dense-cell.purple-cell .dc-val {
+            background: var(--purple);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(168, 110, 255, 0.3);
+            border-color: var(--purple);
+        }
+
+        .dense-cell.pink-cell .dc-val {
+            background: var(--pink);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(255, 110, 180, 0.3);
+            border-color: var(--pink);
+        }
+
+        .dense-cell.perfect .dc-val {
+            border-color: var(--accent);
+            box-shadow: 0 0 16px rgba(0, 228, 160, 0.45);
+            animation: perfectPulse 1.2s ease infinite;
+        }
+
+        .dense-cell.mismatch .dc-val {
+            opacity: 0.4;
+            border-color: var(--hot);
+        }
+
+        @keyframes perfectPulse {
+            0%, 100% {
+                box-shadow: 0 0 14px rgba(0, 228, 160, 0.35);
+            }
+            50% {
+                box-shadow: 0 0 24px rgba(0, 228, 160, 0.6);
+            }
+        }
+
+        .dense-equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--dim);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .dense-equation .eq-sum {
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .dense-equation .eq-sum.pass {
+            color: var(--accent);
+        }
+
+        .dense-equation .eq-sum.fail {
+            color: var(--hot);
+        }
+
+        .out {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 3rem;
+            transition: all 0.5s ease;
+        }
+
+        .out.y {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(0, 228, 160, 0.08);
+            box-shadow: 0 0 30px rgba(0, 228, 160, 0.25);
+        }
+
+        .out.n {
+            color: var(--hot);
+            border-color: var(--hot);
+            background: rgba(255, 92, 92, 0.06);
+            box-shadow: 0 0 30px rgba(255, 92, 92, 0.2);
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 16px 0;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--dim);
+            line-height: 1.6;
+        }
+
+        /* === THEME TOGGLE === */
+        #themeToggle {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--dim);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+
+        #themeToggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* === EXPLAIN PANEL === */
+        .explain-panel {
+            margin-top: 208px;
+            min-height: 24px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .ep-default {
+            color: var(--dim);
+            opacity: 0.5;
+            transition: opacity 0.15s;
+        }
+
+        .ep-default.hidden {
+            opacity: 0;
+        }
+
+        .ep-body {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .ep-body.visible {
+            opacity: 1;
+        }
+
+        .ep-title {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .ep-sep {
+            color: var(--dim);
+        }
+
+        .ep-text {
+            color: var(--text);
+        }
+
+        @media (max-width: 1100px) {
+            :root {
+                --cell: 32px;
+            }
+
+            .arrow {
+                padding: 0 8px;
+            }
+
+            .arrow svg {
+                width: 32px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --cell: 28px;
+            }
+
+            .pipeline {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .arrow {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --cell: 24px;
+            }
+
+            .app {
+                padding: 16px 12px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            .out {
+                width: 70px;
+                height: 70px;
+                font-size: 2.4rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
+<div class="app">
     <header>
-      <h1>CNN Pipeline</h1>
+        <h1>CNN Pipeline</h1>
     </header>
 
     <div class="controls">
-      <button class="btn" onclick="newRabbit()">&#8635; New Rabbit</button>
-      <button class="btn run" onclick="run()">&#9654; Run</button>
-      <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+        <button class="btn" onclick="newRabbit()">&#8635; New Rabbit</button>
+        <button class="btn run" onclick="run()">&#9654; Run</button>
+        <button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
     </div>
 
     <div class="step-bar">
-      <div class="step-dot" id="d0"></div><div class="step-dot" id="d1"></div><div class="step-dot" id="d2"></div><div class="step-dot" id="d3"></div>
-      <div class="step-dot" id="d4"></div><div class="step-dot" id="d5"></div><div class="step-dot" id="d6"></div><div class="step-dot" id="d7"></div>
-      <span class="step-text" id="sT">Choose an example and press Run</span>
+        <div class="step-dot" id="d0"></div>
+        <div class="step-dot" id="d1"></div>
+        <div class="step-dot" id="d2"></div>
+        <div class="step-dot" id="d3"></div>
+        <div class="step-dot" id="d4"></div>
+        <div class="step-dot" id="d5"></div>
+        <div class="step-dot" id="d6"></div>
+        <div class="step-dot" id="d7"></div>
+        <span class="step-text" id="sT">Choose an example and press Run</span>
     </div>
 
     <div class="pipeline">
 
-      <!-- INPUT -->
-      <div class="block" id="bIn">
-        <div class="lbl">Input</div>
-        <div class="grid" id="inGrid"></div>
-      </div>
-
-      <div class="arrow" id="a1">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
-
-      <!-- FILTERS -->
-      <div class="block" id="bK">
-        <div class="lbl">Filters</div>
-        <div class="filters-col" id="kCol"></div>
-      </div>
-
-      <div class="arrow" id="a2">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
-
-      <!-- FEATURE MAPS -->
-      <div class="block" id="bP">
-        <div class="lbl">Feature Maps</div>
-        <div class="fmap-deck">
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
-            <div class="fm-grid" id="fmapGrid3"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
-            <div class="fm-grid" id="fmapGrid2"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
-            <div class="fm-grid" id="fmapGrid1"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
-            <div class="fm-grid" id="fmapGrid0"></div>
-          </div>
-          <span class="fmap-hint">hover to inspect</span>
+        <!-- INPUT -->
+        <div class="block" id="bIn">
+            <div class="lbl">Input</div>
+            <div class="grid" id="inGrid"></div>
         </div>
-      </div>
 
-      <div class="arrow" id="a3">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
-
-      <!-- MAX POOLING -->
-      <div class="block" id="bID">
-        <div class="lbl">Max Pooling</div>
-        <div class="fmap-deck fmap-deck-sm">
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
-            <div class="fm-grid" id="poolGrid3"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
-            <div class="fm-grid" id="poolGrid2"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
-            <div class="fm-grid" id="poolGrid1"></div>
-          </div>
-          <div class="fmap-card">
-            <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
-            <div class="fm-grid" id="poolGrid0"></div>
-          </div>
-          <span class="fmap-hint">hover to inspect</span>
+        <div class="arrow" id="a1">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
         </div>
-      </div>
 
-      <div class="arrow" id="a4">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
-
-      <!-- L2 FILTER -->
-      <div class="block" id="bL2K">
-        <div class="lbl">Filter</div>
-        <div class="fmap-deck fmap-deck-sm" id="l2FilterDeck">
-          <span class="fmap-hint">hover to inspect</span>
+        <!-- FILTERS -->
+        <div class="block" id="bK">
+            <div class="lbl">Filters</div>
+            <div class="filters-col" id="kCol"></div>
         </div>
-      </div>
 
-      <div class="arrow" id="a4b">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
+        <div class="arrow" id="a2">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
 
-      <!-- L2 OUTPUT MAP -->
-      <div class="block" id="bL2">
-        <div class="lbl">Feature Maps</div>
-        <div class="fm-grid" id="l2Grid"></div>
-      </div>
+        <!-- FEATURE MAPS -->
+        <div class="block" id="bP">
+            <div class="lbl">Feature Maps</div>
+            <div class="fmap-deck">
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+                    <div class="fm-grid" id="fmapGrid3"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+                    <div class="fm-grid" id="fmapGrid2"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+                    <div class="fm-grid" id="fmapGrid1"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+                    <div class="fm-grid" id="fmapGrid0"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
 
-      <div class="arrow" id="a5">
-        <svg viewBox="0 0 26 14"><line class="al" x1="0" y1="7" x2="18" y2="7"/><polygon class="ahead" points="18,2 26,7 18,12"/></svg>
-      </div>
+        <div class="arrow" id="a3">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
 
-      <!-- OUTPUT -->
-      <div class="block" id="bOut">
-        <div class="lbl">Output</div>
-        <div class="out" id="outV">?</div>
-      </div>
+        <!-- MAX POOLING -->
+        <div class="block" id="bID">
+            <div class="lbl">Max Pooling</div>
+            <div class="fmap-deck fmap-deck-sm">
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--pink);">Filter 4</div>
+                    <div class="fm-grid" id="poolGrid3"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--purple);">Filter 3</div>
+                    <div class="fm-grid" id="poolGrid2"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--cool);">Filter 2</div>
+                    <div class="fm-grid" id="poolGrid1"></div>
+                </div>
+                <div class="fmap-card">
+                    <div class="fmap-tag" style="color:var(--hot);">Filter 1</div>
+                    <div class="fm-grid" id="poolGrid0"></div>
+                </div>
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
+
+        <div class="arrow" id="a4">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- L2 FILTER -->
+        <div class="block" id="bL2K">
+            <div class="lbl">Filter</div>
+            <div class="fmap-deck fmap-deck-sm" id="l2FilterDeck">
+                <span class="fmap-hint">hover to inspect</span>
+            </div>
+        </div>
+
+        <div class="arrow" id="a4b">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- L2 OUTPUT MAP -->
+        <div class="block" id="bL2">
+            <div class="lbl">Feature Maps</div>
+            <div class="fm-grid" id="l2Grid"></div>
+        </div>
+
+        <div class="arrow" id="a5">
+            <svg viewBox="0 0 26 14">
+                <line class="al" x1="0" y1="7" x2="18" y2="7"/>
+                <polygon class="ahead" points="18,2 26,7 18,12"/>
+            </svg>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="block" id="bOut">
+            <div class="lbl">Output</div>
+            <div class="out" id="outV">?</div>
+        </div>
 
     </div>
 
     <div class="explain-panel" id="explainPanel">
-      <div class="ep-default" id="epDefault">hover a stage to learn more</div>
-      <div class="ep-body" id="epBody">
-        <span class="ep-title" id="epTitle"></span>
-        <span class="ep-sep">—</span>
-        <span class="ep-text" id="epText"></span>
-      </div>
+        <div class="ep-default" id="epDefault">hover a stage to learn more</div>
+        <div class="ep-body" id="epBody">
+            <span class="ep-title" id="epTitle"></span>
+            <span class="ep-sep">—</span>
+            <span class="ep-text" id="epText"></span>
+        </div>
     </div>
 
-  </div>
+</div>
 
 <script>
-const KS = 3;
-const CSS_COLORS = ['var(--hot)','var(--cool)','var(--purple)','var(--pink)'];
-const COLORS = ['hot','cool','purple','pink'];
-const L2_FILTER = [[1,2],[3,4]]; // filter numbers arranged spatially
+    const KS = 3;
+    const CSS_COLORS = ['var(--hot)', 'var(--cool)', 'var(--purple)', 'var(--pink)'];
+    const COLORS = ['hot', 'cool', 'purple', 'pink'];
+    const L2_FILTER = [[1, 2], [3, 4]]; // filter numbers arranged spatially
 
-const KERNELS = [
-  { id:1, data:[[1,0,0],[1,1,0],[1,0,0]] },
-  { id:2, data:[[0,1,0],[1,1,0],[0,1,0]] },
-  { id:3, data:[[1,0,0],[1,1,1],[0,0,0]] },
-  { id:4, data:[[0,0,1],[1,1,1],[0,0,0]] }
-];
+    const KERNELS = [
+        {id: 1, data: [[1, 0, 0], [1, 1, 0], [1, 0, 0]]},
+        {id: 2, data: [[0, 1, 0], [1, 1, 0], [0, 1, 0]]},
+        {id: 3, data: [[1, 0, 0], [1, 1, 1], [0, 0, 0]]},
+        {id: 4, data: [[0, 0, 1], [1, 1, 1], [0, 0, 0]]}
+    ];
 
-// Fixed cup shape (4 rows × 6 cols) — position is randomised on the 8×8 grid
-const CUP_SHAPE = [
-  [0,1,0,0,1,0],
-  [0,1,1,1,1,0],
-  [1,1,0,0,1,1],
-  [1,1,1,1,1,1]
-];
+    // Fixed cup shape (4 rows × 6 cols) — position is randomised on the 8×8 grid
+    const CUP_SHAPE = [
+        [0, 1, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 0],
+        [1, 1, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1]
+    ];
 
-function classifies(grid){
-  const fmaps = KERNELS.map(k => conv(grid, k.data));
-  const binaryFmaps = fmaps.map((fm, ki) => {
-    const ks = ksum(ki);
-    return fm.map(row => row.map(v => v === ks ? 1 : 0));
-  });
-  const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
-  return applyL2Filter(pooled).flat().some(v => v === 1);
-}
-
-function generateRabbit(){
-  const sRows = CUP_SHAPE.length;          // 4
-  const sCols = CUP_SHAPE[0].length;       // 6
-  const rowOffset = Math.floor(Math.random() * (8 - sRows)); // 0–3
-  const colOffset = Math.floor(Math.random() * (8 - sCols + 1)); // 0–2
-  const grid = Array.from({length:8}, () => Array(8).fill(0));
-  CUP_SHAPE.forEach((row, r) =>
-    row.forEach((v, c) => { if(v) grid[rowOffset + r][colOffset + c] = 1; })
-  );
-
-  const roll = Math.random();
-  if(roll < 0.4){
-    // Collect all active cells
-    const active = [];
-    for(let r = rowOffset; r < rowOffset + sRows; r++)
-      for(let c = colOffset; c < colOffset + sCols; c++)
-        if(grid[r][c]) active.push([r, c]);
-
-    // Build candidate removals (single cell or neighboring pair)
-    let candidates;
-    if(roll < 0.2){
-      candidates = active.map(([r, c]) => [[r, c]]);
-    } else {
-      const pairs = [];
-      active.forEach(([r, c]) => {
-        if(grid[r][c + 1]) pairs.push([[r, c], [r, c + 1]]);
-        if(grid[r + 1]?.[c]) pairs.push([[r, c], [r + 1, c]]);
-      });
-      candidates = pairs.length > 0 ? pairs : active.map(([r, c]) => [[r, c]]);
+    function classifies(grid) {
+        const fmaps = KERNELS.map(k => conv(grid, k.data));
+        const binaryFmaps = fmaps.map((fm, ki) => {
+            const ks = ksum(ki);
+            return fm.map(row => row.map(v => v === ks ? 1 : 0));
+        });
+        const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
+        return applyL2Filter(pooled).flat().some(v => v === 1);
     }
 
-    // Only keep removals that actually break classification to 0
-    const breaking = candidates.filter(removal => {
-      const test = grid.map(row => [...row]);
-      removal.forEach(([r, c]) => test[r][c] = 0);
-      return !classifies(test);
-    });
+    function generateRabbit() {
+        const sRows = CUP_SHAPE.length;          // 4
+        const sCols = CUP_SHAPE[0].length;       // 6
+        const rowOffset = Math.floor(Math.random() * (8 - sRows)); // 0–3
+        const colOffset = Math.floor(Math.random() * (8 - sCols + 1)); // 0–2
+        const grid = Array.from({length: 8}, () => Array(8).fill(0));
+        CUP_SHAPE.forEach((row, r) =>
+            row.forEach((v, c) => {
+                if (v) grid[rowOffset + r][colOffset + c] = 1;
+            })
+        );
 
-    if(breaking.length > 0){
-      const removal = breaking[Math.floor(Math.random() * breaking.length)];
-      removal.forEach(([r, c]) => grid[r][c] = 0);
+        const roll = Math.random();
+        if (roll < 0.4) {
+            // Collect all active cells
+            const active = [];
+            for (let r = rowOffset; r < rowOffset + sRows; r++)
+                for (let c = colOffset; c < colOffset + sCols; c++)
+                    if (grid[r][c]) active.push([r, c]);
+
+            // Build candidate removals (single cell or neighboring pair)
+            let candidates;
+            if (roll < 0.2) {
+                candidates = active.map(([r, c]) => [[r, c]]);
+            } else {
+                const pairs = [];
+                active.forEach(([r, c]) => {
+                    if (grid[r][c + 1]) pairs.push([[r, c], [r, c + 1]]);
+                    if (grid[r + 1]?.[c]) pairs.push([[r, c], [r + 1, c]]);
+                });
+                candidates = pairs.length > 0 ? pairs : active.map(([r, c]) => [[r, c]]);
+            }
+
+            // Only keep removals that actually break classification to 0
+            const breaking = candidates.filter(removal => {
+                const test = grid.map(row => [...row]);
+                removal.forEach(([r, c]) => test[r][c] = 0);
+                return !classifies(test);
+            });
+
+            if (breaking.length > 0) {
+                const removal = breaking[Math.floor(Math.random() * breaking.length)];
+                removal.forEach(([r, c]) => grid[r][c] = 0);
+            }
+            // If no breaking removal exists, return the perfect rabbit unchanged
+        }
+
+        return grid;
     }
-    // If no breaking removal exists, return the perfect rabbit unchanged
-  }
 
-  return grid;
-}
+    let currentInput = generateRabbit();
 
-let currentInput = generateRabbit();
-function getInput(){ return currentInput; }
-
-let busy = false;
-
-const $ = id => document.getElementById(id);
-function el(tag, cls){ const e = document.createElement(tag); if(cls) e.className = cls; return e; }
-
-function newRabbit(){
-  if(busy) return;
-  currentInput = generateRabbit();
-  reset();
-}
-
-// Works for any input size
-function conv(inp, kern){
-  const out = [];
-  const outRows = inp.length - KS + 1;
-  const outCols = inp[0].length - KS + 1;
-  for(let r=0; r<outRows; r++){
-    const row = [];
-    for(let c=0; c<outCols; c++){
-      let s=0;
-      for(let kr=0;kr<KS;kr++)
-        for(let kc=0;kc<KS;kc++)
-          s += inp[r+kr][c+kc]*kern[kr][kc];
-      row.push(s);
+    function getInput() {
+        return currentInput;
     }
-    out.push(row);
-  }
-  return out;
-}
 
-// 2×2 max pooling (stride 2) — dynamic output size based on feature map dimensions
-function maxpool2x2(fm){
-  const outRows = Math.floor(fm.length / 2);
-  const outCols = Math.floor(fm[0].length / 2);
-  const out = [];
-  for(let R=0; R<outRows; R++){
-    const row = [];
-    for(let C=0; C<outCols; C++)
-      row.push(Math.max(fm[R*2][C*2], fm[R*2][C*2+1], fm[R*2+1][C*2], fm[R*2+1][C*2+1]));
-    out.push(row);
-  }
-  return out;
-}
+    let busy = false;
 
-function ksum(ki){
-  return KERNELS[ki].data.flat().reduce((a,b)=>a+b,0);
-}
+    const $ = id => document.getElementById(id);
 
-function buildInputGrid(){
-  const inp = getInput();
-  const numRows = inp.length;
-  const numCols = inp[0].length;
-  const inG = $('inGrid');
-  inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
-  inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
-  inG.innerHTML = '';
-  for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
-}
-
-function build(){
-  buildInputGrid();
-  const kCol = $('kCol');
-  kCol.innerHTML = '';
-  KERNELS.forEach((k,ki)=>{
-    const box = el('div','kbox'); box.id = `kbox${ki}`;
-    const nm = el('div','kname');
-    nm.textContent = `Filter ${k.id}`;
-    nm.style.color = CSS_COLORS[ki];
-    box.appendChild(nm);
-    const kg = el('div','kg');
-    kg.style.gridTemplateColumns = `repeat(${KS}, var(--kcell))`;
-    for(let r=0;r<KS;r++){
-      for(let c=0;c<KS;c++){
-        const ce = el('div', 'kc' + (k.data[r][c] ? ` k-${COLORS[ki]}` : ''));
-        ce.textContent = k.data[r][c];
-        kg.appendChild(ce);
-      }
+    function el(tag, cls) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        return e;
     }
-    box.appendChild(kg);
-    kCol.appendChild(box);
-  });
-  // Feature maps: 6 rows × 6 cols (8-3+1=6)
-  buildFmapPlaceholders(6, 6);
-  // Pooled: 3 rows × 3 cols (6/2=3)
-  buildPoolPlaceholders(3, 3);
-  buildL2FilterDisplay();
-  buildL2Placeholders();
-}
 
-function renderInput(inp){
-  const numRows = inp.length;
-  const numCols = inp[0].length;
-  const inG = $('inGrid');
-  const currentCells = inG.children.length;
-  if(currentCells !== numRows * numCols){
-    inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
-    inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
-    inG.innerHTML = '';
-    for(let i=0; i<numRows*numCols; i++) inG.appendChild(el('div','ic'));
-  }
-  const cells = [...inG.children];
-  let idx = 0;
-  for(let r=0;r<numRows;r++){
-    for(let c=0;c<numCols;c++){
-      const ce = cells[idx++];
-      ce.className = 'ic';
-      ce.textContent = inp[r][c];
-      if(inp[r][c]) ce.classList.add('on');
+    function newRabbit() {
+        if (busy) return;
+        currentInput = generateRabbit();
+        reset();
     }
-  }
-}
 
-function buildFmapPlaceholders(rows, cols){
-  ['fmapGrid0','fmapGrid1','fmapGrid2','fmapGrid3'].forEach(id => {
-    const g = $(id);
-    g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
-    g.innerHTML = '';
-    for(let i=0; i<rows*cols; i++) g.appendChild(el('div','fm-cell'));
-  });
-}
-
-function buildPoolPlaceholders(rows, cols){
-  ['poolGrid0','poolGrid1','poolGrid2','poolGrid3'].forEach(id => {
-    const g = $(id);
-    g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
-    g.innerHTML = '';
-    for(let i=0; i<rows*cols; i++) g.appendChild(el('div','fm-cell'));
-  });
-}
-
-function renderFeatureMaps(binaryFmaps){
-  binaryFmaps.forEach((fmap, ki) => {
-    const cells = $('fmapGrid' + ki).querySelectorAll('.fm-cell');
-    fmap.forEach((row, r) => row.forEach((v, c) => {
-      const cell = cells[r * fmap[0].length + c];
-      cell.textContent = v ? ki + 1 : 0;
-      if(v) cell.classList.add(COLORS[ki]);
-    }));
-  });
-}
-
-function renderPooled(pooledMaps){
-  pooledMaps.forEach((pool, ki) => {
-    const cells = $('poolGrid' + ki).querySelectorAll('.fm-cell');
-    pool.forEach((row, r) => row.forEach((v, c) => {
-      const cell = cells[r * pool[0].length + c];
-      cell.textContent = v ? ki + 1 : 0;
-      if(v) cell.classList.add(COLORS[ki]);
-    }));
-  });
-}
-
-function buildL2FilterDisplay(){
-  const deck = $('l2FilterDeck');
-  deck.innerHTML = '';
-
-  // Cards ordered deepest to top: filter 4 → filter 1
-  [4, 3, 2, 1].forEach(filterNum => {
-    const card = el('div', 'fmap-card');
-
-    const tag = el('div', 'fmap-tag');
-    tag.textContent = `Filter ${filterNum}`;
-    tag.style.color = CSS_COLORS[filterNum - 1];
-    card.appendChild(tag);
-
-    const grid = el('div', 'fm-grid');
-    grid.style.gridTemplateColumns = `repeat(2, var(--fmcell))`;
-    L2_FILTER.forEach((row, r) => row.forEach((v, c) => {
-      const cell = el('div', 'fm-cell');
-      if(v === filterNum){
-        cell.classList.add(COLORS[filterNum - 1]);
-        cell.textContent = filterNum;
-      } else {
-        cell.textContent = 0;
-      }
-      grid.appendChild(cell);
-    }));
-    card.appendChild(grid);
-    deck.appendChild(card);
-  });
-
-  const hint = el('span', 'fmap-hint');
-  hint.textContent = 'hover to inspect';
-  deck.appendChild(hint);
-}
-
-function applyL2Filter(pooledMaps){
-  const outRows = pooledMaps[0].length - L2_FILTER.length + 1;
-  const outCols = pooledMaps[0][0].length - L2_FILTER[0].length + 1;
-  const out = [];
-  for(let R = 0; R < outRows; R++){
-    const row = [];
-    for(let C = 0; C < outCols; C++){
-      const match = L2_FILTER.every((frow, dr) =>
-        frow.every((filterNum, dc) =>
-          pooledMaps[filterNum - 1][R + dr][C + dc] === 1
-        )
-      );
-      row.push(match ? 1 : 0);
+    // Works for any input size
+    function conv(inp, kern) {
+        const out = [];
+        const outRows = inp.length - KS + 1;
+        const outCols = inp[0].length - KS + 1;
+        for (let r = 0; r < outRows; r++) {
+            const row = [];
+            for (let c = 0; c < outCols; c++) {
+                let s = 0;
+                for (let kr = 0; kr < KS; kr++)
+                    for (let kc = 0; kc < KS; kc++)
+                        s += inp[r + kr][c + kc] * kern[kr][kc];
+                row.push(s);
+            }
+            out.push(row);
+        }
+        return out;
     }
-    out.push(row);
-  }
-  return out;
-}
 
-function buildL2Placeholders(){
-  const g = $('l2Grid');
-  g.style.gridTemplateColumns = `repeat(${L2_FILTER[0].length}, var(--fmcell))`;
-  g.innerHTML = '';
-  for(let i = 0; i < L2_FILTER.length * L2_FILTER[0].length; i++)
-    g.appendChild(el('div','fm-cell'));
-}
+    // 2×2 max pooling (stride 2) — dynamic output size based on feature map dimensions
+    function maxpool2x2(fm) {
+        const outRows = Math.floor(fm.length / 2);
+        const outCols = Math.floor(fm[0].length / 2);
+        const out = [];
+        for (let R = 0; R < outRows; R++) {
+            const row = [];
+            for (let C = 0; C < outCols; C++)
+                row.push(Math.max(fm[R * 2][C * 2], fm[R * 2][C * 2 + 1], fm[R * 2 + 1][C * 2], fm[R * 2 + 1][C * 2 + 1]));
+            out.push(row);
+        }
+        return out;
+    }
 
-function renderL2Output(l2map){
-  const cols = l2map[0].length;
-  const cells = $('l2Grid').querySelectorAll('.fm-cell');
-  l2map.forEach((row, r) => row.forEach((v, c) => {
-    const cell = cells[r * cols + c];
-    cell.textContent = v || 0;
-    if(v) cell.classList.add('accent');
-  }));
-}
+    function ksum(ki) {
+        return KERNELS[ki].data.flat().reduce((a, b) => a + b, 0);
+    }
 
-function renderDense(binaryFmaps){
-  const denseRow = $('denseRow');
-  denseRow.innerHTML = '';
-  binaryFmaps.forEach((fmap, ki) => {
-    const fired = fmap.flat().some(v => v === 1);
-    const dc = el('div', 'dense-cell ' + COLORS[ki] + '-cell' + (fired ? ' perfect' : ' mismatch'));
-    const dv = el('div','dc-val');
-    dv.textContent = fired ? '1' : '0';
-    const dl = el('div','dc-label');
-    dl.textContent = `Filter ${ki + 1}`;
-    dc.appendChild(dv);
-    dc.appendChild(dl);
-    denseRow.appendChild(dc);
-  });
-  const matchCount = binaryFmaps.filter(fmap => fmap.flat().some(v => v === 1)).length;
-  const eq = $('denseEq');
-  eq.innerHTML = `<span class="eq-sum ${matchCount === 4 ? 'pass' : 'fail'}">${matchCount}/4</span> filters matched`;
-}
+    function buildInputGrid() {
+        const inp = getInput();
+        const numRows = inp.length;
+        const numCols = inp[0].length;
+        const inG = $('inGrid');
+        inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
+        inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
+        inG.innerHTML = '';
+        for (let i = 0; i < numRows * numCols; i++) inG.appendChild(el('div', 'ic'));
+    }
 
-function setStep(i, t){
-  for(let j=0;j<8;j++){
-    const d = $('d'+j);
-    d.className = (j<i) ? 'step-dot done' : (j===i ? 'step-dot current' : 'step-dot');
-  }
-  $('sT').textContent = t;
-}
-function setOn(id, on){
-  const e = $(id);
-  if(!e) return;
-  e.classList.toggle('on', !!on);
-}
-function reset(){
-  ['bIn','bK','bP','bID','bL2K','bL2','bOut'].forEach(id => setOn(id,false));
-  ['a1','a2','a3','a4','a4b','a5'].forEach(id => $(id).classList.remove('on'));
-  for(let ki=0;ki<4;ki++) $(`kbox${ki}`).classList.remove('active');
-  setStep(-1,'Choose an example and press Run');
-  $('outV').textContent='?';
-  $('outV').className='out';
-  renderInput(getInput());
-  buildFmapPlaceholders(6, 6);
-  buildPoolPlaceholders(3, 3);
-  buildL2Placeholders();
-}
+    function build() {
+        buildInputGrid();
+        const kCol = $('kCol');
+        kCol.innerHTML = '';
+        KERNELS.forEach((k, ki) => {
+            const box = el('div', 'kbox');
+            box.id = `kbox${ki}`;
+            const nm = el('div', 'kname');
+            nm.textContent = `Filter ${k.id}`;
+            nm.style.color = CSS_COLORS[ki];
+            box.appendChild(nm);
+            const kg = el('div', 'kg');
+            kg.style.gridTemplateColumns = `repeat(${KS}, var(--kcell))`;
+            for (let r = 0; r < KS; r++) {
+                for (let c = 0; c < KS; c++) {
+                    const ce = el('div', 'kc' + (k.data[r][c] ? ` k-${COLORS[ki]}` : ''));
+                    ce.textContent = k.data[r][c];
+                    kg.appendChild(ce);
+                }
+            }
+            box.appendChild(kg);
+            kCol.appendChild(box);
+        });
+        // Feature maps: 6 rows × 6 cols (8-3+1=6)
+        buildFmapPlaceholders(6, 6);
+        // Pooled: 3 rows × 3 cols (6/2=3)
+        buildPoolPlaceholders(3, 3);
+        buildL2FilterDisplay();
+        buildL2Placeholders();
+    }
 
-const wait = ms => new Promise(r => setTimeout(r, ms));
+    function renderInput(inp) {
+        const numRows = inp.length;
+        const numCols = inp[0].length;
+        const inG = $('inGrid');
+        const currentCells = inG.children.length;
+        if (currentCells !== numRows * numCols) {
+            inG.style.gridTemplateColumns = `repeat(${numCols}, var(--cell))`;
+            inG.style.gridTemplateRows = `repeat(${numRows}, var(--cell))`;
+            inG.innerHTML = '';
+            for (let i = 0; i < numRows * numCols; i++) inG.appendChild(el('div', 'ic'));
+        }
+        const cells = [...inG.children];
+        let idx = 0;
+        for (let r = 0; r < numRows; r++) {
+            for (let c = 0; c < numCols; c++) {
+                const ce = cells[idx++];
+                ce.className = 'ic';
+                ce.textContent = inp[r][c];
+                if (inp[r][c]) ce.classList.add('on');
+            }
+        }
+    }
 
-async function run(){
-  if(busy) return;
-  busy = true;
+    function buildFmapPlaceholders(rows, cols) {
+        ['fmapGrid0', 'fmapGrid1', 'fmapGrid2', 'fmapGrid3'].forEach(id => {
+            const g = $(id);
+            g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+            g.innerHTML = '';
+            for (let i = 0; i < rows * cols; i++) g.appendChild(el('div', 'fm-cell'));
+        });
+    }
 
-  const inp = getInput();
+    function buildPoolPlaceholders(rows, cols) {
+        ['poolGrid0', 'poolGrid1', 'poolGrid2', 'poolGrid3'].forEach(id => {
+            const g = $(id);
+            g.style.gridTemplateColumns = `repeat(${cols}, var(--fmcell))`;
+            g.innerHTML = '';
+            for (let i = 0; i < rows * cols; i++) g.appendChild(el('div', 'fm-cell'));
+        });
+    }
 
-  // Step 0: Input
-  setStep(0,'Input loaded');
-  setOn('bIn', true);
-  renderInput(inp);
-  await wait(300);
+    function renderFeatureMaps(binaryFmaps) {
+        binaryFmaps.forEach((fmap, ki) => {
+            const cells = $('fmapGrid' + ki).querySelectorAll('.fm-cell');
+            fmap.forEach((row, r) => row.forEach((v, c) => {
+                const cell = cells[r * fmap[0].length + c];
+                cell.textContent = v ? ki + 1 : 0;
+                if (v) cell.classList.add(COLORS[ki]);
+            }));
+        });
+    }
 
-  // Step 1: Filters
-  setStep(1,'Applying 4 filters...');
-  $('a1').classList.add('on');
-  setOn('bK', true);
+    function renderPooled(pooledMaps) {
+        pooledMaps.forEach((pool, ki) => {
+            const cells = $('poolGrid' + ki).querySelectorAll('.fm-cell');
+            pool.forEach((row, r) => row.forEach((v, c) => {
+                const cell = cells[r * pool[0].length + c];
+                cell.textContent = v ? ki + 1 : 0;
+                if (v) cell.classList.add(COLORS[ki]);
+            }));
+        });
+    }
 
-  const fmaps = KERNELS.map(k => conv(inp, k.data));
+    function buildL2FilterDisplay() {
+        const deck = $('l2FilterDeck');
+        deck.innerHTML = '';
 
-  for(let ki=0;ki<4;ki++){
-    $(`kbox${ki}`).classList.add('active');
-    await wait(180);
-    $(`kbox${ki}`).classList.remove('active');
-  }
-  await wait(100);
+        // Cards ordered deepest to top: filter 4 → filter 1
+        [4, 3, 2, 1].forEach(filterNum => {
+            const card = el('div', 'fmap-card');
 
-  // Step 2: Binary Feature Maps — 6×6
-  setStep(2,'Binary feature maps (6×6, 1 = perfect match)');
-  $('a2').classList.add('on');
-  setOn('bP', true);
+            const tag = el('div', 'fmap-tag');
+            tag.textContent = `Filter ${filterNum}`;
+            tag.style.color = CSS_COLORS[filterNum - 1];
+            card.appendChild(tag);
 
-  const binaryFmaps = fmaps.map((fm, ki) => {
-    const ks = ksum(ki);
-    return fm.map(row => row.map(v => v === ks ? 1 : 0));
-  });
-  renderFeatureMaps(binaryFmaps);
-  await wait(400);
+            const grid = el('div', 'fm-grid');
+            grid.style.gridTemplateColumns = `repeat(2, var(--fmcell))`;
+            L2_FILTER.forEach((row, r) => row.forEach((v, c) => {
+                const cell = el('div', 'fm-cell');
+                if (v === filterNum) {
+                    cell.classList.add(COLORS[filterNum - 1]);
+                    cell.textContent = filterNum;
+                } else {
+                    cell.textContent = 0;
+                }
+                grid.appendChild(cell);
+            }));
+            card.appendChild(grid);
+            deck.appendChild(card);
+        });
 
-  // Step 3: Max Pooling 6×6 → 3×3
-  setStep(3,'Max pooling 6×6 → 3×3');
-  $('a3').classList.add('on');
-  setOn('bID', true);
+        const hint = el('span', 'fmap-hint');
+        hint.textContent = 'hover to inspect';
+        deck.appendChild(hint);
+    }
 
-  const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
-  renderPooled(pooled);
-  await wait(400);
+    function applyL2Filter(pooledMaps) {
+        const outRows = pooledMaps[0].length - L2_FILTER.length + 1;
+        const outCols = pooledMaps[0][0].length - L2_FILTER[0].length + 1;
+        const out = [];
+        for (let R = 0; R < outRows; R++) {
+            const row = [];
+            for (let C = 0; C < outCols; C++) {
+                const match = L2_FILTER.every((frow, dr) =>
+                    frow.every((filterNum, dc) =>
+                        pooledMaps[filterNum - 1][R + dr][C + dc] === 1
+                    )
+                );
+                row.push(match ? 1 : 0);
+            }
+            out.push(row);
+        }
+        return out;
+    }
 
-  // Step 4: L2 Filter
-  setStep(4,'Applying L2 filter [[1,2],[3,4]]...');
-  $('a4').classList.add('on');
-  setOn('bL2K', true);
-  await wait(300);
+    function buildL2Placeholders() {
+        const g = $('l2Grid');
+        g.style.gridTemplateColumns = `repeat(${L2_FILTER[0].length}, var(--fmcell))`;
+        g.innerHTML = '';
+        for (let i = 0; i < L2_FILTER.length * L2_FILTER[0].length; i++)
+            g.appendChild(el('div', 'fm-cell'));
+    }
 
-  // Step 5: L2 Output Map
-  setStep(5,'L2 feature map (2×2)');
-  $('a4b').classList.add('on');
-  setOn('bL2', true);
+    function renderL2Output(l2map) {
+        const cols = l2map[0].length;
+        const cells = $('l2Grid').querySelectorAll('.fm-cell');
+        l2map.forEach((row, r) => row.forEach((v, c) => {
+            const cell = cells[r * cols + c];
+            cell.textContent = v || 0;
+            if (v) cell.classList.add('accent');
+        }));
+    }
 
-  const l2map = applyL2Filter(pooled);
-  renderL2Output(l2map);
-  await wait(400);
+    function renderDense(binaryFmaps) {
+        const denseRow = $('denseRow');
+        denseRow.innerHTML = '';
+        binaryFmaps.forEach((fmap, ki) => {
+            const fired = fmap.flat().some(v => v === 1);
+            const dc = el('div', 'dense-cell ' + COLORS[ki] + '-cell' + (fired ? ' perfect' : ' mismatch'));
+            const dv = el('div', 'dc-val');
+            dv.textContent = fired ? '1' : '0';
+            const dl = el('div', 'dc-label');
+            dl.textContent = `Filter ${ki + 1}`;
+            dc.appendChild(dv);
+            dc.appendChild(dl);
+            denseRow.appendChild(dc);
+        });
+        const matchCount = binaryFmaps.filter(fmap => fmap.flat().some(v => v === 1)).length;
+        const eq = $('denseEq');
+        eq.innerHTML = `<span class="eq-sum ${matchCount === 4 ? 'pass' : 'fail'}">${matchCount}/4</span> filters matched`;
+    }
 
-  // Step 6: Output
-  $('a5').classList.add('on');
-  setOn('bOut', true);
+    function setStep(i, t) {
+        for (let j = 0; j < 8; j++) {
+            const d = $('d' + j);
+            d.className = (j < i) ? 'step-dot done' : (j === i ? 'step-dot current' : 'step-dot');
+        }
+        $('sT').textContent = t;
+    }
 
-  const ok = l2map.flat().some(v => v === 1);
+    function setOn(id, on) {
+        const e = $(id);
+        if (!e) return;
+        e.classList.toggle('on', !!on);
+    }
 
-  const outV = $('outV');
-  outV.textContent = ok ? '1' : '0';
-  outV.className = 'out ' + (ok ? 'y' : 'n');
+    function reset() {
+        ['bIn', 'bK', 'bP', 'bID', 'bL2K', 'bL2', 'bOut'].forEach(id => setOn(id, false));
+        ['a1', 'a2', 'a3', 'a4', 'a4b', 'a5'].forEach(id => $(id).classList.remove('on'));
+        for (let ki = 0; ki < 4; ki++) $(`kbox${ki}`).classList.remove('active');
+        setStep(-1, 'Choose an example and press Run');
+        $('outV').textContent = '?';
+        $('outV').className = 'out';
+        renderInput(getInput());
+        buildFmapPlaceholders(6, 6);
+        buildPoolPlaceholders(3, 3);
+        buildL2Placeholders();
+    }
 
-  setStep(7, ok ? '✓ Output 1' : '✗ Output 0');
+    const wait = ms => new Promise(r => setTimeout(r, ms));
 
-  busy = false;
-}
+    async function run() {
+        if (busy) return;
+        busy = true;
 
-// === THEME ===
-function toggleTheme(){
-  document.body.classList.add('no-transition');
-  const isLight = document.body.classList.toggle('light-mode');
-  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
-  setTimeout(() => document.body.classList.remove('no-transition'), 0);
-}
+        const inp = getInput();
 
-// === EXPLANATIONS ===
-const EXPLANATIONS = {
-  bIn:  { title: 'Input',           text: 'An 8×8 binary grid representing a shape. Each cell is 1 (on) or 0 (off).' },
-  bK:   { title: 'Filters',         text: 'Four 3×3 learned kernels slide over the input, each detecting a different local edge or corner pattern.' },
-  bP:   { title: 'Feature Maps',    text: 'One 6×6 binary map per filter. A 1 marks every position where that filter found a perfect match.' },
-  bID:  { title: 'Max Pooling',     text: 'Each 2×2 region collapses to its maximum value, shrinking 6×6 maps to 3×3 and making detection shift-invariant.' },
-  bL2K: { title: 'L2 Filter',       text: 'A 2×2 meta-filter that checks for a specific spatial arrangement of activations across the four pooled maps.' },
-  bL2:  { title: 'L2 Feature Map',  text: 'Output of the L2 filter. A 1 means the full pattern signature was found at that spatial location.' },
-  bOut: { title: 'Output',          text: '1 if the L2 feature map contains at least one activation — the shape was recognised. 0 otherwise.' },
-};
+        // Step 0: Input
+        setStep(0, 'Input loaded');
+        setOn('bIn', true);
+        renderInput(inp);
+        await wait(300);
 
-function explain(key){
-  const e = EXPLANATIONS[key];
-  if(!e) return;
-  document.getElementById('epTitle').textContent = e.title;
-  document.getElementById('epText').textContent = e.text;
-  document.getElementById('epDefault').classList.add('hidden');
-  document.getElementById('epBody').classList.add('visible');
-}
+        // Step 1: Filters
+        setStep(1, 'Applying 4 filters...');
+        $('a1').classList.add('on');
+        setOn('bK', true);
 
-function clearExplain(){
-  document.getElementById('epDefault').classList.remove('hidden');
-  document.getElementById('epBody').classList.remove('visible');
-}
+        const fmaps = KERNELS.map(k => conv(inp, k.data));
 
-function initExplain(){
-  document.querySelectorAll('.block').forEach(el => {
-    el.addEventListener('mouseenter', () => explain(el.id));
-    el.addEventListener('mouseleave', clearExplain);
-  });
-}
+        for (let ki = 0; ki < 4; ki++) {
+            $(`kbox${ki}`).classList.add('active');
+            await wait(180);
+            $(`kbox${ki}`).classList.remove('active');
+        }
+        await wait(100);
 
-build();
-reset();
-initExplain();
-document.body.classList.add('ready');
+        // Step 2: Binary Feature Maps — 6×6
+        setStep(2, 'Binary feature maps (6×6, 1 = perfect match)');
+        $('a2').classList.add('on');
+        setOn('bP', true);
+
+        const binaryFmaps = fmaps.map((fm, ki) => {
+            const ks = ksum(ki);
+            return fm.map(row => row.map(v => v === ks ? 1 : 0));
+        });
+        renderFeatureMaps(binaryFmaps);
+        await wait(400);
+
+        // Step 3: Max Pooling 6×6 → 3×3
+        setStep(3, 'Max pooling 6×6 → 3×3');
+        $('a3').classList.add('on');
+        setOn('bID', true);
+
+        const pooled = binaryFmaps.map(bfm => maxpool2x2(bfm));
+        renderPooled(pooled);
+        await wait(400);
+
+        // Step 4: L2 Filter
+        setStep(4, 'Applying L2 filter [[1,2],[3,4]]...');
+        $('a4').classList.add('on');
+        setOn('bL2K', true);
+        await wait(300);
+
+        // Step 5: L2 Output Map
+        setStep(5, 'L2 feature map (2×2)');
+        $('a4b').classList.add('on');
+        setOn('bL2', true);
+
+        const l2map = applyL2Filter(pooled);
+        renderL2Output(l2map);
+        await wait(400);
+
+        // Step 6: Output
+        $('a5').classList.add('on');
+        setOn('bOut', true);
+
+        const ok = l2map.flat().some(v => v === 1);
+
+        const outV = $('outV');
+        outV.textContent = ok ? '1' : '0';
+        outV.className = 'out ' + (ok ? 'y' : 'n');
+
+        setStep(7, ok ? '✓ Output 1' : '✗ Output 0');
+
+        busy = false;
+    }
+
+    // === THEME ===
+    function toggleTheme() {
+        document.body.classList.add('no-transition');
+        const isLight = document.body.classList.toggle('light-mode');
+        document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+        setTimeout(() => document.body.classList.remove('no-transition'), 0);
+    }
+
+    // === EXPLANATIONS ===
+    const EXPLANATIONS = {
+        bIn: {title: 'Input', text: 'An 8×8 binary grid representing a shape. Each cell is 1 (on) or 0 (off).'},
+        bK: {
+            title: 'Filters',
+            text: 'Four 3×3 learned kernels slide over the input, each detecting a different local edge or corner pattern.'
+        },
+        bP: {
+            title: 'Feature Maps',
+            text: 'One 6×6 binary map per filter. A 1 marks every position where that filter found a perfect match.'
+        },
+        bID: {
+            title: 'Max Pooling',
+            text: 'Each 2×2 region collapses to its maximum value, shrinking 6×6 maps to 3×3 and making detection shift-invariant.'
+        },
+        bL2K: {
+            title: 'L2 Filter',
+            text: 'A 2×2 meta-filter that checks for a specific spatial arrangement of activations across the four pooled maps.'
+        },
+        bL2: {
+            title: 'L2 Feature Map',
+            text: 'Output of the L2 filter. A 1 means the full pattern signature was found at that spatial location.'
+        },
+        bOut: {
+            title: 'Output',
+            text: '1 if the L2 feature map contains at least one activation — the shape was recognised. 0 otherwise.'
+        },
+    };
+
+    function explain(key) {
+        const e = EXPLANATIONS[key];
+        if (!e) return;
+        document.getElementById('epTitle').textContent = e.title;
+        document.getElementById('epText').textContent = e.text;
+        document.getElementById('epDefault').classList.add('hidden');
+        document.getElementById('epBody').classList.add('visible');
+    }
+
+    function clearExplain() {
+        document.getElementById('epDefault').classList.remove('hidden');
+        document.getElementById('epBody').classList.remove('visible');
+    }
+
+    function initExplain() {
+        document.querySelectorAll('.block').forEach(el => {
+            el.addEventListener('mouseenter', () => explain(el.id));
+            el.addEventListener('mouseleave', clearExplain);
+        });
+    }
+
+    build();
+    reset();
+    initExplain();
+    document.body.classList.add('ready');
 </script>
 </body>
 </html>
