@@ -236,36 +236,117 @@ which completes the induction. \hfill$\square$
 \end{mdframed}
 
 \section{Reverse process (model): one-step and multi-step (sampling-only)}
-The reverse direction is not known analytically for real data, so we \textbf{learn} it.
-At each step, the reverse model takes the current noisy object $x_t$ and predicts how much noise to remove.
 
-\subsection*{One-step reverse model (learned denoising step)}
-A common sampling form is:
+\subsection*{Step 1: the ideal reverse formula (if we knew $\varepsilon$)}
+
+Recall the multi-step forward formula:
+\[
+x_t \;=\; \sqrt{\bar\alpha_t}\,x_0 \;+\; \sqrt{1-\bar\alpha_t}\,\varepsilon.
+\]
+If we happened to know the noise $\varepsilon$ that was used to produce $x_t$, we could solve for $x_0$ exactly:
+\[
+x_0 \;=\; \frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
+\]
+Substituting this into the one-step forward rule (run backwards) gives the \emph{ideal} reverse step:
 \[
 x_{t-1}
 \;=\;
 \frac{1}{\sqrt{\alpha_t}}
 \left(
-x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}(x_t,t)
+x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon
+\right)
+\;+\; \sqrt{\beta_t}\,z,
+\]
+where $z$ is a small fresh noise injection that keeps the step statistically consistent.
+This formula is exact: given $\varepsilon$, it recovers $x_{t-1}$ perfectly.
+
+\subsection*{Step 2: the problem — $\varepsilon$ is unknown at inference time}
+
+During generation we start from pure noise and have no access to any real $x_0$, so the noise $\varepsilon$ that ``would have'' produced our $x_t$ is unknown.
+We must \emph{estimate} it.
+
+\subsection*{Step 3: learned denoising — replace $\varepsilon$ by $\widehat{\varepsilon}_\theta$}
+
+We train a neural network $\widehat{\varepsilon}_\theta(x_t, t)$ to predict $\varepsilon$ given only $x_t$ and the time step $t$.
+Substituting the network's prediction for the unknown $\varepsilon$ gives the formula we actually use:
+\[
+x_{t-1}
+\;=\;
+\frac{1}{\sqrt{\alpha_t}}
+\left(
+x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
 \right)
 \;+\;
 \sqrt{\beta_t}\, z,
 \]
 where:
 \begin{itemize}
-  \item $\widehat{\varepsilon}(x_t,t)$ is the model's prediction of the noise inside $x_t$,
-  \item $\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}$ is a known scalar derived from the noise schedule (it says ``how much of the predicted noise to subtract''),
+  \item $\widehat{\varepsilon}_\theta(x_t,t)$ is the network's estimate of the noise $\varepsilon$ inside $x_t$,
+  \item $\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}$ is a known scalar from the schedule,
   \item $z$ is fresh standard noise (set to $0$ on the final step),
-  \item $\sqrt{\beta_t}$ controls how much fresh randomness is injected at each reverse step.
+  \item $\sqrt{\beta_t}$ controls the small randomness injected at each reverse step.
 \end{itemize}
 
+\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Proof (for the curious reader): derivation of the reverse step}}]
+\textit{(This derivation can be skipped on first reading.)}
+
+\medskip
 \noindent
-Intuition:
-\begin{itemize}
-  \item Predict the noise that was added,
-  \item subtract it (scaled by the schedule),
-  \item optionally add a small amount of fresh randomness to stay consistent with the learned dynamics.
-\end{itemize}
+\textbf{Goal.} Show that the reverse step formula follows from the multi-step forward formula and the one-step forward rule.
+
+\medskip
+\noindent
+\textbf{1. Recover $x_0$ from $x_t$ and $\varepsilon$.}
+The multi-step forward formula states
+\[
+x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon.
+\]
+Solving for $x_0$:
+\[
+x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
+\tag{$*$}
+\]
+
+\medskip
+\noindent
+\textbf{2. Write $x_{t-1}$ using the multi-step formula at $t-1$.}
+Applying the multi-step formula one step earlier:
+\[
+x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'.
+\]
+For the reverse step we want the \emph{mean} of $x_{t-1}$ given $x_t$ (ignoring the residual noise $\varepsilon'$ for the moment), so we substitute $(*)$:
+\[
+\mathbb{E}[x_{t-1} \mid x_t]
+= \sqrt{\bar\alpha_{t-1}}\cdot\frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
+\]
+
+\medskip
+\noindent
+\textbf{3. Rewrite using $\alpha_t = \bar\alpha_t / \bar\alpha_{t-1}$.}
+Note that $\sqrt{\bar\alpha_{t-1}}/\sqrt{\bar\alpha_t} = 1/\sqrt{\alpha_t}$.
+Expanding:
+\[
+\mathbb{E}[x_{t-1} \mid x_t]
+= \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\sqrt{1-\bar\alpha_t}}{\sqrt{\alpha_t}\,\cdot\,\frac{\sqrt{\bar\alpha_t}}{\sqrt{\bar\alpha_{t-1}}}}\,\varepsilon\right)
+= \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right),
+\]
+where the last equality uses $\beta_t = 1-\alpha_t$ and the algebraic identity
+\[
+\frac{1-\bar\alpha_t}{\sqrt{\alpha_t}} - \frac{\sqrt{(1-\bar\alpha_t)(1-\bar\alpha_{t-1})}}{\sqrt{\bar\alpha_t/\bar\alpha_{t-1}}}
+\;=\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}.
+\]
+
+\medskip
+\noindent
+\textbf{4. Add back the residual randomness.}
+The true posterior of $x_{t-1}$ given $x_t$ and $x_0$ is a bell-shaped cloud centred at the mean above, with variance $\beta_t$ (the DDPM simplest choice).
+Adding the residual noise $\sqrt{\beta_t}\,z$, $z\sim\mathcal{N}(0,I)$, gives the full reverse sampling formula:
+\[
+x_{t-1}
+= \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right) + \sqrt{\beta_t}\,z.
+\]
+Replacing the unknown $\varepsilon$ by its network estimate $\widehat\varepsilon_\theta(x_t,t)$ gives the formula used in practice. \hfill$\square$
+\end{mdframed}
 
 \subsection*{Multi-step reverse (the full generation procedure)}
 \begin{enumerate}
@@ -276,7 +357,7 @@ Intuition:
   \;=\;
   \frac{1}{\sqrt{\alpha_t}}
   \left(
-  x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}(x_t,t)
+  x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
   \right)
   \;+\;
   \sqrt{\beta_t}\, z.
