@@ -28,20 +28,16 @@ A useful mental model is: \emph{each outcome is the sum of many small pushes}, a
 \noindent
 In what follows, we will call this bell-shaped family the \textbf{normal curve} (in 1D) and the \textbf{normal cloud} (in multiple dimensions).
 
-\vspace{0.5em}
-\noindent
-\textbf{Characterizing the spread.}
-The parameter $\sigma$ (``sigma'') quantifies how widely the cloud is dispersed.
-A useful rule of thumb in $d$ dimensions is:
-\[
-r_{95} \;\approx\; \sigma + \sqrt{d},
-\]
-where $r_{95}$ is the radius of the sphere that captures approximately 95\% of the particles (or data points).
-In one dimension ($d=1$) this reduces to the familiar ``roughly two sigma'' intuition.
-In high dimensions, the extra $\sqrt{d}$ term reflects the fact that a high-dimensional cloud spreads over a larger shell.
-
 \section{Predicting probabilities with an integral (1D)}
-Suppose a quantity $x$ is described by a \emph{normal curve} centered at $\mu$ with ``spread'' $\sigma$.
+Suppose a quantity $x$ is described by a \emph{normal curve} centered at $\mu$ with \textbf{spread} $\sigma$ (``sigma'').
+The spread $\sigma$ controls how wide the bell is: a larger $\sigma$ means outcomes are more scattered around the center.
+A useful rule of thumb is that the interval $[\mu - 2\sigma,\, \mu + 2\sigma]$ captures approximately 95\% of all outcomes.
+In $d$ dimensions the analogous statement is that a sphere of radius
+\[
+r_{95} \;\approx\; \sigma + \sqrt{d}
+\]
+centered at $\mu$ captures approximately 95\% of the cloud.
+The extra $\sqrt{d}$ term reflects the fact that in high dimensions the cloud concentrates on a shell rather than near the center.
 
 \subsection*{Probability of landing in an interval}
 If you want the chance that $x$ lands between $a$ and $b$, you compute the \emph{area under the curve} between $a$ and $b$:
@@ -180,8 +176,8 @@ This says:
   \item the rest becomes noise.
 \end{itemize}
 
-\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Supplementary Video: Derivation of the Multi-Step Forward Formula}}]
-\textit{(This derivation is covered in a separate video and is provided here for completeness. It can be skipped on first reading.)}
+\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Proof (for the curious reader)}}]
+\textit{(This derivation can be skipped on first reading.)}
 
 \medskip
 \noindent
@@ -250,25 +246,25 @@ x_{t-1}
 \;=\;
 \frac{1}{\sqrt{\alpha_t}}
 \left(
-x_t \;-\; c_t \cdot \widehat{\varepsilon}(x_t,t)
+x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}(x_t,t)
 \right)
 \;+\;
-s_t \, z,
+\sqrt{\beta_t}\, z,
 \]
 where:
 \begin{itemize}
   \item $\widehat{\varepsilon}(x_t,t)$ is the model's prediction of the noise inside $x_t$,
-  \item $c_t$ is a known scalar that depends on the schedule (a ``how much to subtract'' factor),
-  \item $z$ is fresh standard noise (often set to $0$ on the final step),
-  \item $s_t$ is a known scalar controlling how much randomness to add back in the reverse step.
+  \item $\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}$ is a known scalar derived from the noise schedule (it says ``how much of the predicted noise to subtract''),
+  \item $z$ is fresh standard noise (set to $0$ on the final step),
+  \item $\sqrt{\beta_t}$ controls how much fresh randomness is injected at each reverse step.
 \end{itemize}
 
 \noindent
 Intuition:
 \begin{itemize}
   \item Predict the noise that was added,
-  \item subtract it (scaled appropriately),
-  \item optionally add a tiny amount of fresh randomness to stay consistent with the learned dynamics.
+  \item subtract it (scaled by the schedule),
+  \item optionally add a small amount of fresh randomness to stay consistent with the learned dynamics.
 \end{itemize}
 
 \subsection*{Multi-step reverse (the full generation procedure)}
@@ -280,10 +276,10 @@ Intuition:
   \;=\;
   \frac{1}{\sqrt{\alpha_t}}
   \left(
-  x_t \;-\; c_t \cdot \widehat{\varepsilon}(x_t,t)
+  x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}(x_t,t)
   \right)
   \;+\;
-  s_t \, z.
+  \sqrt{\beta_t}\, z.
   \]
   \item Output $x_0$.
 \end{enumerate}
