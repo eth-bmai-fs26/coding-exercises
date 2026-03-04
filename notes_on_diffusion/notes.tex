@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{hyperref}
+\usepackage{mdframed}
 
 \title{Intuition for Diffusion in Nature and in Generative Modeling}
 \author{}
@@ -11,7 +12,7 @@
 \begin{document}
 \maketitle
 
-\section{Diffusion in real life (why ``bell-shaped'' patterns keep showing up)}
+\section{Physical Diffusion and the Ubiquity of Bell-Shaped Distributions}
 Many everyday phenomena can be understood as the result of \emph{lots of tiny random influences piling up}.
 
 \begin{itemize}
@@ -25,7 +26,19 @@ A useful mental model is: \emph{each outcome is the sum of many small pushes}, a
 
 \vspace{0.5em}
 \noindent
-In what follows, we will call this bell-shaped family the \textbf{normal curve} (in 1D) and the \textbf{normal cloud} (in multiple dimensions), without introducing extra naming that might clash with later terminology.
+In what follows, we will call this bell-shaped family the \textbf{normal curve} (in 1D) and the \textbf{normal cloud} (in multiple dimensions).
+
+\vspace{0.5em}
+\noindent
+\textbf{Characterizing the spread.}
+The parameter $\sigma$ (``sigma'') quantifies how widely the cloud is dispersed.
+A useful rule of thumb in $d$ dimensions is:
+\[
+r_{95} \;\approx\; \sigma + \sqrt{d},
+\]
+where $r_{95}$ is the radius of the sphere that captures approximately 95\% of the particles (or data points).
+In one dimension ($d=1$) this reduces to the familiar ``roughly two sigma'' intuition.
+In high dimensions, the extra $\sqrt{d}$ term reflects the fact that a high-dimensional cloud spreads over a larger shell.
 
 \section{Predicting probabilities with an integral (1D)}
 Suppose a quantity $x$ is described by a \emph{normal curve} centered at $\mu$ with ``spread'' $\sigma$.
@@ -83,8 +96,8 @@ A classic intuition is:
 \emph{If you add many independent small random numbers, the result starts looking bell-shaped.}
 \end{quote}
 
-Each draw $u_i \sim \mathrm{Uniform}[-1,1]$ has mean $0$ and variance $\tfrac{1}{3}$.
-By the Central Limit Theorem, the sum $S = u_1 + \cdots + u_n$ has mean $0$ and variance $\tfrac{n}{3}$, so
+Each draw $u_i \sim \mathrm{Uniform}[-1,1]$ has mean $0$.
+Mathematics tells us that the sum $S = u_1 + \cdots + u_n$ increasingly resembles a standard bell-shaped noise as $n$ grows, and the rescaled value
 \[
 z = S \cdot \sqrt{\tfrac{3}{n}}
 \]
@@ -98,8 +111,8 @@ x = \mu + \sigma z.
 \]
 
 \subsection*{Multidimensional sampling: isotropic cloud}
-The simplest multivariate case is an \textbf{isotropic} (equally spread in every direction) normal cloud, where the covariance is $\Sigma = \sigma^2 I$.
-There are no correlations between coordinates, so the recipe is just:
+The simplest multivariate case is an \textbf{isotropic} (equally spread in every direction) normal cloud.
+Since there are no correlations between coordinates, the recipe is just:
 \begin{enumerate}
   \item Generate $d$ independent bell-shaped noises $z_1,\dots,z_d$ (using the add-up trick above).
   \item Assemble them into a vector $z=(z_1,\dots,z_d)$.
@@ -154,7 +167,9 @@ Intuition:
 \subsection*{Multi-step forward (direct jump to step $t$)}
 If you do many small corruptions, you can write $x_t$ directly from the original $x_0$:
 \[
-x_t \;=\; \sqrt{\alpha_1\alpha_2\cdots\alpha_t}\,x_0 \;+\; \sqrt{1-\alpha_1\alpha_2\cdots\alpha_t}\,\varepsilon,
+x_t \;=\; \sqrt{\bar\alpha_t}\,x_0 \;+\; \sqrt{1-\bar\alpha_t}\,\varepsilon,
+\qquad
+\bar\alpha_t \;=\; \alpha_1\alpha_2\cdots\alpha_t,
 \]
 where $\varepsilon$ is standard noise.
 
@@ -164,6 +179,65 @@ This says:
   \item a shrinking fraction of the original survives,
   \item the rest becomes noise.
 \end{itemize}
+
+\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Supplementary Video: Derivation of the Multi-Step Forward Formula}}]
+\textit{(This derivation is covered in a separate video and is provided here for completeness. It can be skipped on first reading.)}
+
+\medskip
+\noindent
+\textbf{Claim.} Applying the one-step rule $t$ times yields
+\[
+x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon,
+\qquad \varepsilon \sim \mathcal{N}(0,I),
+\]
+where $\bar\alpha_t = \prod_{s=1}^{t}\alpha_s$.
+
+\medskip
+\noindent
+\textbf{Derivation by induction.}
+
+\noindent
+\emph{Base case ($t=1$).}
+By the one-step rule,
+\[
+x_1 = \sqrt{\alpha_1}\,x_0 + \sqrt{1-\alpha_1}\,\varepsilon_1.
+\]
+This matches the claim with $\bar\alpha_1 = \alpha_1$.
+
+\medskip
+\noindent
+\emph{Inductive step.}
+Assume the claim holds at step $t-1$:
+\[
+x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon',
+\qquad \varepsilon' \sim \mathcal{N}(0,I).
+\]
+Apply the one-step rule to go from $x_{t-1}$ to $x_t$:
+\[
+x_t
+= \sqrt{\alpha_t}\,x_{t-1} + \sqrt{1-\alpha_t}\,\varepsilon_t
+= \sqrt{\alpha_t}\!\left(\sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'\right) + \sqrt{1-\alpha_t}\,\varepsilon_t.
+\]
+Collecting the $x_0$ term and the noise terms:
+\[
+x_t
+= \sqrt{\alpha_t\bar\alpha_{t-1}}\,x_0
+  + \underbrace{\sqrt{\alpha_t(1-\bar\alpha_{t-1})}\,\varepsilon' + \sqrt{1-\alpha_t}\,\varepsilon_t}_{\text{sum of two independent bell-shaped noises}}.
+\]
+The sum of two independent bell-shaped noises with variances $a^2$ and $b^2$ is itself a bell-shaped noise with variance $a^2+b^2$.
+Here $a^2 = \alpha_t(1-\bar\alpha_{t-1})$ and $b^2 = 1-\alpha_t$, so the combined noise has variance
+\[
+\alpha_t(1-\bar\alpha_{t-1}) + (1-\alpha_t)
+= \alpha_t - \alpha_t\bar\alpha_{t-1} + 1 - \alpha_t
+= 1 - \alpha_t\bar\alpha_{t-1}
+= 1 - \bar\alpha_t.
+\]
+Therefore
+\[
+x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon,
+\]
+which completes the induction. \hfill$\square$
+\end{mdframed}
 
 \section{Reverse process (model): one-step and multi-step (sampling-only)}
 The reverse direction is not known analytically for real data, so we \textbf{learn} it.
