@@ -4,379 +4,349 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{mdframed}
+\usepackage{abstract}
+\usepackage{titlesec}
 
-\title{Intuition for Diffusion in Nature and in Generative Modeling}
-\author{}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+\title{\textbf{Intuition for Diffusion in Nature and in Generative Modelling}\\[0.4em]
+\large Lecture Notes}
+\author{Carlos Cotrini\thanks{Department of Computer Science, ETH Z\"{u}rich.}
+\and
+Juan Tarazona\thanks{Department of Mechanical Engineering, ETH Z\"{u}rich.}}
 \date{}
 
 \begin{document}
 \maketitle
 
+\begin{abstract}
+These notes provide an accessible introduction to diffusion processes and their role in modern generative modelling.
+We begin with physical intuition, develop the necessary probabilistic tools at an elementary level, and proceed to a self-contained derivation of the denoising diffusion probabilistic model (DDPM) framework.
+Proofs are collected in dedicated boxes and may be skipped on a first reading without loss of continuity.
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+% -----------------------------------------------------------------------
 \section{Physical Diffusion and the Ubiquity of Bell-Shaped Distributions}
-Many everyday phenomena can be understood as the result of \emph{lots of tiny random influences piling up}.
+% -----------------------------------------------------------------------
+
+Many observable phenomena arise from the cumulative effect of a large number of small, independent random influences.
+The following examples illustrate this principle across different physical and social contexts.
 
 \begin{itemize}
-  \item \textbf{Dye spreading in water.} Each molecule gets nudged by countless collisions with water molecules. After many nudges, the cloud of dye becomes a smooth blur that expands over time.
-  \item \textbf{Heat spreading in a metal rod.} Energy moves around via many microscopic interactions, producing a smooth ``heat profile'' that spreads out.
-  \item \textbf{Measurement noise.} When a sensor is affected by many small independent sources of error, the total error often forms a bell-shaped curve.
-  \item \textbf{Human height (roughly).} Height reflects many small contributions (genes, nutrition, health). When many small effects add up, the population often looks bell-shaped around a typical value.
+  \item \textbf{Dye spreading in water.}
+        Each dye molecule is displaced by countless collisions with surrounding water molecules.
+        After many such collisions, the dye cloud evolves into a smooth, expanding blur whose profile is well described by a bell-shaped distribution.
+  \item \textbf{Heat conduction in a metal rod.}
+        Thermal energy propagates through a lattice via many microscopic interactions, producing a smooth temperature profile that spreads over time.
+  \item \textbf{Measurement noise.}
+        When a sensor is subject to many small, independent error sources, the aggregate error tends to be bell-shaped around zero.
+  \item \textbf{Human height.}
+        Adult height is influenced by many genetic and environmental factors.
+        When numerous small additive effects combine, the resulting population distribution is approximately bell-shaped around a central value.
 \end{itemize}
 
-A useful mental model is: \emph{each outcome is the sum of many small pushes}, and the \emph{sum tends to form a bell-shaped profile}.
-
-\vspace{0.5em}
 \noindent
-In what follows, we will call this bell-shaped family the \textbf{normal curve} (in 1D) and the \textbf{normal cloud} (in multiple dimensions).
+The common thread is the following principle: \emph{when an outcome is the sum of many small, independent pushes, the distribution of that outcome tends to be bell-shaped}.
+We will call this bell-shaped family the \textbf{normal curve} (in one dimension) and the \textbf{normal cloud} (in multiple dimensions).
 
-\section{Predicting probabilities with an integral (1D)}
-Suppose a quantity $x$ is described by a \emph{normal curve} centered at $\mu$ with \textbf{spread} $\sigma$ (``sigma'').
-The spread $\sigma$ controls how wide the bell is: a larger $\sigma$ means outcomes are more scattered around the center.
-A useful rule of thumb is that the interval $[\mu - 2\sigma,\, \mu + 2\sigma]$ captures approximately 95\% of all outcomes.
-In $d$ dimensions the analogous statement is that a sphere of radius
+% -----------------------------------------------------------------------
+\section{Probabilities as Integrals: the One-Dimensional Case}
+% -----------------------------------------------------------------------
+
+Suppose a scalar quantity $x$ follows a normal curve centred at $\mu$ with \textbf{spread} $\sigma$ (``sigma'').
+The spread $\sigma$ governs the width of the bell: a larger value of $\sigma$ corresponds to outcomes that are more dispersed around the centre.
+As a rule of thumb, the interval $[\mu - 2\sigma,\, \mu + 2\sigma]$ captures approximately $95\%$ of all outcomes.
+
+In $d$ dimensions, the analogous statement is that a sphere of radius
 \[
-r_{95} \;\approx\; \sigma + \sqrt{d}
+  r_{95} \;\approx\; \sigma + \sqrt{d}
 \]
-centered at $\mu$ captures approximately 95\% of the cloud.
-The extra $\sqrt{d}$ term reflects the fact that in high dimensions the cloud concentrates on a shell rather than near the center.
+centred at $\mu$ captures approximately $95\%$ of the cloud.
+The additional $\sqrt{d}$ term reflects the geometric fact that, in high dimensions, the probability mass of an isotropic cloud concentrates on a thin shell rather than near the centre.
 
 \subsection*{Probability of landing in an interval}
-If you want the chance that $x$ lands between $a$ and $b$, you compute the \emph{area under the curve} between $a$ and $b$:
+
+The probability that $x$ falls between $a$ and $b$ is given by the area under the normal curve over that interval:
 \[
-\text{Probability}(a \le x \le b)
-\;=\;
-\int_{a}^{b} \text{(height of the normal curve at }x\text{)}\,dx.
+  \Pr(a \le x \le b)
+  \;=\;
+  \int_{a}^{b} p(x)\,dx,
 \]
+where $p(x)$ denotes the height of the normal curve at the point $x$.
+Geometrically, the integral accumulates the areas of infinitesimally thin rectangles of height $p(x)$ and width $dx$.
+In practice, this integral is evaluated numerically or via lookup tables, but the conceptual content is simply \emph{area under the bell}.
 
-\noindent
-Intuition:
-\begin{itemize}
-  \item The curve is taller where outcomes are more likely.
-  \item The integral adds up ``tiny rectangles'' of probability from $a$ to $b$.
-\end{itemize}
+% -----------------------------------------------------------------------
+\section{Probabilities as Integrals: the Multidimensional Case}
+% -----------------------------------------------------------------------
 
-\noindent
-In practice, people often use a lookup table or software for this integral, but conceptually it is just \emph{area under the bell}.
-
-\section{Predicting probabilities with an integral (multiple dimensions)}
-Now let $x$ be a \emph{vector} (e.g., a 2D location or a high-dimensional image vector). The normal curve becomes a \emph{normal cloud}: it assigns a \emph{density} to each point in space.
+Let $x$ now be a vector in $\mathbb{R}^d$ (for example, a two-dimensional spatial location, or the pixel values of an image).
+The normal curve generalises to a \emph{normal cloud}, which assigns a probability density $p(x)$ to each point in $\mathbb{R}^d$.
 
 \subsection*{Probability of landing in a region}
-If $R$ is a region (like a rectangle, a circle, or any shape), then
+
+For any region $R \subset \mathbb{R}^d$, the probability that $x$ falls in $R$ is
 \[
-\text{Probability}(x \in R)
-\;=\;
-\int_{x \in R} \text{(density of the normal cloud at }x\text{)}\,dx.
+  \Pr(x \in R)
+  \;=\;
+  \int_{x \in R} p(x)\,dx.
 \]
+The one-dimensional notion of ``area under a curve'' is replaced by ``volume under a surface'' (in two dimensions) or, more generally, by the integral of probability mass over the region $R$.
 
-\noindent
-Intuition:
-\begin{itemize}
-  \item Replace ``area under a curve'' with ``volume under a surface'' (or, in higher dimensions, ``mass in a region'').
-  \item You add up tiny pieces of probability mass across the region.
-\end{itemize}
+\subsection*{A canonical special case: probability mass inside a ball}
 
-\subsection*{A common special case: inside a ball}
-If the cloud is symmetric around the origin (equally spread in every direction), then a very simple question is:
+When the cloud is isotropic (equally spread in every direction) and centred at the origin, a natural quantity is the fraction of mass contained within a ball of radius $r$:
 \[
-\text{Probability}(\|x\| \le r) \;=\; \int_{\|x\|\le r} \text{density}(x)\,dx.
+  \Pr(\|x\| \le r) \;=\; \int_{\|x\| \le r} p(x)\,dx.
 \]
-This is ``how much probability mass is inside a radius-$r$ ball.''
+This quantity plays a central role in understanding the geometry of high-dimensional distributions.
 
-\section{How to simulate samples using uniforms + adding up (intuition)}
-To \emph{simulate} outcomes from these bell-shaped dynamics, we need a way to generate the required random noise.
-Assume we only have access to a \textbf{uniform random number generator} that returns values in $[-1,1]$.
+% -----------------------------------------------------------------------
+\section{Simulating Bell-Shaped Noise from Uniform Draws}
+% -----------------------------------------------------------------------
 
-\subsection*{The add-up trick (simple and intuitive)}
-A classic intuition is:
+To simulate outcomes from bell-shaped distributions, we require a practical method to generate the necessary random noise.
+We assume access only to a \textbf{uniform random number generator} producing values in $[-1,1]$.
+
+\subsection*{The summation method}
+
+A classical observation is the following:
 \begin{quote}
-\emph{If you add many independent small random numbers, the result starts looking bell-shaped.}
+  \emph{The sum of many independent uniform random variables increasingly resembles a bell-shaped distribution as the number of terms grows.}
 \end{quote}
 
-Each draw $u_i \sim \mathrm{Uniform}[-1,1]$ has mean $0$.
-Mathematics tells us that the sum $S = u_1 + \cdots + u_n$ increasingly resembles a standard bell-shaped noise as $n$ grows, and the rescaled value
+Let $u_1, u_2, \ldots, u_n$ be independent draws from $\mathrm{Uniform}[-1,1]$, each with mean $0$.
+Mathematics guarantees that the rescaled sum
 \[
-z = S \cdot \sqrt{\tfrac{3}{n}}
+  z \;=\; (u_1 + \cdots + u_n) \cdot \sqrt{\tfrac{3}{n}}
 \]
-behaves like a standard bell-shaped noise.
-A convenient choice is $n = 12$, giving $z = S/2$.
+behaves as a standard bell-shaped noise for sufficiently large $n$.
+A practical choice is $n = 12$, which simplifies the formula to $z = (u_1 + \cdots + u_{12})/2$.
 
 \noindent
-To get a bell-shaped value centered at $\mu$ with spread $\sigma$, use:
+To obtain a bell-shaped value centred at $\mu$ with spread $\sigma$, one then computes
 \[
-x = \mu + \sigma z.
+  x = \mu + \sigma z.
 \]
 
-\subsection*{Multidimensional sampling: isotropic cloud}
-The simplest multivariate case is an \textbf{isotropic} (equally spread in every direction) normal cloud.
-Since there are no correlations between coordinates, the recipe is just:
+\subsection*{Multidimensional sampling: the isotropic cloud}
+
+The simplest multivariate normal cloud is the \textbf{isotropic} case, in which the distribution is equally spread in every direction and coordinates are mutually independent.
+Sampling from such a cloud of dimension $d$ proceeds as follows:
 \begin{enumerate}
-  \item Generate $d$ independent bell-shaped noises $z_1,\dots,z_d$ (using the add-up trick above).
-  \item Assemble them into a vector $z=(z_1,\dots,z_d)$.
-  \item Scale and shift: $x = \mu + \sigma z$.
+  \item Generate $d$ independent standard bell-shaped values $z_1, \ldots, z_d$ using the summation method above.
+  \item Assemble them into a vector $z = (z_1, \ldots, z_d)^\top$.
+  \item Apply the affine transformation $x = \mu + \sigma z$.
 \end{enumerate}
+The result is a spherical cloud centred at $\mu$, with each coordinate independently dispersed with spread $\sigma$.
 
-\noindent
-Each coordinate gets its own independent nudges; the result is a spherical cloud centered at $\mu$.
+% -----------------------------------------------------------------------
+\section{The Diffusion Process: Forward Corruption and Reverse Restoration}
+% -----------------------------------------------------------------------
 
-
-\section{Now: simulating a diffusion process (forward corrupts, reverse restores)}
-A \textbf{diffusion process} (in the generative-modeling sense) is a controlled way to:
+A \textbf{diffusion process}, in the sense used in generative modelling, is a pair of stochastic procedures:
 \begin{itemize}
-  \item \textbf{Forward:} gradually corrupt structured data into pure noise using many small steps.
-  \item \textbf{Reverse:} learn to undo those steps, removing noise little-by-little to recover structure.
+  \item \textbf{Forward process:} structured data $x_0$ is gradually corrupted by the successive injection of small amounts of noise, producing a sequence $x_1, x_2, \ldots, x_T$ that converges to pure noise.
+  \item \textbf{Reverse process:} a learned model progressively removes noise from a noisy sample, recovering structured data from pure noise.
 \end{itemize}
 
-We will keep things intuitive by writing only \textbf{sampling equations} (recipes for generating the next state).
+Throughout, we restrict attention to \textbf{sampling equations}: explicit recipes for generating the next state given the current one.
 
-\subsection*{Ingredients}
-We choose a schedule of small noise amounts:
+\subsection*{Schedule and notation}
+
+We fix a \textbf{noise schedule} $\beta_1, \beta_2, \ldots, \beta_T$ with each $\beta_t \in (0,1)$ small, and define
 \[
-\beta_1,\beta_2,\dots,\beta_T \quad \text{(each is small, between 0 and 1)}
+  \alpha_t \;=\; 1 - \beta_t, \qquad
+  \bar{\alpha}_t \;=\; \prod_{s=1}^{t} \alpha_s.
 \]
-and define
+The quantity $\bar{\alpha}_t$ represents the cumulative retention of the original signal after $t$ steps.
+We also fix a source of \textbf{standard noise} $\varepsilon$: in one dimension a scalar, in $d$ dimensions a vector with independent standard bell-shaped coordinates.
+
+% -----------------------------------------------------------------------
+\section{The Forward Process}
+% -----------------------------------------------------------------------
+
+\subsection*{One-step forward transition}
+
+Given the state $x_{t-1}$, the next corrupted state $x_t$ is obtained by
 \[
-\alpha_t = 1-\beta_t.
+  x_t \;=\; \sqrt{\alpha_t}\,x_{t-1} \;+\; \sqrt{1-\alpha_t}\,\varepsilon_t,
 \]
+where $\varepsilon_t$ is a freshly sampled standard noise vector.
+The factor $\sqrt{\alpha_t}$ attenuates the signal, while the term $\sqrt{1-\alpha_t}\,\varepsilon_t$ injects a controlled amount of fresh randomness.
 
-We also use a source of \textbf{standard noise}:
-\begin{itemize}
-  \item In 1D: a scalar noise value $\varepsilon$
-  \item In $d$ dimensions: a noise vector $\varepsilon$ whose coordinates are independent bell-shaped noises
-\end{itemize}
-You can simulate $\varepsilon$ using the \textbf{uniform-add-up trick} from the previous section.
+\subsection*{Multi-step forward transition}
 
-\section{Forward process: one-step and multi-step (sampling-only)}
-\subsection*{One-step forward (add a small bit of noise)}
-Given $x_{t-1}$, generate the next noisy version $x_t$ by:
+Applying the one-step rule repeatedly, one may express $x_t$ directly in terms of the original $x_0$:
 \[
-x_t \;=\; \sqrt{\alpha_t}\,x_{t-1} \;+\; \sqrt{1-\alpha_t}\,\varepsilon_t,
+  x_t \;=\; \sqrt{\bar{\alpha}_t}\,x_0 \;+\; \sqrt{1-\bar{\alpha}_t}\,\varepsilon,
 \]
-where $\varepsilon_t$ is freshly sampled standard noise.
+where $\varepsilon$ is a single standard noise vector.
+As $t$ increases, $\bar{\alpha}_t \to 0$ and $x_t$ converges to pure noise.
 
-\noindent
-Intuition:
-\begin{itemize}
-  \item The factor $\sqrt{\alpha_t}$ slightly fades the old signal.
-  \item The new term injects fresh randomness.
-\end{itemize}
-
-\subsection*{Multi-step forward (direct jump to step $t$)}
-If you do many small corruptions, you can write $x_t$ directly from the original $x_0$:
-\[
-x_t \;=\; \sqrt{\bar\alpha_t}\,x_0 \;+\; \sqrt{1-\bar\alpha_t}\,\varepsilon,
-\qquad
-\bar\alpha_t \;=\; \alpha_1\alpha_2\cdots\alpha_t,
-\]
-where $\varepsilon$ is standard noise.
-
-\noindent
-This says:
-\begin{itemize}
-  \item a shrinking fraction of the original survives,
-  \item the rest becomes noise.
-\end{itemize}
-
-\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Proof (for the curious reader)}}]
-\textit{(This derivation can be skipped on first reading.)}
+\begin{mdframed}[linewidth=1pt, frametitle={\textbf{Proof (for the curious reader): multi-step forward formula}}]
+\textit{(This derivation may be skipped on a first reading.)}
 
 \medskip
 \noindent
 \textbf{Claim.} Applying the one-step rule $t$ times yields
-\[
-x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon,
-\qquad \varepsilon \sim \mathcal{N}(0,I),
-\]
-where $\bar\alpha_t = \prod_{s=1}^{t}\alpha_s$.
+$x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon$,
+where $\bar\alpha_t = \prod_{s=1}^{t}\alpha_s$ and $\varepsilon$ is standard noise.
 
-\medskip
-\noindent
-\textbf{Derivation by induction.}
-
-\noindent
+\medskip\noindent
 \emph{Base case ($t=1$).}
-By the one-step rule,
-\[
-x_1 = \sqrt{\alpha_1}\,x_0 + \sqrt{1-\alpha_1}\,\varepsilon_1.
-\]
-This matches the claim with $\bar\alpha_1 = \alpha_1$.
+By the one-step rule, $x_1 = \sqrt{\alpha_1}\,x_0 + \sqrt{1-\alpha_1}\,\varepsilon_1$, which matches the claim with $\bar\alpha_1 = \alpha_1$.
 
-\medskip
-\noindent
+\medskip\noindent
 \emph{Inductive step.}
 Assume the claim holds at step $t-1$:
-\[
-x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon',
-\qquad \varepsilon' \sim \mathcal{N}(0,I).
-\]
-Apply the one-step rule to go from $x_{t-1}$ to $x_t$:
+$x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'$.
+Applying the one-step rule:
 \[
 x_t
-= \sqrt{\alpha_t}\,x_{t-1} + \sqrt{1-\alpha_t}\,\varepsilon_t
-= \sqrt{\alpha_t}\!\left(\sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'\right) + \sqrt{1-\alpha_t}\,\varepsilon_t.
-\]
-Collecting the $x_0$ term and the noise terms:
-\[
-x_t
-= \sqrt{\alpha_t\bar\alpha_{t-1}}\,x_0
+= \sqrt{\alpha_t}\!\left(\sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'\right) + \sqrt{1-\alpha_t}\,\varepsilon_t
+= \sqrt{\bar\alpha_t}\,x_0
   + \underbrace{\sqrt{\alpha_t(1-\bar\alpha_{t-1})}\,\varepsilon' + \sqrt{1-\alpha_t}\,\varepsilon_t}_{\text{sum of two independent bell-shaped noises}}.
 \]
-The sum of two independent bell-shaped noises with variances $a^2$ and $b^2$ is itself a bell-shaped noise with variance $a^2+b^2$.
-Here $a^2 = \alpha_t(1-\bar\alpha_{t-1})$ and $b^2 = 1-\alpha_t$, so the combined noise has variance
-\[
-\alpha_t(1-\bar\alpha_{t-1}) + (1-\alpha_t)
-= \alpha_t - \alpha_t\bar\alpha_{t-1} + 1 - \alpha_t
-= 1 - \alpha_t\bar\alpha_{t-1}
-= 1 - \bar\alpha_t.
-\]
-Therefore
-\[
-x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon,
-\]
-which completes the induction. \hfill$\square$
+The sum of two independent bell-shaped noises with variances $a^2$ and $b^2$ is a bell-shaped noise with variance $a^2+b^2$.
+Here the combined variance is $\alpha_t(1-\bar\alpha_{t-1}) + (1-\alpha_t) = 1 - \bar\alpha_t$,
+so $x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon$. \hfill$\square$
 \end{mdframed}
 
-\section{Reverse process (model): one-step and multi-step (sampling-only)}
+% -----------------------------------------------------------------------
+\section{The Reverse Process}
+% -----------------------------------------------------------------------
 
-\subsection*{Step 1: the ideal reverse formula (if we knew $\varepsilon$)}
+\subsection*{Step 1: the ideal reverse step (assuming $\varepsilon$ is known)}
 
 Recall the multi-step forward formula:
 \[
-x_t \;=\; \sqrt{\bar\alpha_t}\,x_0 \;+\; \sqrt{1-\bar\alpha_t}\,\varepsilon.
+  x_t \;=\; \sqrt{\bar{\alpha}_t}\,x_0 \;+\; \sqrt{1-\bar{\alpha}_t}\,\varepsilon.
 \]
-If we happened to know the noise $\varepsilon$ that was used to produce $x_t$, we could solve for $x_0$ exactly:
+Were the noise $\varepsilon$ known, one could recover $x_0$ exactly:
 \[
-x_0 \;=\; \frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
+  x_0 \;=\; \frac{x_t - \sqrt{1-\bar{\alpha}_t}\,\varepsilon}{\sqrt{\bar{\alpha}_t}}.
 \]
-Substituting this into the one-step forward rule (run backwards) gives the \emph{ideal} reverse step:
+Substituting this expression into the forward formula at step $t-1$ and taking the conditional mean yields the \emph{ideal} one-step reverse formula:
 \[
-x_{t-1}
-\;=\;
-\frac{1}{\sqrt{\alpha_t}}
-\left(
-x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon
-\right)
-\;+\; \sqrt{\beta_t}\,z,
+  x_{t-1}
+  \;=\;
+  \frac{1}{\sqrt{\alpha_t}}
+  \!\left(
+    x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\,\varepsilon
+  \right)
+  \;+\; \sqrt{\beta_t}\,z,
 \]
-where $z$ is a small fresh noise injection that keeps the step statistically consistent.
-This formula is exact: given $\varepsilon$, it recovers $x_{t-1}$ perfectly.
+where $z$ is a fresh standard noise injection that maintains the correct stochastic dynamics.
+This formula is exact when $\varepsilon$ is available.
 
-\subsection*{Step 2: the problem — $\varepsilon$ is unknown at inference time}
+\subsection*{Step 2: the fundamental difficulty at inference time}
 
-During generation we start from pure noise and have no access to any real $x_0$, so the noise $\varepsilon$ that ``would have'' produced our $x_t$ is unknown.
-We must \emph{estimate} it.
+During generation, one begins from pure noise and has no access to a real datum $x_0$.
+Consequently, the noise vector $\varepsilon$ that would have produced the observed $x_t$ is unknown and must be estimated.
 
-\subsection*{Step 3: learned denoising — replace $\varepsilon$ by $\widehat{\varepsilon}_\theta$}
+\subsection*{Step 3: learned denoising via $\widehat{\varepsilon}_\theta$}
 
-We train a neural network $\widehat{\varepsilon}_\theta(x_t, t)$ to predict $\varepsilon$ given only $x_t$ and the time step $t$.
-Substituting the network's prediction for the unknown $\varepsilon$ gives the formula we actually use:
+A neural network $\widehat{\varepsilon}_\theta(x_t, t)$ is trained to estimate $\varepsilon$ given only $x_t$ and the time index $t$.
+Substituting this estimate in place of the unknown $\varepsilon$ yields the practical reverse step:
 \[
-x_{t-1}
-\;=\;
-\frac{1}{\sqrt{\alpha_t}}
-\left(
-x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
-\right)
-\;+\;
-\sqrt{\beta_t}\, z,
+  x_{t-1}
+  \;=\;
+  \frac{1}{\sqrt{\alpha_t}}
+  \!\left(
+    x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
+  \right)
+  \;+\;
+  \sqrt{\beta_t}\, z,
 \]
 where:
 \begin{itemize}
-  \item $\widehat{\varepsilon}_\theta(x_t,t)$ is the network's estimate of the noise $\varepsilon$ inside $x_t$,
-  \item $\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}$ is a known scalar from the schedule,
-  \item $z$ is fresh standard noise (set to $0$ on the final step),
-  \item $\sqrt{\beta_t}$ controls the small randomness injected at each reverse step.
+  \item $\widehat{\varepsilon}_\theta(x_t,t)$ is the network's estimate of the noise $\varepsilon$ present in $x_t$;
+  \item $\dfrac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}$ is a known scalar determined entirely by the schedule;
+  \item $z$ is fresh standard noise, set to zero on the final step $t=1$;
+  \item $\sqrt{\beta_t}$ governs the magnitude of the stochastic component of the reverse step.
 \end{itemize}
 
 \begin{mdframed}[linewidth=1pt, frametitle={\textbf{Proof (for the curious reader): derivation of the reverse step}}]
-\textit{(This derivation can be skipped on first reading.)}
+\textit{(This derivation may be skipped on a first reading.)}
 
-\medskip
-\noindent
-\textbf{Goal.} Show that the reverse step formula follows from the multi-step forward formula and the one-step forward rule.
+\medskip\noindent
+\textbf{Goal.} Derive the reverse step formula from the multi-step forward formula and the noise schedule.
 
-\medskip
-\noindent
+\medskip\noindent
 \textbf{1. Recover $x_0$ from $x_t$ and $\varepsilon$.}
-The multi-step forward formula states
-\[
-x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon.
-\]
-Solving for $x_0$:
+From $x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon$, solving for $x_0$:
 \[
 x_0 = \frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
 \tag{$*$}
 \]
 
-\medskip
-\noindent
-\textbf{2. Write $x_{t-1}$ using the multi-step formula at $t-1$.}
-Applying the multi-step formula one step earlier:
-\[
-x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'.
-\]
-For the reverse step we want the \emph{mean} of $x_{t-1}$ given $x_t$ (ignoring the residual noise $\varepsilon'$ for the moment), so we substitute $(*)$:
+\medskip\noindent
+\textbf{2. Express the conditional mean of $x_{t-1}$ given $x_t$.}
+The multi-step formula at step $t-1$ gives $x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon'$.
+Conditioning on $x_t$ (i.e.\ fixing $x_0$ via $(*)$ and suppressing the residual $\varepsilon'$):
 \[
 \mathbb{E}[x_{t-1} \mid x_t]
 = \sqrt{\bar\alpha_{t-1}}\cdot\frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
 \]
 
-\medskip
-\noindent
-\textbf{3. Rewrite using $\alpha_t = \bar\alpha_t / \bar\alpha_{t-1}$.}
-Note that $\sqrt{\bar\alpha_{t-1}}/\sqrt{\bar\alpha_t} = 1/\sqrt{\alpha_t}$.
-Expanding:
+\medskip\noindent
+\textbf{3. Simplify using $\bar\alpha_t = \alpha_t\,\bar\alpha_{t-1}$.}
+Since $\sqrt{\bar\alpha_{t-1}}/\sqrt{\bar\alpha_t} = 1/\sqrt{\alpha_t}$, one obtains
 \[
 \mathbb{E}[x_{t-1} \mid x_t]
-= \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\sqrt{1-\bar\alpha_t}}{\sqrt{\alpha_t}\,\cdot\,\frac{\sqrt{\bar\alpha_t}}{\sqrt{\bar\alpha_{t-1}}}}\,\varepsilon\right)
-= \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right),
+= \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right),
 \]
-where the last equality uses $\beta_t = 1-\alpha_t$ and the algebraic identity
-\[
-\frac{1-\bar\alpha_t}{\sqrt{\alpha_t}} - \frac{\sqrt{(1-\bar\alpha_t)(1-\bar\alpha_{t-1})}}{\sqrt{\bar\alpha_t/\bar\alpha_{t-1}}}
-\;=\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}.
-\]
+where the coefficient of $\varepsilon$ follows from the identity $\frac{\sqrt{1-\bar\alpha_t}}{\sqrt{\alpha_t}} - \sqrt{\frac{1-\bar\alpha_{t-1}}{\alpha_t}} = \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}$.
 
-\medskip
-\noindent
-\textbf{4. Add back the residual randomness.}
-The true posterior of $x_{t-1}$ given $x_t$ and $x_0$ is a bell-shaped cloud centred at the mean above, with variance $\beta_t$ (the DDPM simplest choice).
-Adding the residual noise $\sqrt{\beta_t}\,z$, $z\sim\mathcal{N}(0,I)$, gives the full reverse sampling formula:
+\medskip\noindent
+\textbf{4. Restore the stochastic component.}
+The posterior distribution of $x_{t-1}$ given $x_t$ and $x_0$ is a normal cloud centred at the mean above, with variance $\beta_t$ (the choice made in the original DDPM formulation).
+Adding the corresponding noise term $\sqrt{\beta_t}\,z$, $z\sim\mathcal{N}(0,I)$, yields
 \[
 x_{t-1}
 = \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right) + \sqrt{\beta_t}\,z.
 \]
-Replacing the unknown $\varepsilon$ by its network estimate $\widehat\varepsilon_\theta(x_t,t)$ gives the formula used in practice. \hfill$\square$
+Replacing $\varepsilon$ by the network estimate $\widehat\varepsilon_\theta(x_t,t)$ gives the formula used in practice. \hfill$\square$
 \end{mdframed}
 
-\subsection*{Multi-step reverse (the full generation procedure)}
+\subsection*{Multi-step generation procedure}
+
+Starting from pure noise, the full generation algorithm proceeds as follows:
 \begin{enumerate}
-  \item Start from pure noise: sample $x_T$ as standard noise.
-  \item For $t=T, T-1, \dots, 1$:
+  \item Sample $x_T$ from a standard normal cloud.
+  \item For $t = T, T-1, \ldots, 1$, compute
   \[
   x_{t-1}
   \;=\;
   \frac{1}{\sqrt{\alpha_t}}
-  \left(
-  x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar\alpha_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
+  \!\left(
+    x_t \;-\; \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}} \cdot \widehat{\varepsilon}_\theta(x_t,t)
   \right)
   \;+\;
   \sqrt{\beta_t}\, z.
   \]
-  \item Output $x_0$.
+  \item Return $x_0$ as the generated sample.
 \end{enumerate}
 
-\section{Conclusion: how training works (the key idea)}
-We train the diffusion model by repeatedly:
+% -----------------------------------------------------------------------
+\section{Training the Diffusion Model}
+% -----------------------------------------------------------------------
+
+The network $\widehat{\varepsilon}_\theta$ is trained by minimising the mean squared error between its predictions and the true noise vectors used in the forward process.
+Concretely, training proceeds by repeatedly:
 \begin{itemize}
-  \item taking a real object $x_0$,
-  \item corrupting it to some step $t$ using the forward sampling rule,
-  \item and teaching a neural network to \textbf{predict the noise} that was used.
+  \item drawing a real datum $x_0$ from the training set;
+  \item sampling a time step $t$ uniformly from $\{1, \ldots, T\}$ and a noise vector $\varepsilon$;
+  \item corrupting $x_0$ to obtain $x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1-\bar{\alpha}_t}\,\varepsilon$;
+  \item updating $\theta$ to minimise $\|\varepsilon - \widehat{\varepsilon}_\theta(x_t, t)\|^2$.
 \end{itemize}
 
-In other words:
-\begin{quote}
-\emph{The network learns to estimate ``how much noise is inside this noisy object at step $t$,''}
-and that estimate is exactly what the reverse sampling step needs in order to denoise.
-\end{quote}
+The key insight is that the training objective is entirely self-supervised: the targets $\varepsilon$ are generated synthetically by the forward process and require no human annotation.
+The trained network encodes, for each noise level $t$, the mapping from a noisy observation $x_t$ back to the noise $\varepsilon$ that produced it --- which is precisely the information needed to run the reverse process.
 
 \end{document}
