@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Tetris Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a10;
+            --surface: #12121c;
+            --border: #222236;
+            --text: #e0dff0;
+            --dim: #5e5c78;
+            --accent: #00e4a0;
+            --hot: #ff5c5c;
+            --cool: #4a9eff;
+            --purple: #a86eff;
+            --pink: #ff6eb4;
+            --orange: #ff6b4a;
+            --yellow: #ffe04a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0, 228, 160, 0.06), transparent),
+                radial-gradient(ellipse 60% 50% at 80% 50%, rgba(74, 158, 255, 0.04), transparent),
+                radial-gradient(ellipse 60% 50% at 20% 80%, rgba(168, 110, 255, 0.04), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--cool));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--dim);
+            font-size: 1rem;
+            font-weight: 300;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .games-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .game-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 36px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .game-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        .game-card:active {
+            transform: translateY(-1px);
+        }
+
+        .card-1::before { background: radial-gradient(circle at 30% 50%, rgba(255, 107, 74, 0.08), transparent 60%); }
+        .card-2::before { background: radial-gradient(circle at 30% 50%, rgba(74, 224, 255, 0.08), transparent 60%); }
+        .card-3::before { background: radial-gradient(circle at 30% 50%, rgba(0, 228, 160, 0.08), transparent 60%); }
+        .card-4::before { background: radial-gradient(circle at 30% 50%, rgba(168, 110, 255, 0.08), transparent 60%); }
+        .card-5::before { background: radial-gradient(circle at 30% 50%, rgba(255, 110, 180, 0.08), transparent 60%); }
+
+        .card-1:hover { border-color: rgba(255, 107, 74, 0.3); }
+        .card-2:hover { border-color: rgba(74, 224, 255, 0.3); }
+        .card-3:hover { border-color: rgba(0, 228, 160, 0.3); }
+        .card-4:hover { border-color: rgba(168, 110, 255, 0.3); }
+        .card-5:hover { border-color: rgba(255, 110, 180, 0.3); }
+
+        .game-number {
+            flex-shrink: 0;
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .card-1 .game-number { background: rgba(255, 107, 74, 0.12); color: var(--orange); border: 1px solid rgba(255, 107, 74, 0.2); }
+        .card-2 .game-number { background: rgba(74, 224, 255, 0.12); color: var(--cool); border: 1px solid rgba(74, 224, 255, 0.2); }
+        .card-3 .game-number { background: rgba(0, 228, 160, 0.12); color: var(--accent); border: 1px solid rgba(0, 228, 160, 0.2); }
+        .card-4 .game-number { background: rgba(168, 110, 255, 0.12); color: var(--purple); border: 1px solid rgba(168, 110, 255, 0.2); }
+        .card-5 .game-number { background: rgba(255, 110, 180, 0.12); color: var(--pink); border: 1px solid rgba(255, 110, 180, 0.2); }
+
+        .game-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .game-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .game-desc {
+            color: var(--dim);
+            font-size: 0.85rem;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        .game-arrow {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover .game-arrow {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .game-arrow svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--dim);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.3s;
+        }
+
+        .game-card:hover .game-arrow svg {
+            stroke: var(--text);
+        }
+
+        .difficulty {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .diff-intro { background: rgba(0, 228, 160, 0.12); color: var(--accent); }
+        .diff-medium { background: rgba(74, 158, 255, 0.12); color: var(--cool); }
+        .diff-advanced { background: rgba(168, 110, 255, 0.12); color: var(--purple); }
+        .diff-hard { background: rgba(255, 110, 180, 0.12); color: var(--pink); }
+
+        /* Tetris decoration */
+        .tetris-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .tetris-piece {
+            position: absolute;
+            opacity: 0.03;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-20vh) rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer p {
+            color: var(--dim);
+            font-size: 0.8rem;
+            font-weight: 300;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .footer a:hover {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 16px 60px;
+            }
+
+            .game-card {
+                padding: 22px 20px;
+                gap: 18px;
+            }
+
+            .game-number {
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+                border-radius: 10px;
+            }
+
+            .game-title {
+                font-size: 0.95rem;
+            }
+
+            .game-arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating tetris background pieces -->
+    <div class="tetris-bg" id="tetrisBg"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>CNN Tetris Games</h1>
+            <p>Interactive games to build intuition about Convolutional Neural Networks, from convolutions to full training pipelines.</p>
+        </header>
+
+        <div class="games-grid">
+            <a href="game1.html" class="game-card card-1">
+                <div class="game-number">1</div>
+                <div class="game-info">
+                    <span class="difficulty diff-intro">Intro</span>
+                    <div class="game-title">Convolution Puzzle</div>
+                    <div class="game-desc">Place Tetris-shaped kernels on a grid and compute convolution outputs by hand.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="game2.html" class="game-card card-2">
+                <div class="game-number">2</div>
+                <div class="game-info">
+                    <span class="difficulty diff-medium">Medium</span>
+                    <div class="game-title">Binary Feature Maps</div>
+                    <div class="game-desc">Given a feature map output, figure out where the input and kernel originated from.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="game3.html" class="game-card card-3">
+                <div class="game-number">3</div>
+                <div class="game-info">
+                    <span class="difficulty diff-medium">Medium</span>
+                    <div class="game-title">CNN Classifier</div>
+                    <div class="game-desc">Trace how a CNN classifies cross vs H shapes through convolution, ReLU, and pooling.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="game4.html" class="game-card card-4">
+                <div class="game-number">4</div>
+                <div class="game-info">
+                    <span class="difficulty diff-advanced">Advanced</span>
+                    <div class="game-title">CNN Pipeline</div>
+                    <div class="game-desc">Walk through a full CNN pipeline step by step: convolution, activation, pooling, and classification.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="game5.html" class="game-card card-5">
+                <div class="game-number">5</div>
+                <div class="game-info">
+                    <span class="difficulty diff-hard">Hard</span>
+                    <div class="game-title">CNN Training: Filter Discovery</div>
+                    <div class="game-desc">Train CNN filters from scratch — compute gradients, update weights, and watch the network learn.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+        </div>
+
+        <footer class="footer">
+            <p>ETH BMAI FS26 &mdash; <a href="https://github.com/eth-bmai-fs26/coding-exercises/tree/week2/w2-tetris-games" target="_blank">View on GitHub</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Generate floating tetris pieces in the background
+        const shapes = [
+            // T-piece
+            `<svg width="60" height="60" viewBox="0 0 3 2"><rect x="0" y="0" width="1" height="1" fill="currentColor"/><rect x="1" y="0" width="1" height="1" fill="currentColor"/><rect x="2" y="0" width="1" height="1" fill="currentColor"/><rect x="1" y="1" width="1" height="1" fill="currentColor"/></svg>`,
+            // L-piece
+            `<svg width="40" height="60" viewBox="0 0 2 3"><rect x="0" y="0" width="1" height="1" fill="currentColor"/><rect x="0" y="1" width="1" height="1" fill="currentColor"/><rect x="0" y="2" width="1" height="1" fill="currentColor"/><rect x="1" y="2" width="1" height="1" fill="currentColor"/></svg>`,
+            // S-piece
+            `<svg width="60" height="40" viewBox="0 0 3 2"><rect x="1" y="0" width="1" height="1" fill="currentColor"/><rect x="2" y="0" width="1" height="1" fill="currentColor"/><rect x="0" y="1" width="1" height="1" fill="currentColor"/><rect x="1" y="1" width="1" height="1" fill="currentColor"/></svg>`,
+            // Square
+            `<svg width="40" height="40" viewBox="0 0 2 2"><rect x="0" y="0" width="1" height="1" fill="currentColor"/><rect x="1" y="0" width="1" height="1" fill="currentColor"/><rect x="0" y="1" width="1" height="1" fill="currentColor"/><rect x="1" y="1" width="1" height="1" fill="currentColor"/></svg>`,
+            // I-piece
+            `<svg width="20" height="80" viewBox="0 0 1 4"><rect x="0" y="0" width="1" height="1" fill="currentColor"/><rect x="0" y="1" width="1" height="1" fill="currentColor"/><rect x="0" y="2" width="1" height="1" fill="currentColor"/><rect x="0" y="3" width="1" height="1" fill="currentColor"/></svg>`,
+        ];
+
+        const colors = ['#ff6b4a', '#4ae0ff', '#00e4a0', '#a86eff', '#ff6eb4', '#ffe04a'];
+        const bg = document.getElementById('tetrisBg');
+
+        for (let i = 0; i < 12; i++) {
+            const div = document.createElement('div');
+            div.className = 'tetris-piece';
+            div.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
+            div.style.color = colors[Math.floor(Math.random() * colors.length)];
+            div.style.left = Math.random() * 100 + '%';
+            div.style.animationDuration = (20 + Math.random() * 30) + 's';
+            div.style.animationDelay = -(Math.random() * 40) + 's';
+            div.style.transform = `scale(${0.6 + Math.random() * 1.2})`;
+            bg.appendChild(div);
+        }
+    </script>
+</body>
+</html>
