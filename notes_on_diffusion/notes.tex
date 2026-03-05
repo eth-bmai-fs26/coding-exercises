@@ -290,9 +290,10 @@ The same multi-step formula, applied one step earlier, gives
 x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon',
 \]
 where $\varepsilon'$ is a standard noise vector.
-To find the \emph{expected} value of $x_{t-1}$ given $x_t$ (i.e.\ what we should aim for when reversing), we substitute the expression for $x_0$ from (A) and ignore the residual noise $\varepsilon'$ (which represents the irreducible randomness at step $t-1$ that we will add back at the end):
+We define $\mu_{t-1}$ as the \emph{target value} we aim for when reversing --- that is, the best estimate of $x_{t-1}$ given the current noisy state $x_t$, before any residual randomness is added back.
+To compute $\mu_{t-1}$, we substitute the expression for $x_0$ from (A) into the formula above and drop the residual noise term $\varepsilon'$ (which represents the irreducible randomness at step $t-1$ that we will restore in Step~E):
 \[
-\mathbb{E}[x_{t-1} \mid x_t]
+\mu_{t-1}
 = \sqrt{\bar\alpha_{t-1}} \cdot \frac{x_t - \sqrt{1-\bar\alpha_t}\,\varepsilon}{\sqrt{\bar\alpha_t}}.
 \tag{B}
 \]
@@ -309,7 +310,7 @@ By definition, $\bar\alpha_t = \alpha_t \cdot \bar\alpha_{t-1}$, so
 \]
 Therefore (B) becomes
 \[
-\mathbb{E}[x_{t-1} \mid x_t]
+\mu_{t-1}
 = \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\sqrt{1-\bar\alpha_t}\cdot\sqrt{\bar\alpha_{t-1}}}{\sqrt{\bar\alpha_t}}\,\varepsilon\right)
 = \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\sqrt{1-\bar\alpha_t}}{\sqrt{\alpha_t}}\,\varepsilon\right).
 \tag{C}
@@ -372,7 +373,7 @@ which holds because $\beta_t = 1-\alpha_t$ and one can verify:
 Rather than pursuing this algebraic path further, we state the result and verify it directly.
 From (C):
 \[
-\mathbb{E}[x_{t-1} \mid x_t]
+\mu_{t-1}
 = \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right).
 \tag{D}
 \]
@@ -398,10 +399,15 @@ so this holds only up to the $\beta_t$ term, confirming that (D) gives the corre
 \medskip\noindent
 \textbf{Step E: add back the residual randomness.}
 
-The mean computed in (D) is the best deterministic guess for $x_{t-1}$ given $x_t$.
-However, $x_{t-1}$ is not determined exactly by $x_t$: there is residual randomness corresponding to the fresh noise that was injected at step $t$.
+The target value $\mu_{t-1}$ computed in (D) is the best deterministic guess for $x_{t-1}$ given $x_t$.
+However, $x_{t-1}$ is not determined exactly by $x_t$: there is residual randomness corresponding to the fresh noise injected at step $t$, which we deliberately dropped in Step~B.
 In the DDPM framework, this residual is modelled as a normal cloud with spread $\sqrt{\beta_t}$.
-Adding the corresponding noise term $\sqrt{\beta_t}\,z$, where $z$ is a freshly drawn standard noise vector, gives the full reverse sampling formula:
+The full reverse step is therefore
+\[
+x_{t-1} = \mu_{t-1} + \sqrt{\beta_t}\,z,
+\]
+where $z$ is a freshly drawn standard noise vector.
+Expanding $\mu_{t-1}$ using (D) gives the formula stated in Step~1 of the main text:
 \[
 x_{t-1}
 = \frac{1}{\sqrt{\alpha_t}}\!\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\varepsilon\right) + \sqrt{\beta_t}\,z.
