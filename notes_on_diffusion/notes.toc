@@ -1,6 +1,6 @@
 \contentsline {section}{\numberline {1}Physical Diffusion and the Ubiquity of Bell-Shaped Distributions}{1}{section.1}%
 \contentsline {section}{\numberline {2}Simulating Bell-Shaped Noise from Uniform Draws}{2}{section.2}%
 \contentsline {section}{\numberline {3}The Diffusion Process: Forward Corruption and Reverse Restoration}{3}{section.3}%
-\contentsline {section}{\numberline {4}The Forward Process}{3}{section.4}%
+\contentsline {section}{\numberline {4}The Forward Process}{4}{section.4}%
 \contentsline {section}{\numberline {5}The Reverse Process}{5}{section.5}%
 \contentsline {section}{\numberline {6}Training the Diffusion Model}{8}{section.6}%

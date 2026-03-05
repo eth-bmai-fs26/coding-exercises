@@ -125,12 +125,16 @@ We fix a \textbf{noise schedule} $\beta_1, \beta_2, \ldots, \beta_T$ with each $
 \]
 We further define the \textbf{cumulative product}
 \[
-  \bar{\alpha}_t \;=\; \alpha_1 \cdot \alpha_2 \cdots \alpha_t,
+  \bar{\alpha}_t
+  \;=\; \alpha_1 \cdot \alpha_2 \cdots \alpha_t
+  \;=\; \prod_{s=1}^{t} \alpha_s,
 \]
-that is, $\bar{\alpha}_t$ is simply the product of all the $\alpha$ values from the first step up to and including step $t$.
+where the compact notation $\prod_{s=1}^{t} \alpha_s$ is simply shorthand for the product of all the $\alpha$ values from $\alpha_1$ up to and including $\alpha_t$ --- it is nothing more than a concise way of writing the same multiplication.
 Intuitively, $\bar{\alpha}_t$ measures how much of the original signal is retained after $t$ forward steps: when $\bar{\alpha}_t$ is close to $1$, the data is largely intact; when $\bar{\alpha}_t$ is close to $0$, the data has been almost entirely replaced by noise.
 
-We also fix a source of \textbf{standard noise} $\varepsilon$: in one dimension a scalar, in $d$ dimensions a vector with independent standard bell-shaped coordinates, each with centre $0$ and spread $1$.
+We also fix a source of \textbf{standard noise}: a bell-shaped random draw centred at $0$ with spread $1$ in every direction.
+In one dimension this is a scalar; in $d$ dimensions it is a vector with independent bell-shaped coordinates.
+In both cases we write $\varepsilon \sim \mathcal{N}(0, I)$, which is the standard mathematical shorthand meaning \emph{``$\varepsilon$ is drawn from a bell-shaped cloud centred at zero with spread~$1$''}.
 
 % -----------------------------------------------------------------------
 \section{The Forward Process}
