@@ -437,8 +437,8 @@
         }
 
         #bL2K .fmap-deck {
-            min-width: 95px;
-            min-height: 115px;
+            min-width: calc(2 * var(--kcell) + 18px);
+            min-height: 110px;
         }
 
         .fmap-deck {
@@ -540,6 +540,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 700;
+            text-align: center;
         }
 
         .fm-grid {
@@ -1376,14 +1377,17 @@
     function buildL2FilterDisplay() {
         const deck = $('l2FilterDeck');
         deck.innerHTML = '';
+        const gridW = 'calc(2 * var(--kcell) + 2px)';
         [4, 3, 2, 1].forEach(filterNum => {
             const card = el('div', 'fmap-card');
             const tag = el('div', 'fmap-tag');
             tag.textContent = `Filter ${filterNum}`;
             tag.style.color = CSS_COLORS[filterNum - 1];
+            tag.style.width = gridW;
             card.appendChild(tag);
             const grid = el('div', 'kg');
             grid.style.gridTemplateColumns = `repeat(2, var(--kcell))`;
+            grid.style.width = gridW;
             TARGET_L2.forEach((row, r) => row.forEach((_, c) => {
                 const cell = el('div', 'wc');
                 cell.id = `l2cell_${filterNum}_${r}_${c}`;

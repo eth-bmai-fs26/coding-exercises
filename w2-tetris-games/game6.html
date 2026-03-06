@@ -907,7 +907,7 @@
 
         .pipeline-flow {
             display: flex;
-            align-items: flex-start;
+            align-items: stretch;
             gap: 0;
             flex-wrap: wrap;
             justify-content: center;
@@ -918,6 +918,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: flex-start;
             gap: 6px;
         }
 
@@ -2151,7 +2152,7 @@
         // threshold bar
         const pctT = Math.round(100 * CONV3_THRESHOLD / maxBar);
         h += `<div class="score-bar-row">`;
-        h += `<span class="score-bar-label" style="color:var(--yellow);font-size:0.58rem">threshold<br>${CONV3_THRESHOLD}</span>`;
+        h += `<span class="score-bar-label" style="color:var(--yellow);font-size:0.58rem">threshold</span>`;
         h += `<div class="score-bar-track" style="background:transparent;border:1px dashed rgba(255,209,102,0.3)">`;
         h += `<div style="width:${pctT}%;height:100%;background:rgba(255,209,102,0.15);border-right:2px solid var(--yellow)"></div>`;
         h += `</div>`;
@@ -2161,22 +2162,13 @@
         // scalar bar
         const pctS = Math.round(100 * scalar / maxBar);
         h += `<div class="score-bar-row" style="margin-top:8px">`;
-        h += `<span class="score-bar-label">scalar<br><span style="font-size:0.5rem">(final scalar)</span></span>`;
+        h += `<span class="score-bar-label">scalar<br><span style="font-size:0.5rem"></span></span>`;
         h += `<div class="score-bar-track">`;
         h += `<div class="score-bar-fill" style="width:${pctS}%;background:${isDetected ? 'var(--accent)' : 'var(--red)'}"></div>`;
         h += `</div>`;
         h += `<span class="score-bar-num" style="color:${isDetected ? 'var(--accent)' : 'var(--red)'}">${scalar}</span>`;
         h += `</div>`;
 
-        // Verdict
-        h += `<div style="margin-top:14px;font-size:0.78rem;color:var(--dim)">`;
-        h += `Does <strong style="color:${isDetected ? 'var(--accent)' : 'var(--red)'}">${scalar}</strong> &gt; <strong style="color:var(--yellow)">${CONV3_THRESHOLD}</strong>?`;
-        h += `</div>`;
-        if (isDetected) {
-            h += `<div class="verdict-result pass">✓ YES — ${scalar} > ${CONV3_THRESHOLD} (Δ = +${scalar - CONV3_THRESHOLD})</div>`;
-        } else {
-            h += `<div class="verdict-result fail">✗ NO — ${scalar} ≤ ${CONV3_THRESHOLD} (Δ = ${scalar - CONV3_THRESHOLD})</div>`;
-        }
         h += `</div>`; // fc-verdict
         h += `</div>`; // flex:1 wrapper
         h += `</div>`; // step-col
@@ -2193,10 +2185,8 @@
 
         h += `</div>`; // step-body
 
-        h += `<div class="explanation"><strong>Pool3 → scalar ${scalar}, threshold ${CONV3_THRESHOLD}.</strong><br><br>`;
-        h += `The Conv3 output (${conv3Size}×${conv3Size}) is collapsed to its maximum, giving a single number. That number is compared to the fixed threshold ${CONV3_THRESHOLD}.<br><br>`;
-        h += `<strong>Why only the normal house passes?</strong><br>`;
-        h += `Conv2's top-heavy filter (A) fires strongly when features cluster in the <em>upper</em> pooled rows, and the bottom-heavy filter (B) fires when they cluster in the <em>lower</em> rows. Conv3 then combines both Pool2 maps: it has learned a spatial pattern that specifically matches the case where diagonal features (the roof) are at the top. Only the normal house produces a high enough scalar to exceed the threshold.</div>`;
+        h += `<div class="explanation"><strong>Why only the normal house passes?</strong><br>`;
+        h += `Top-heavy filter (A) fires strongly when features cluster in the <em>upper</em> pooled rows, and the bottom-heavy filter (B) fires when they cluster in the <em>lower</em> rows. Only the normal house produces a high enough scalar to exceed the threshold.</div>`;
         return h;
     }
 
@@ -2281,7 +2271,7 @@
             },
         ];
         stages.forEach((s, i) => {
-            h += `<div class="pipe-stage"><div class="pipe-title" style="color:${s.color}">${s.title}</div><div class="pipe-thumb">${s.thumb}</div><div class="pipe-size">${s.size}</div></div>`;
+            h += `<div class="pipe-stage"><div class="pipe-title" style="color:${s.color}">${s.title}</div><div style="flex:1;display:flex;align-items:center;justify-content:center"><div class="pipe-thumb">${s.thumb}</div></div><div class="pipe-size">${s.size}</div></div>`;
             if (i < stages.length - 1) h += `<div style="display:flex;align-items:center;align-self:center;padding:0 4px"><div class="arrow">${svgArrow}</div></div>`;
         });
         h += `</div>`;
@@ -2302,8 +2292,9 @@
 
         h += `<div style="overflow-x:auto;margin-bottom:18px"><table style="font-size:0.75rem;border-collapse:collapse;width:100%">`;
         h += `<tr style="color:var(--dim);font-size:0.65rem;letter-spacing:1px;text-transform:uppercase">`;
-        ['Shape', 'Conv3 map', 'Scalar (Pool3)', 'Threshold', 'Pass?', 'Output'].forEach(c => {
-            h += `<th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)">${c}</th>`;
+        ['Shape', 'Conv3 map', 'Scalar (Pool3)', 'Threshold', 'Pass?', 'Output'].forEach((c, i) => {
+            const align = i >= 2 ? 'center' : 'left';
+            h += `<th style="text-align:${align};padding:8px 12px;border-bottom:1px solid var(--border)">${c}</th>`;
         });
         h += `</tr>`;
         EXAMPLES.forEach(e => {
