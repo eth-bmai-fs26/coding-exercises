@@ -12,9 +12,7 @@
 
 \title{\textbf{Intuition for Diffusion in Nature and in Generative Modelling}\\[0.4em]
 \large Lecture Notes}
-\author{Carlos Cotrini\thanks{Department of Computer Science, ETH Z\"{u}rich.}
-\and
-Juan Tarazona\thanks{Department of Mechanical Engineering, ETH Z\"{u}rich.}}
+\author{Carlos Cotrini\thanks{Department of Computer Science, ETH Z\"{u}rich.}}
 \date{}
 
 \begin{document}
@@ -29,9 +27,9 @@ Proofs are collected in dedicated boxes and may be skipped on a first reading wi
 \tableofcontents
 \bigskip
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{Physical Diffusion and the Ubiquity of Bell-Shaped Distributions}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 Many observable phenomena arise from the cumulative effect of a large number of small, independent random influences.
 The following examples illustrate this principle across different physical and social contexts.
@@ -66,9 +64,9 @@ In $d$ dimensions, the analogous statement is that a sphere of radius
 centred at $\mu$ captures approximately $95\%$ of the cloud.
 The additional $\sqrt{d}$ term reflects the geometric fact that, in high dimensions, the probability mass of an isotropic cloud concentrates on a thin shell rather than near the centre.
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{Simulating Bell-Shaped Noise from Uniform Draws}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 To simulate outcomes from bell-shaped distributions, we require a practical method to generate the necessary random noise.
 We assume access only to a \textbf{uniform random number generator} producing values in $[-1,1]$.
@@ -105,9 +103,9 @@ Sampling from such a cloud of dimension $d$ proceeds as follows:
 \end{enumerate}
 The result is a spherical cloud centred at $\mu$, with each coordinate independently dispersed with spread $\sigma$.
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{The Diffusion Process: Forward Corruption and Reverse Restoration}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 A \textbf{diffusion process}, in the sense used in generative modelling, is a pair of stochastic procedures:
 \begin{itemize}
@@ -129,16 +127,16 @@ We further define the \textbf{cumulative product}
   \;=\; \alpha_1 \cdot \alpha_2 \cdots \alpha_t
   \;=\; \prod_{s=1}^{t} \alpha_s,
 \]
-where the compact notation $\prod_{s=1}^{t} \alpha_s$ is simply shorthand for the product of all the $\alpha$ values from $\alpha_1$ up to and including $\alpha_t$ --- it is nothing more than a concise way of writing the same multiplication.
+where the compact notation $\prod_{s=1}^{t} \alpha_s$ is simply shorthand for the product of all the $\alpha$ values from $\alpha_1$ up to and including $\alpha_t$: it is nothing more than a concise way of writing the same multiplication.
 Intuitively, $\bar{\alpha}_t$ measures how much of the original signal is retained after $t$ forward steps: when $\bar{\alpha}_t$ is close to $1$, the data is largely intact; when $\bar{\alpha}_t$ is close to $0$, the data has been almost entirely replaced by noise.
 
 We also fix a source of \textbf{standard noise}: a bell-shaped random draw centred at $0$ with spread $1$ in every direction.
 In one dimension this is a scalar; in $d$ dimensions it is a vector with independent bell-shaped coordinates.
 In both cases we write $\varepsilon \sim \mathcal{N}(0, I)$, which is the standard mathematical shorthand meaning \emph{``$\varepsilon$ is drawn from a bell-shaped cloud centred at zero with spread~$1$''}.
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{The Forward Process}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 \subsection*{One-step forward transition}
 
@@ -211,9 +209,9 @@ The combined spread is therefore
 Therefore $x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon$, completing the induction. \hfill$\square$
 \end{mdframed}
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{The Reverse Process}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 \subsection*{Step 1: the ideal reverse step (assuming $\varepsilon$ is known)}
 
@@ -294,7 +292,7 @@ The same multi-step formula, applied one step earlier, gives
 x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,x_0 + \sqrt{1-\bar\alpha_{t-1}}\,\varepsilon',
 \]
 where $\varepsilon'$ is a standard noise vector.
-We define $\mu_{t-1}$ as the \emph{target value} we aim for when reversing --- that is, the best estimate of $x_{t-1}$ given the current noisy state $x_t$, before any residual randomness is added back.
+We define $\mu_{t-1}$ as the \emph{target value} we aim for when reversing: that is, the best estimate of $x_{t-1}$ given the current noisy state $x_t$, before any residual randomness is added back.
 To compute $\mu_{t-1}$, we substitute the expression for $x_0$ from (A) into the formula above and drop the residual noise term $\varepsilon'$ (which represents the irreducible randomness at step $t-1$ that we will restore in Step~E):
 \[
 \mu_{t-1}
@@ -438,9 +436,9 @@ Starting from pure noise, the full generation algorithm proceeds as follows:
   \item Return $x_0$ as the generated sample.
 \end{enumerate}
 
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 \section{Training the Diffusion Model}
-% -----------------------------------------------------------------------
+%:--------------------------------------------------------------------
 
 The network $\widehat{\varepsilon}_\theta$ is trained by minimising the mean squared error between its predictions and the true noise vectors used in the forward process.
 Concretely, training proceeds by repeatedly:
@@ -452,6 +450,6 @@ Concretely, training proceeds by repeatedly:
 \end{itemize}
 
 The key insight is that the training objective is entirely self-supervised: the targets $\varepsilon$ are generated synthetically by the forward process and require no human annotation.
-The trained network encodes, for each noise level $t$, the mapping from a noisy observation $x_t$ back to the noise $\varepsilon$ that produced it --- which is precisely the information needed to run the reverse process.
+The trained network encodes, for each noise level $t$, the mapping from a noisy observation $x_t$ back to the noise $\varepsilon$ that produced it: which is precisely the information needed to run the reverse process.
 
 \end{document}
