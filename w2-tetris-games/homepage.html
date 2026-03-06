@@ -131,12 +131,14 @@
         .card-3::before { background: radial-gradient(circle at 30% 50%, rgba(0, 228, 160, 0.08), transparent 60%); }
         .card-4::before { background: radial-gradient(circle at 30% 50%, rgba(168, 110, 255, 0.08), transparent 60%); }
         .card-5::before { background: radial-gradient(circle at 30% 50%, rgba(255, 110, 180, 0.08), transparent 60%); }
+        .card-6::before { background: radial-gradient(circle at 30% 50%, rgba(255, 224, 74, 0.08), transparent 60%); }
 
         .card-1:hover { border-color: rgba(255, 107, 74, 0.3); }
         .card-2:hover { border-color: rgba(74, 224, 255, 0.3); }
         .card-3:hover { border-color: rgba(0, 228, 160, 0.3); }
         .card-4:hover { border-color: rgba(168, 110, 255, 0.3); }
         .card-5:hover { border-color: rgba(255, 110, 180, 0.3); }
+        .card-6:hover { border-color: rgba(255, 224, 74, 0.3); }
 
         .game-number {
             flex-shrink: 0;
@@ -157,6 +159,7 @@
         .card-3 .game-number { background: rgba(0, 228, 160, 0.12); color: var(--accent); border: 1px solid rgba(0, 228, 160, 0.2); }
         .card-4 .game-number { background: rgba(168, 110, 255, 0.12); color: var(--purple); border: 1px solid rgba(168, 110, 255, 0.2); }
         .card-5 .game-number { background: rgba(255, 110, 180, 0.12); color: var(--pink); border: 1px solid rgba(255, 110, 180, 0.2); }
+        .card-6 .game-number { background: rgba(255, 224, 74, 0.12); color: var(--yellow); border: 1px solid rgba(255, 224, 74, 0.2); }
 
         .game-info {
             flex: 1;
@@ -366,6 +369,18 @@
                     <span class="difficulty diff-hard">Hard</span>
                     <div class="game-title">CNN Training: Filter Discovery</div>
                     <div class="game-desc">Train CNN filters from scratch — compute gradients, update weights, and watch the network learn.</div>
+                </div>
+                <div class="game-arrow">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="game6.html" class="game-card card-6">
+                <div class="game-number">6</div>
+                <div class="game-info">
+                    <span class="difficulty diff-hard">Hard</span>
+                    <div class="game-title">CNN Pipeline: Full Walkthrough</div>
+                    <div class="game-desc">Step through a complete CNN pipeline — convolutions, pooling, and threshold classification — stage by stage.</div>
                 </div>
                 <div class="game-arrow">
                     <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
