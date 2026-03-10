@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}What Is a Community?}{2}{section.1}%
+\contentsline {section}{\numberline {2}Why Simply Counting Internal Edges Is Not Enough}{2}{section.2}%
+\contentsline {section}{\numberline {3}The Null Model: The Configuration Model}{2}{section.3}%
+\contentsline {section}{\numberline {4}Modularity $Q$}{3}{section.4}%
+\contentsline {paragraph}{Notation.}{3}{section*.2}%
+\contentsline {paragraph}{Interpretation.}{3}{section*.3}%
+\contentsline {paragraph}{Practical threshold.}{3}{section*.4}%
+\contentsline {section}{\numberline {5}Why $Q$ Is Useful but Imperfect}{4}{section.5}%
+\contentsline {section}{\numberline {6}The Louvain Algorithm}{4}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Phase 1: Local Moves}{4}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Phase 2: Aggregation}{4}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Iteration}{5}{subsection.6.3}%
+\contentsline {paragraph}{Hierarchy.}{5}{section*.5}%
+\contentsline {paragraph}{Complexity.}{5}{section*.6}%
+\contentsline {paragraph}{Convergence and quality.}{5}{section*.7}%
+\contentsline {section}{\numberline {7}Summary}{5}{section.7}%
