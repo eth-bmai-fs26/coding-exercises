@@ -1,0 +1,46 @@
+\contentsline {section}{\numberline {1}Motivation and Big Picture}{2}{section.1}%
+\contentsline {section}{\numberline {2}The Skip-List Analogy}{2}{section.2}%
+\contentsline {section}{\numberline {3}Why Layers?}{2}{section.3}%
+\contentsline {section}{\numberline {4}Data Structure}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Layer Assignment}{3}{subsection.4.1}%
+\contentsline {paragraph}{Why this formulation?}{3}{section*.2}%
+\contentsline {subsection}{\numberline {4.2}Key Parameters}{4}{subsection.4.2}%
+\contentsline {section}{\numberline {5}The Five Algorithms}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}\textsc {find-nn}: Greedy Descent Across Layers}{4}{subsection.5.1}%
+\contentsline {paragraph}{Purpose.}{4}{section*.3}%
+\contentsline {paragraph}{Algorithm.}{4}{section*.4}%
+\contentsline {paragraph}{Invariant.}{5}{section*.5}%
+\contentsline {subsection}{\numberline {5.2}\textsc {beam-search}: Single-Layer Beam Search}{5}{subsection.5.2}%
+\contentsline {paragraph}{Purpose.}{5}{section*.6}%
+\contentsline {paragraph}{Data structures.}{5}{section*.7}%
+\contentsline {paragraph}{Loop.}{5}{section*.8}%
+\contentsline {paragraph}{Why the visited set $D$?}{5}{section*.9}%
+\contentsline {paragraph}{The $\mathit {ef}$ parameter.}{6}{section*.10}%
+\contentsline {subsection}{\numberline {5.3}\textsc {sel-neighbors}: Heuristic Neighbor Selection}{6}{subsection.5.3}%
+\contentsline {paragraph}{Purpose.}{6}{section*.11}%
+\contentsline {paragraph}{The cluster-boundary problem.}{6}{section*.12}%
+\contentsline {paragraph}{The heuristic.}{6}{section*.13}%
+\contentsline {paragraph}{Geometric intuition.}{6}{section*.14}%
+\contentsline {paragraph}{Fallback.}{8}{section*.15}%
+\contentsline {subsection}{\numberline {5.4}\textsc {insert}: Building the Index}{8}{subsection.5.4}%
+\contentsline {paragraph}{Overview.}{8}{section*.16}%
+\contentsline {paragraph}{Step 1: Layer assignment.}{9}{section*.17}%
+\contentsline {paragraph}{Step 2: Greedy descent to layer $\mathit {lw}$.}{9}{section*.18}%
+\contentsline {paragraph}{Step 3: Layer-by-layer connection.}{9}{section*.19}%
+\contentsline {paragraph}{Step 4: Update global state.}{9}{section*.20}%
+\contentsline {paragraph}{Edge case: first element.}{9}{section*.21}%
+\contentsline {subsection}{\numberline {5.5}\textsc {search}: Answering $K$-NN Queries}{9}{subsection.5.5}%
+\contentsline {paragraph}{Overview.}{9}{section*.22}%
+\contentsline {paragraph}{Why only beam search on layer~0?}{10}{section*.23}%
+\contentsline {paragraph}{The $\mathit {ef}$ knob.}{10}{section*.24}%
+\contentsline {section}{\numberline {6}Complexity Analysis}{10}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Search}{10}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Construction}{10}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Memory}{11}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Putting It All Together: A Worked Example}{11}{section.7}%
+\contentsline {paragraph}{Insertion 1:}{11}{section*.25}%
+\contentsline {paragraph}{Insertion 2:}{11}{section*.26}%
+\contentsline {paragraph}{Insertion 5 (promoted to layer~1):}{11}{section*.27}%
+\contentsline {paragraph}{Later query:}{11}{section*.28}%
+\contentsline {section}{\numberline {8}Parameter Tuning in Practice}{11}{section.8}%
+\contentsline {section}{\numberline {9}Summary}{12}{section.9}%
