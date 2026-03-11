@@ -153,7 +153,7 @@ SHOP_CATALOG: dict[tuple[int, int], ShopInfo] = {
         name="Dwarf Blacksmith",
         description="A stout dwarf works the forge, sparks flying. He sells bread and can forge special weapons.",
         sells={"Bread": 1},
-        crafts={"Sunblade": ("Ember Ore", 2)},
+        crafts={"Sunblade": ("Ember Ore", 1)},
         buys={},
     ),
     (4, 1): ShopInfo(
