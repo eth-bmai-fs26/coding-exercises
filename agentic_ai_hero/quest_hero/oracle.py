@@ -1,7 +1,7 @@
 """NPC Oracle for Quest Hero.
 
 Phase 1: Uses stub_oracle with canned keyword-matched responses.
-Phase 2: Students implement build_npc_system_prompt() and ask_npc() using the Gemini API.
+Phase 2: Uses llm_oracle powered by the Gemini API.
 """
 
 from quest_hero.game_world import NPC
@@ -9,7 +9,7 @@ from quest_hero.hero import Hero
 
 
 # ---------------------------------------------------------------------------
-# Template for NPC system prompts (reference for students)
+# Template for NPC system prompts
 # ---------------------------------------------------------------------------
 
 ORACLE_TEMPLATE = """You are {name}, an NPC in a fantasy RPG world.
@@ -118,48 +118,28 @@ def stub_oracle(npc: NPC, question: str, hero: Hero) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Phase 2: LLM-powered oracle (students implement these)
+# LLM-powered oracle for Phase 2 (provided complete)
 # ---------------------------------------------------------------------------
 
 def build_npc_system_prompt(npc: NPC, hero: Hero) -> str:
-    """Build a system prompt for an NPC based on their personality and knowledge.
+    """Build a system prompt for an NPC based on their personality and knowledge."""
+    knowledge_str = "\n".join(f"- {k}" for k in npc.knowledge)
+    inventory_str = ", ".join(hero.inventory) if hero.inventory else "nothing"
 
-    TODO (Phase 2): Implement this function.
-
-    Use the ORACLE_TEMPLATE above as a starting point. Fill in:
-    - npc.name, npc.personality, npc.knowledge, npc.style
-    - hero.inventory, hero.hearts, hero.gold, hero.visited
-
-    The system prompt should make the NPC:
-    - Stay in character and never break the fourth wall
-    - Give hints based on their knowledge, not direct answers
-    - Be aware of what the hero is carrying and has done
-    - Keep responses to 2-3 sentences
-
-    Returns:
-        str: The system prompt for the NPC.
-    """
-    # ========================
-    # YOUR CODE HERE (Phase 2)
-    # ========================
-    raise NotImplementedError("TODO: Implement build_npc_system_prompt for Phase 2")
+    return ORACLE_TEMPLATE.format(
+        name=npc.name,
+        personality=npc.personality,
+        knowledge=knowledge_str,
+        style=npc.style,
+        inventory=inventory_str,
+        hearts=hero.hearts,
+        gold=hero.gold,
+        visited_count=len(hero.visited),
+    )
 
 
-def ask_npc(npc: NPC, question: str, hero: Hero, client) -> str:
+def llm_oracle(npc: NPC, question: str, hero: Hero, client) -> str:
     """Ask an NPC a question using the Gemini API.
-
-    TODO (Phase 2): Implement this function.
-
-    Steps:
-    1. Call build_npc_system_prompt() to get the system prompt.
-    2. Use client.models.generate_content() with:
-       - model="gemini-2.5-flash"
-       - contents=question
-       - config=genai.types.GenerateContentConfig(
-             system_instruction=<your system prompt>,
-             max_output_tokens=300,
-         )
-    3. Return response.text
 
     Args:
         npc: The NPC to talk to.
@@ -170,7 +150,17 @@ def ask_npc(npc: NPC, question: str, hero: Hero, client) -> str:
     Returns:
         str: The NPC's in-character response.
     """
-    # ========================
-    # YOUR CODE HERE (Phase 2)
-    # ========================
-    raise NotImplementedError("TODO: Implement ask_npc for Phase 2")
+    from google import genai
+
+    system_prompt = build_npc_system_prompt(npc, hero)
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=question,
+        config=genai.types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            max_output_tokens=300,
+        ),
+    )
+
+    return response.text

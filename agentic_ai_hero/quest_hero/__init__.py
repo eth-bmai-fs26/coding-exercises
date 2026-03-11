@@ -12,7 +12,7 @@ from quest_hero.game_world import (
 )
 from quest_hero.hero import Hero
 from quest_hero.tools import ToolResult, GameTools
-from quest_hero.oracle import stub_oracle, ORACLE_TEMPLATE
+from quest_hero.oracle import stub_oracle, llm_oracle, ORACLE_TEMPLATE
 from quest_hero.agent import (
     TOOLS_DESCRIPTION,
     parse_tool_call,

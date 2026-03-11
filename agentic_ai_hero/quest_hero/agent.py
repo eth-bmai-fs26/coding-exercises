@@ -7,7 +7,9 @@ Students implement:
 Everything else is provided.
 """
 
+import json
 import re
+from datetime import datetime
 from typing import Callable, Optional
 
 from quest_hero.hero import Hero
@@ -117,17 +119,28 @@ def run_agent(
         display_fn: Optional function(world, hero, turn, action, result) for visualization.
 
     Returns:
-        dict with keys: won (bool), turns (int), gold (int), hearts (int).
+        dict with keys: won, turns, gold, hearts, log_file.
     """
     history: list[dict[str, str]] = []
+    game_log: list[dict] = []
 
     for turn in range(max_turns):
         # Check end conditions
         if not hero.is_alive:
+            game_log.append({
+                "turn": turn, "event": "GAME OVER", "reason": "The hero has fallen.",
+                "position": list(hero.position), "hearts": hero.hearts, "gold": hero.gold,
+                "inventory": list(hero.inventory),
+            })
             if display_fn:
                 display_fn(world, hero, turn, "---", "GAME OVER: The hero has fallen.")
             break
         if hero.has_won:
+            game_log.append({
+                "turn": turn, "event": "VICTORY", "reason": "Collected enough gold!",
+                "position": list(hero.position), "hearts": hero.hearts, "gold": hero.gold,
+                "inventory": list(hero.inventory),
+            })
             if display_fn:
                 display_fn(world, hero, turn, "---", "VICTORY: The hero has collected enough gold!")
             break
@@ -139,10 +152,12 @@ def run_agent(
         history.append({"role": "observation", "content": observation})
 
         # THINK: agent decides an action
+        think_error = None
         try:
             action_text = think_fn(hero, world, history)
         except Exception as e:
             action_text = "TOOL: look()"
+            think_error = str(e)
             history.append({"role": "error", "content": f"Think function error: {e}"})
 
         # Parse the action
@@ -155,16 +170,58 @@ def run_agent(
         history.append({"role": "action", "content": f"{tool_name}({args})"})
         history.append({"role": "result", "content": result.message})
 
+        # Log this turn
+        log_entry = {
+            "turn": turn,
+            "position": list(hero.position),
+            "hearts": hero.hearts,
+            "gold": hero.gold,
+            "inventory": list(hero.inventory),
+            "observation": observation,
+            "action": f"{tool_name}({args})",
+            "result": result.message,
+            "success": result.success,
+        }
+        if think_error:
+            log_entry["think_error"] = think_error
+        game_log.append(log_entry)
+
         # Display
         if display_fn:
             display_fn(world, hero, turn, f"{tool_name}({args})", result.message)
+
+    # Save game log
+    log_file = _save_game_log(game_log, hero)
 
     return {
         "won": hero.has_won,
         "turns": turn + 1 if 'turn' in dir() else 0,
         "gold": hero.gold,
         "hearts": hero.hearts,
+        "log_file": log_file,
     }
+
+
+def _save_game_log(game_log: list[dict], hero: Hero) -> str:
+    """Save the game log to a JSON file and return the file path."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    outcome = "victory" if hero.has_won else "defeat"
+    log_file = f"game_log_{outcome}_{timestamp}.json"
+
+    log_data = {
+        "outcome": outcome,
+        "final_gold": hero.gold,
+        "final_hearts": hero.hearts,
+        "final_inventory": list(hero.inventory),
+        "total_turns": len([e for e in game_log if "action" in e]),
+        "journal": list(hero.journal),
+        "turns": game_log,
+    }
+
+    with open(log_file, "w") as f:
+        json.dump(log_data, f, indent=2)
+
+    return log_file
 
 
 # ---------------------------------------------------------------------------
