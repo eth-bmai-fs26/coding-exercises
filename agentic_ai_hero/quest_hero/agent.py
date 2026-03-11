@@ -231,7 +231,7 @@ def think_llm(hero: Hero, world: GameWorld, history: list[dict], client) -> str:
        - The hero's journal entries (key past NPC conversations)
 
     3. Call client.models.generate_content() with:
-       - model="gemini-2.0-flash"
+       - model="gemini-2.5-flash"
        - contents=<your user message>
        - config=genai.types.GenerateContentConfig(
              system_instruction=<your system message>,

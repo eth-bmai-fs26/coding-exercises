@@ -153,7 +153,7 @@ def ask_npc(npc: NPC, question: str, hero: Hero, client) -> str:
     Steps:
     1. Call build_npc_system_prompt() to get the system prompt.
     2. Use client.models.generate_content() with:
-       - model="gemini-2.0-flash"
+       - model="gemini-2.5-flash"
        - contents=question
        - config=genai.types.GenerateContentConfig(
              system_instruction=<your system prompt>,
