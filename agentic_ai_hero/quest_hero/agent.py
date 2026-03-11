@@ -230,19 +230,21 @@ def think_llm(hero: Hero, world: GameWorld, history: list[dict], client) -> str:
        - Current cell description
        - The hero's journal entries (key past NPC conversations)
 
-    3. Call client.messages.create() with:
-       - model="claude-sonnet-4-20250514"
-       - max_tokens=500
-       - system=<your system message>
-       - messages=[{"role": "user", "content": <your user message>}]
+    3. Call client.models.generate_content() with:
+       - model="gemini-2.0-flash"
+       - contents=<your user message>
+       - config=genai.types.GenerateContentConfig(
+             system_instruction=<your system message>,
+             max_output_tokens=500,
+         )
 
-    4. Return the text content of the response.
+    4. Return response.text
 
     Args:
         hero: Current hero state.
         world: The game world.
         history: Conversation history from the game loop.
-        client: An anthropic.Anthropic() instance.
+        client: A genai.Client() instance.
 
     Returns:
         str: The LLM's response containing a TOOL: call.

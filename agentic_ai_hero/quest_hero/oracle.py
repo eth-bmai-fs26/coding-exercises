@@ -1,7 +1,7 @@
 """NPC Oracle for Quest Hero.
 
 Phase 1: Uses stub_oracle with canned keyword-matched responses.
-Phase 2: Students implement build_npc_system_prompt() and ask_npc() using the Anthropic API.
+Phase 2: Students implement build_npc_system_prompt() and ask_npc() using the Gemini API.
 """
 
 from quest_hero.game_world import NPC
@@ -146,24 +146,26 @@ def build_npc_system_prompt(npc: NPC, hero: Hero) -> str:
 
 
 def ask_npc(npc: NPC, question: str, hero: Hero, client) -> str:
-    """Ask an NPC a question using the Anthropic API.
+    """Ask an NPC a question using the Gemini API.
 
     TODO (Phase 2): Implement this function.
 
     Steps:
     1. Call build_npc_system_prompt() to get the system prompt.
-    2. Use client.messages.create() with:
-       - model="claude-sonnet-4-20250514"
-       - max_tokens=300
-       - system=<your system prompt>
-       - messages=[{"role": "user", "content": question}]
-    3. Return the text content of the response.
+    2. Use client.models.generate_content() with:
+       - model="gemini-2.0-flash"
+       - contents=question
+       - config=genai.types.GenerateContentConfig(
+             system_instruction=<your system prompt>,
+             max_output_tokens=300,
+         )
+    3. Return response.text
 
     Args:
         npc: The NPC to talk to.
         question: The hero's question.
         hero: The hero (for context in the system prompt).
-        client: An anthropic.Anthropic() instance.
+        client: A genai.Client() instance.
 
     Returns:
         str: The NPC's in-character response.
