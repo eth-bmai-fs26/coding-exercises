@@ -1,0 +1,1245 @@
+{
+  "outcome": "victory",
+  "final_gold": 10,
+  "final_hearts": 3,
+  "final_inventory": [
+    "Sunblade"
+  ],
+  "total_turns": 82,
+  "journal": [
+    "Talked to innkeeper at Southern Inn: '[You received Herbal Tea.]...'",
+    "Talked to Forest Witch: Q: 'What can you tell me? What quests or dangers should I know about?' A: 'The forest speaks to me, child. I know where the burning stones hide and where the pale caps grow. I...'",
+    "Talked to innkeeper at Northern Inn: '[You delivered the Herbal Tea! Earned 2 gold.]...'",
+    "Talked to Old Hermit: Q: 'What can you tell me? What quests or dangers should I know about?' A: 'The land is troubled, young one. Beasts stir in the shadows, and fire sleeps beneath the mountains. ...'",
+    "Talked to Traveling Merchant: Q: 'What can you tell me? What quests or dangers should I know about?' A: 'Looking for work? There's a shadow beast terrorizing the east, treasure scattered about, and I've go...'",
+    "Talked to Traveling Merchant: Q: 'Do you have any letter or delivery job for me?' A: 'Actually, I do have a job for you! I need this letter delivered to the Old Hermit down south. 2 gold...'",
+    "Talked to Old Hermit: Q: 'I have a letter for you from the merchant.' A: 'A letter? For me? How wonderful! Let me read it...\n[You delivered the Letter! The Hermit rewards you...'"
+  ],
+  "turns": [
+    {
+      "turn": 0,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 1,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt! You see something shining here! Use pick_up() to collect it.",
+      "success": true
+    },
+    {
+      "turn": 2,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "Picked up: 1 gold (treasure).",
+      "success": true
+    },
+    {
+      "turn": 3,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 4,
+      "position": [
+        6,
+        1
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 1).",
+      "success": true
+    },
+    {
+      "turn": 5,
+      "position": [
+        6,
+        2
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 1).\n  North: Open path \u00b7\n  South: NPC \ud83e\uddd9\n  East: Shop \ud83c\udfea\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 2). The Dwarf Blacksmith's forge roars with heat. You enter Dwarf Blacksmith. A stout dwarf works the forge, sparks flying. He sells bread and can forge special weapons.",
+      "success": true
+    },
+    {
+      "turn": 6,
+      "position": [
+        6,
+        3
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 2).\nCurrent location: The Dwarf Blacksmith's forge roars with heat.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 3).",
+      "success": true
+    },
+    {
+      "turn": 7,
+      "position": [
+        6,
+        4
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 3).\n  North: NPC \ud83e\uddd9\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Shop \ud83c\udfea",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 4).",
+      "success": true
+    },
+    {
+      "turn": 8,
+      "position": [
+        6,
+        5
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 4).\n  North: Open path \u00b7\n  South: Inn \ud83c\udfda\ufe0f\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 5).",
+      "success": true
+    },
+    {
+      "turn": 9,
+      "position": [
+        6,
+        6
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 5).\n  North: Forest \ud83c\udf32\n  South: Open path \u00b7\n  East: Treasure \ud83d\udc8e\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 6). Gold coins scattered on the ground! You see something shining here! Use pick_up() to collect it.",
+      "success": true
+    },
+    {
+      "turn": 10,
+      "position": [
+        6,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (6, 6).\nCurrent location: Gold coins scattered on the ground!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "pick_up({})",
+      "result": "Picked up: 1 gold (treasure).",
+      "success": true
+    },
+    {
+      "turn": 11,
+      "position": [
+        5,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (6, 6).\nCurrent location: Gold coins scattered on the ground!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 6).",
+      "success": true
+    },
+    {
+      "turn": 12,
+      "position": [
+        4,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (5, 6).\n  North: Dragon \ud83d\udc09\n  South: Treasure \ud83d\udc8e\n  East: Open path \u00b7\n  West: Forest \ud83c\udf32",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (4, 6). Darkness pools unnaturally here. The Shadow Beast lurks in the gloom. A fearsome Shadow Beast blocks your path! Fight or flee!",
+      "success": true
+    },
+    {
+      "turn": 13,
+      "position": [
+        3,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (4, 6).\nCurrent location: Darkness pools unnaturally here. The Shadow Beast lurks in the gloom.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (3, 6).",
+      "success": true
+    },
+    {
+      "turn": 14,
+      "position": [
+        2,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (3, 6).\n  North: Open path \u00b7\n  South: Dragon \ud83d\udc09\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (2, 6).",
+      "success": true
+    },
+    {
+      "turn": 15,
+      "position": [
+        1,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (2, 6).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Forest \ud83c\udf32\n  West: Inn \ud83c\udfda\ufe0f",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (1, 6).",
+      "success": true
+    },
+    {
+      "turn": 16,
+      "position": [
+        0,
+        6
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (1, 6).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (0, 6).",
+      "success": true
+    },
+    {
+      "turn": 17,
+      "position": [
+        0,
+        7
+      ],
+      "hearts": 3,
+      "gold": 2,
+      "inventory": [],
+      "observation": "You are at position (0, 6).\n  North: Edge of the world (impassable).\n  South: Open path \u00b7\n  East: Treasure \ud83d\udc8e\n  West: Forest \ud83c\udf32",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (0, 7). A glint of gold catches your eye among the rocks! You see something shining here! Use pick_up() to collect it.",
+      "success": true
+    },
+    {
+      "turn": 18,
+      "position": [
+        0,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (0, 7).\nCurrent location: A glint of gold catches your eye among the rocks!\n  North: Edge of the world (impassable).\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "pick_up({})",
+      "result": "Picked up: 1 gold (treasure).",
+      "success": true
+    },
+    {
+      "turn": 19,
+      "position": [
+        1,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (0, 7).\nCurrent location: A glint of gold catches your eye among the rocks!\n  North: Edge of the world (impassable).\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (1, 7).",
+      "success": true
+    },
+    {
+      "turn": 20,
+      "position": [
+        2,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (1, 7).\n  North: Treasure \ud83d\udc8e\n  South: Forest \ud83c\udf32\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (2, 7). A peaceful forest clearing. Birds sing overhead.",
+      "success": true
+    },
+    {
+      "turn": 21,
+      "position": [
+        3,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (2, 7).\nCurrent location: A peaceful forest clearing. Birds sing overhead.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (3, 7).",
+      "success": true
+    },
+    {
+      "turn": 22,
+      "position": [
+        4,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (3, 7).\n  North: Forest \ud83c\udf32\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (4, 7).",
+      "success": true
+    },
+    {
+      "turn": 23,
+      "position": [
+        5,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (4, 7).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Dragon \ud83d\udc09",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (5, 7).",
+      "success": true
+    },
+    {
+      "turn": 24,
+      "position": [
+        6,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (5, 7).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 7).",
+      "success": true
+    },
+    {
+      "turn": 25,
+      "position": [
+        7,
+        7
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (6, 7).\n  North: Open path \u00b7\n  South: Forest \ud83c\udf32\n  East: Edge of the world (impassable).\n  West: Treasure \ud83d\udc8e",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (7, 7). A forest at the edge of the world. The trees thin out here.",
+      "success": true
+    },
+    {
+      "turn": 26,
+      "position": [
+        7,
+        6
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (7, 7).\nCurrent location: A forest at the edge of the world. The trees thin out here.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Edge of the world (impassable).\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 6).",
+      "success": true
+    },
+    {
+      "turn": 27,
+      "position": [
+        7,
+        5
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (7, 6).\n  North: Treasure \ud83d\udc8e\n  South: Edge of the world (impassable).\n  East: Forest \ud83c\udf32\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 5).",
+      "success": true
+    },
+    {
+      "turn": 28,
+      "position": [
+        7,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [],
+      "observation": "You are at position (7, 5).\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Inn \ud83c\udfda\ufe0f",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 4). The Southern Inn. Warm light spills from the windows. You enter Southern Inn. A cozy inn with a warm fireplace. The innkeeper looks worried about his brother up north.",
+      "success": true
+    },
+    {
+      "turn": 29,
+      "position": [
+        7,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (7, 4).\nCurrent location: The Southern Inn. Warm light spills from the windows.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'Hello, do you need any help?'})",
+      "result": "The innkeeper at Southern Inn speaks: \"My brother at the Northern Inn is terribly ill. Please, take this Herbal Tea to him. I'll pay you 2 gold!\" [You received Herbal Tea.]",
+      "success": true
+    },
+    {
+      "turn": 30,
+      "position": [
+        6,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (7, 4).\nCurrent location: The Southern Inn. Warm light spills from the windows.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (6, 4).",
+      "success": true
+    },
+    {
+      "turn": 31,
+      "position": [
+        5,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (6, 4).\n  North: Open path \u00b7\n  South: Inn \ud83c\udfda\ufe0f\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 4).",
+      "success": true
+    },
+    {
+      "turn": 32,
+      "position": [
+        4,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (5, 4).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Forest \ud83c\udf32\n  West: NPC \ud83e\uddd9",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (4, 4).",
+      "success": true
+    },
+    {
+      "turn": 33,
+      "position": [
+        3,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (4, 4).\n  North: NPC \ud83e\uddd9\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Mountain (impassable) \u26f0\ufe0f",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (3, 4). A small hut surrounded by herbs and strange plants. You encounter Forest Witch. The forest told me you would come... The roots whisper, the leaves know. Ask, child, and nature shall answer.",
+      "success": true
+    },
+    {
+      "turn": 34,
+      "position": [
+        3,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (3, 4).\nCurrent location: A small hut surrounded by herbs and strange plants.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'What can you tell me? What quests or dangers should I know about?'})",
+      "result": "Forest Witch says: The forest speaks to me, child. I know where the burning stones hide and where the pale caps grow. I can brew remedies from nature's gifts. What do you seek?",
+      "success": true
+    },
+    {
+      "turn": 35,
+      "position": [
+        2,
+        4
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (3, 4).\nCurrent location: A small hut surrounded by herbs and strange plants.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (2, 4).",
+      "success": true
+    },
+    {
+      "turn": 36,
+      "position": [
+        2,
+        5
+      ],
+      "hearts": 3,
+      "gold": 3,
+      "inventory": [
+        "Herbal Tea"
+      ],
+      "observation": "You are at position (2, 4).\n  North: Open path \u00b7\n  South: NPC \ud83e\uddd9\n  East: Inn \ud83c\udfda\ufe0f\n  West: Mountain (impassable) \u26f0\ufe0f",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (2, 5). The Northern Inn. The innkeeper looks weary and troubled. You enter Northern Inn. A quiet inn. The innkeeper looks tired and worried about his sick wife.",
+      "success": true
+    },
+    {
+      "turn": 37,
+      "position": [
+        2,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (2, 5).\nCurrent location: The Northern Inn. The innkeeper looks weary and troubled.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'I brought herbal tea from your brother!'})",
+      "result": "The innkeeper at Northern Inn speaks: \"The tea from my brother! Thank you so much! Here, take 2 gold for your trouble.\" [You delivered the Herbal Tea! Earned 2 gold.]",
+      "success": true
+    },
+    {
+      "turn": 38,
+      "position": [
+        3,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (2, 5).\nCurrent location: The Northern Inn. The innkeeper looks weary and troubled.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (3, 5).",
+      "success": true
+    },
+    {
+      "turn": 39,
+      "position": [
+        4,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (3, 5).\n  North: Inn \ud83c\udfda\ufe0f\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: NPC \ud83e\uddd9",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (4, 5).",
+      "success": true
+    },
+    {
+      "turn": 40,
+      "position": [
+        5,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (4, 5).\n  North: Open path \u00b7\n  South: Forest \ud83c\udf32\n  East: Dragon \ud83d\udc09\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (5, 5). A quiet forest. Nothing unusual here.",
+      "success": true
+    },
+    {
+      "turn": 41,
+      "position": [
+        6,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (5, 5).\nCurrent location: A quiet forest. Nothing unusual here.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 5).",
+      "success": true
+    },
+    {
+      "turn": 42,
+      "position": [
+        7,
+        5
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (6, 5).\n  North: Forest \ud83c\udf32\n  South: Open path \u00b7\n  East: Treasure \ud83d\udc8e\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (7, 5).",
+      "success": true
+    },
+    {
+      "turn": 43,
+      "position": [
+        7,
+        4
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 5).\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Inn \ud83c\udfda\ufe0f",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 4). The Southern Inn. Warm light spills from the windows. You enter Southern Inn. A cozy inn with a warm fireplace. The innkeeper looks worried about his brother up north.",
+      "success": true
+    },
+    {
+      "turn": 44,
+      "position": [
+        7,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 4).\nCurrent location: The Southern Inn. Warm light spills from the windows.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 3).",
+      "success": true
+    },
+    {
+      "turn": 45,
+      "position": [
+        7,
+        2
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 3).\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Inn \ud83c\udfda\ufe0f\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 2).",
+      "success": true
+    },
+    {
+      "turn": 46,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 2).\n  North: Shop \ud83c\udfea\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: NPC \ud83e\uddd9",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 1). A weathered hut sits beneath an ancient oak. An old man meditates outside. You encounter Old Hermit. Ah, a traveler... The winds whisper of your coming. Sit, and I shall speak of shadows and flame.",
+      "success": true
+    },
+    {
+      "turn": 47,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'What can you tell me? What quests or dangers should I know about?'})",
+      "result": "Old Hermit says: The land is troubled, young one. Beasts stir in the shadows, and fire sleeps beneath the mountains. Seek the witch in the heart of the forest \u2014 she sees what others cannot.",
+      "success": true
+    },
+    {
+      "turn": 48,
+      "position": [
+        6,
+        1
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (6, 1).",
+      "success": true
+    },
+    {
+      "turn": 49,
+      "position": [
+        5,
+        1
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (6, 1).\n  North: Open path \u00b7\n  South: NPC \ud83e\uddd9\n  East: Shop \ud83c\udfea\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 1).",
+      "success": true
+    },
+    {
+      "turn": 50,
+      "position": [
+        5,
+        2
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (5, 1).\n  North: Shop \ud83c\udfea\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Treasure \ud83d\udc8e",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (5, 2).",
+      "success": true
+    },
+    {
+      "turn": 51,
+      "position": [
+        5,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (5, 2).\n  North: Open path \u00b7\n  South: Shop \ud83c\udfea\n  East: NPC \ud83e\uddd9\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (5, 3). A colorful wagon is parked here. A merchant waves you over. You encounter Traveling Merchant. Well well well! A customer! Or perhaps... a business partner? I have goods, information, and a job for the right adventurer!",
+      "success": true
+    },
+    {
+      "turn": 52,
+      "position": [
+        5,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [],
+      "observation": "You are at position (5, 3).\nCurrent location: A colorful wagon is parked here. A merchant waves you over.\n  North: Mountain (impassable) \u26f0\ufe0f\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'What can you tell me? What quests or dangers should I know about?'})",
+      "result": "Traveling Merchant says: Looking for work? There's a shadow beast terrorizing the east, treasure scattered about, and I've got a letter that needs delivering. Plenty of opportunity for a hero like you!",
+      "success": true
+    },
+    {
+      "turn": 53,
+      "position": [
+        5,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [
+        "Letter"
+      ],
+      "observation": "You are at position (5, 3).\nCurrent location: A colorful wagon is parked here. A merchant waves you over.\n  North: Mountain (impassable) \u26f0\ufe0f\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'Do you have any letter or delivery job for me?'})",
+      "result": "Traveling Merchant says: Actually, I do have a job for you! I need this letter delivered to the Old Hermit down south. 2 gold for the trouble. What do you say?\n[The Merchant hands you a sealed Letter.]",
+      "success": true
+    },
+    {
+      "turn": 54,
+      "position": [
+        6,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [
+        "Letter"
+      ],
+      "observation": "You are at position (5, 3).\nCurrent location: A colorful wagon is parked here. A merchant waves you over.\n  North: Mountain (impassable) \u26f0\ufe0f\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 3).",
+      "success": true
+    },
+    {
+      "turn": 55,
+      "position": [
+        7,
+        3
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [
+        "Letter"
+      ],
+      "observation": "You are at position (6, 3).\n  North: NPC \ud83e\uddd9\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Shop \ud83c\udfea",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (7, 3).",
+      "success": true
+    },
+    {
+      "turn": 56,
+      "position": [
+        7,
+        2
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [
+        "Letter"
+      ],
+      "observation": "You are at position (7, 3).\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Inn \ud83c\udfda\ufe0f\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 2).",
+      "success": true
+    },
+    {
+      "turn": 57,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 5,
+      "inventory": [
+        "Letter"
+      ],
+      "observation": "You are at position (7, 2).\n  North: Shop \ud83c\udfea\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: NPC \ud83e\uddd9",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 1). A weathered hut sits beneath an ancient oak. An old man meditates outside. You encounter Old Hermit. Ah, a traveler... The winds whisper of your coming. Sit, and I shall speak of shadows and flame.",
+      "success": true
+    },
+    {
+      "turn": 58,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'I have a letter for you from the merchant.'})",
+      "result": "Old Hermit says: A letter? For me? How wonderful! Let me read it...\n[You delivered the Letter! The Hermit rewards you with 2 gold.]",
+      "success": true
+    },
+    {
+      "turn": 59,
+      "position": [
+        6,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (6, 1).",
+      "success": true
+    },
+    {
+      "turn": 60,
+      "position": [
+        5,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (6, 1).\n  North: Open path \u00b7\n  South: NPC \ud83e\uddd9\n  East: Shop \ud83c\udfea\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 1).",
+      "success": true
+    },
+    {
+      "turn": 61,
+      "position": [
+        4,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (5, 1).\n  North: Shop \ud83c\udfea\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Treasure \ud83d\udc8e",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (4, 1). The Enchanter Shop glows with arcane energy. You enter Enchanter Shop. A mysterious shop filled with glowing crystals and arcane instruments.",
+      "success": true
+    },
+    {
+      "turn": 62,
+      "position": [
+        3,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (4, 1).\nCurrent location: The Enchanter Shop glows with arcane energy.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (3, 1).",
+      "success": true
+    },
+    {
+      "turn": 63,
+      "position": [
+        2,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (3, 1).\n  North: Dragon \ud83d\udc09\n  South: Shop \ud83c\udfea\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (2, 1). A chilling mist fills the air. The Frost Wyrm awaits, its icy breath visible. A fearsome Frost Wyrm blocks your path! Fight or flee!",
+      "success": true
+    },
+    {
+      "turn": 64,
+      "position": [
+        2,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [],
+      "observation": "You are at position (2, 1).\nCurrent location: A chilling mist fills the air. The Frost Wyrm awaits, its icy breath visible.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Forest \ud83c\udf32",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (2, 0). A forest of towering western trees. The ground radiates faint warmth. You notice something hidden among the trees. Use pick_up() to search.",
+      "success": true
+    },
+    {
+      "turn": 65,
+      "position": [
+        2,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (2, 0).\nCurrent location: A forest of towering western trees. The ground radiates faint warmth.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Dragon \ud83d\udc09\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "Picked up: Ember Ore.",
+      "success": true
+    },
+    {
+      "turn": 66,
+      "position": [
+        3,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (2, 0).\nCurrent location: A forest of towering western trees. The ground radiates faint warmth.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Dragon \ud83d\udc09\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (3, 0).",
+      "success": true
+    },
+    {
+      "turn": 67,
+      "position": [
+        4,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (3, 0).\n  North: Forest \ud83c\udf32\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (4, 0).",
+      "success": true
+    },
+    {
+      "turn": 68,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (4, 0).\n  North: Open path \u00b7\n  South: Treasure \ud83d\udc8e\n  East: Shop \ud83c\udfea\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 69,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 70,
+      "position": [
+        6,
+        1
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 1).",
+      "success": true
+    },
+    {
+      "turn": 71,
+      "position": [
+        6,
+        2
+      ],
+      "hearts": 3,
+      "gold": 7,
+      "inventory": [
+        "Ember Ore"
+      ],
+      "observation": "You are at position (6, 1).\n  North: Open path \u00b7\n  South: NPC \ud83e\uddd9\n  East: Shop \ud83c\udfea\n  West: Open path \u00b7",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (6, 2). The Dwarf Blacksmith's forge roars with heat. You enter Dwarf Blacksmith. A stout dwarf works the forge, sparks flying. He sells bread and can forge special weapons.",
+      "success": true
+    },
+    {
+      "turn": 72,
+      "position": [
+        6,
+        2
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (6, 2).\nCurrent location: The Dwarf Blacksmith's forge roars with heat.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "buy({'item': 'Sunblade'})",
+      "result": "Crafted Sunblade! (Used Ember Ore + 1 gold)",
+      "success": true
+    },
+    {
+      "turn": 73,
+      "position": [
+        5,
+        2
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (6, 2).\nCurrent location: The Dwarf Blacksmith's forge roars with heat.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 2).",
+      "success": true
+    },
+    {
+      "turn": 74,
+      "position": [
+        4,
+        2
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (5, 2).\n  North: Open path \u00b7\n  South: Shop \ud83c\udfea\n  East: NPC \ud83e\uddd9\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (4, 2).",
+      "success": true
+    },
+    {
+      "turn": 75,
+      "position": [
+        3,
+        2
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (4, 2).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Mountain (impassable) \u26f0\ufe0f\n  West: Shop \ud83c\udfea",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (3, 2).",
+      "success": true
+    },
+    {
+      "turn": 76,
+      "position": [
+        2,
+        2
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (3, 2).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (2, 2).",
+      "success": true
+    },
+    {
+      "turn": 77,
+      "position": [
+        2,
+        1
+      ],
+      "hearts": 3,
+      "gold": 6,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (2, 2).\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Mountain (impassable) \u26f0\ufe0f\n  West: Dragon \ud83d\udc09",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (2, 1). A chilling mist fills the air. The Frost Wyrm awaits, its icy breath visible. A fearsome Frost Wyrm blocks your path! Fight or flee!",
+      "success": true
+    },
+    {
+      "turn": 78,
+      "position": [
+        2,
+        1
+      ],
+      "hearts": 3,
+      "gold": 9,
+      "inventory": [
+        "Sunblade",
+        "Dragon Scales"
+      ],
+      "observation": "You are at position (2, 1).\nCurrent location: A chilling mist fills the air. The Frost Wyrm awaits, its icy breath visible.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Forest \ud83c\udf32",
+      "action": "fight({})",
+      "result": "You raise the Sunblade high \u2014 its fiery glow melts the Frost Wyrm's icy armor! Victory! Earned 3 gold and Dragon Scales.",
+      "success": true
+    },
+    {
+      "turn": 79,
+      "position": [
+        3,
+        1
+      ],
+      "hearts": 3,
+      "gold": 9,
+      "inventory": [
+        "Sunblade",
+        "Dragon Scales"
+      ],
+      "observation": "You are at position (2, 1).\nCurrent location: A chilling mist fills the air. The Frost Wyrm awaits, its icy breath visible.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Forest \ud83c\udf32",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (3, 1).",
+      "success": true
+    },
+    {
+      "turn": 80,
+      "position": [
+        4,
+        1
+      ],
+      "hearts": 3,
+      "gold": 9,
+      "inventory": [
+        "Sunblade",
+        "Dragon Scales"
+      ],
+      "observation": "You are at position (3, 1).\n  North: Dragon \ud83d\udc09\n  South: Shop \ud83c\udfea\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (4, 1). The Enchanter Shop glows with arcane energy. You enter Enchanter Shop. A mysterious shop filled with glowing crystals and arcane instruments.",
+      "success": true
+    },
+    {
+      "turn": 81,
+      "position": [
+        4,
+        1
+      ],
+      "hearts": 3,
+      "gold": 10,
+      "inventory": [
+        "Sunblade"
+      ],
+      "observation": "You are at position (4, 1).\nCurrent location: The Enchanter Shop glows with arcane energy.\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "buy({'item': 'sell Dragon Scales'})",
+      "result": "Sold Dragon Scales for 1 gold.",
+      "success": true
+    },
+    {
+      "turn": 82,
+      "event": "VICTORY",
+      "reason": "Collected enough gold!",
+      "position": [
+        4,
+        1
+      ],
+      "hearts": 3,
+      "gold": 10,
+      "inventory": [
+        "Sunblade"
+      ]
+    }
+  ]
+}
