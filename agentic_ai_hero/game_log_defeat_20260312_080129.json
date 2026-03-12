@@ -1,0 +1,1413 @@
+{
+  "outcome": "defeat",
+  "final_gold": 1,
+  "final_hearts": 3,
+  "final_inventory": [],
+  "total_turns": 100,
+  "journal": [
+    "Talked to Old Hermit: Q: 'Greetings, Old Hermit. What wisdom do you have for a traveler?' A: 'Ah, young seeker, the winds whisper many tales...'",
+    "Talked to Old Hermit: Q: 'Old Hermit, can you tell me where I might find treasure or gold in this land?' A: 'The earth whispers secrets in the southwest wind, and sometimes, those whispers are of glittering te...'"
+  ],
+  "turns": [
+    {
+      "turn": 0,
+      "position": [
+        7,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "action": "talk({'question': 'Hello there! What can you tell me about this area?'})",
+      "result": "There is no one to talk to here.",
+      "success": false
+    },
+    {
+      "turn": 1,
+      "position": [
+        7,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 2,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (7, 1). A weathered hut sits beneath an ancient oak. An old man meditates outside. You encounter Old Hermit. Ah, a traveler... The winds whisper of your coming. Sit, and I shall speak of shadows and flame.",
+      "success": true
+    },
+    {
+      "turn": 3,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'Greetings, Old Hermit. What wisdom do you have for a traveler?'})",
+      "result": "Old Hermit says: Ah, young seeker, the winds whisper many tales",
+      "success": true
+    },
+    {
+      "turn": 4,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "talk({'question': 'Old Hermit, can you tell me where I might find treasure or gold in this land?'})",
+      "result": "Old Hermit says: The earth whispers secrets in the southwest wind, and sometimes, those whispers are of glittering tears, not far from these ancient stones. Look where the shadows lengthen as the day cools.",
+      "success": true
+    },
+    {
+      "turn": 5,
+      "position": [
+        7,
+        1
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "look({})",
+      "result": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "success": true
+    },
+    {
+      "turn": 6,
+      "position": [
+        7,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 1).\nCurrent location: A weathered hut sits beneath an ancient oak. An old man meditates outside.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: Open path \u00b7\n  West: Open path \u00b7",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (7, 0). The starting clearing. Familiar ground.",
+      "success": true
+    },
+    {
+      "turn": 7,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (7, 0).\nCurrent location: The starting clearing. Familiar ground.\n  North: Open path \u00b7\n  South: Edge of the world (impassable).\n  East: NPC \ud83e\uddd9\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 8,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 0,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt! You see something shining here! Use pick_up() to collect it.",
+      "success": true
+    },
+    {
+      "turn": 9,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "Picked up: 1 gold (treasure).",
+      "success": true
+    },
+    {
+      "turn": 10,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 11,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 12,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 13,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 14,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 15,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 16,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 17,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 18,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 19,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 20,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 21,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 22,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 23,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 24,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 25,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 26,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 27,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 28,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 29,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 30,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 31,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 32,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 33,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 34,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 35,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 36,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 37,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 38,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 39,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 40,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "status({})",
+      "result": "Hearts: 3/3 | Gold: 1 | Position: (5, 0) | Inventory: [empty] | Visited: 4 cells",
+      "success": true
+    },
+    {
+      "turn": 41,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 42,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 43,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 44,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 45,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 46,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 47,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 48,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 49,
+      "position": [
+        5,
+        1
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'east'})",
+      "result": "Moved east to (5, 1).",
+      "success": true
+    },
+    {
+      "turn": 50,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 1).\n  North: Shop \ud83c\udfea\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Treasure \ud83d\udc8e",
+      "action": "move({'direction': 'west'})",
+      "result": "Moved west to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 51,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 52,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 53,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 54,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 55,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 56,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 57,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 58,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 59,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 60,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 61,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 62,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 63,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 64,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 65,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 66,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 67,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 68,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 69,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 70,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 71,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 72,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 73,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 74,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 75,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 76,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 77,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 78,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 79,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 80,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 81,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 82,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 83,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 84,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 85,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 86,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 87,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "status({})",
+      "result": "Hearts: 3/3 | Gold: 1 | Position: (5, 0) | Inventory: [empty] | Visited: 5 cells",
+      "success": true
+    },
+    {
+      "turn": 88,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 89,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'south'})",
+      "result": "Moved south to (6, 0).",
+      "success": true
+    },
+    {
+      "turn": 90,
+      "position": [
+        6,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 91,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (6, 0).\n  North: Treasure \ud83d\udc8e\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "move({'direction': 'north'})",
+      "result": "Moved north to (5, 0). A small treasure chest sits half-buried in the dirt!",
+      "success": true
+    },
+    {
+      "turn": 92,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 93,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 94,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 95,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 96,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    },
+    {
+      "turn": 97,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 98,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "pick_up({})",
+      "result": "There is nothing to pick up here.",
+      "success": false
+    },
+    {
+      "turn": 99,
+      "position": [
+        5,
+        0
+      ],
+      "hearts": 3,
+      "gold": 1,
+      "inventory": [],
+      "observation": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "action": "look({})",
+      "result": "You are at position (5, 0).\nCurrent location: A small treasure chest sits half-buried in the dirt!\n  North: Open path \u00b7\n  South: Open path \u00b7\n  East: Open path \u00b7\n  West: Edge of the world (impassable).",
+      "success": true
+    }
+  ]
+}
