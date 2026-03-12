@@ -20,3 +20,4 @@ from quest_hero.agent import (
 )
 from quest_hero.display import render_grid, display_turn, display_final
 from quest_hero.main import create_game, play_rule_based, play_with_llm
+from quest_hero.interactive import play_interactive
