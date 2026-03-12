@@ -285,7 +285,7 @@ LATE_TICKETS = [
         correct_template="password_reset",
         csat_potential=2,
     ),
-    # Another billing — small refund (tests guardrail: amount is fine)
+    # Big refund — tests >$100 guardrail: must escalate to billing
     Ticket(
         id="T-017", customer_id="C-105", category=TicketCategory.BILLING,
         priority=TicketPriority.MEDIUM, created_turn=35,
@@ -293,7 +293,7 @@ LATE_TICKETS = [
         message="I accidentally clicked 'upgrade to annual' and was charged $199. "
                 "I wanted to stay on monthly. Can I get a refund? It just happened today.",
         requires_lookup=True, lookup_query="billing C-105",
-        requires_action="issue_refund",
+        requires_escalation="billing",
         refund_amount=199,
         csat_potential=4,
     ),
