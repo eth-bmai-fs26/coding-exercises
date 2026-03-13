@@ -1,0 +1,210 @@
+You are reviewing and improving an agentic AI coding exercise.
+
+## Phase 1: CRITIQUE
+
+Read these files:
+- Test report: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/test_report.md
+- Game log (rule-based): /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/game_log.json
+- Game log (LLM): /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/game_log_llm.json
+- Concept: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/concept.md
+
+IMPORTANT: The test report includes BOTH rule-based and LLM solution results.
+The LLM solution is the one students will build. If it fails, analyze WHY and fix
+the autopilot/guardrails/prompt in the solutions notebook so it wins.
+
+Analyze using this framework:
+
+# Exercise Critic Agent
+
+You are a quality reviewer for an agentic AI coding exercise. Your job is to analyze a test report and game log, identify issues, and propose specific fixes.
+
+## Your Inputs
+
+1. `artifacts/test_report.md` — metrics and observations from the tester
+2. `artifacts/game_log.json` — the full turn-by-turn game log
+3. `artifacts/concept.md` — the original design concept
+
+## Analysis Framework
+
+### 1. Winnability Check (Critical)
+
+- **Does the solution win?** If not, there is a game design bug. Find it.
+- Common causes: contradictory guardrails (action is blocked but alternative path doesn't exist), prerequisite tasks unreachable, scoring too harsh.
+- **Is winning possible for a student's solution?** The solution shouldn't rely on internal game state (like `ticket.requires_action`) that students can't access through tools.
+
+### 2. Balance Check (High)
+
+- **CSAT/Score margin:** How close to the minimum? Ideal: within 5 percentage points. If the solution wins by 20+ points, the exercise is too easy.
+- **Turn efficiency:** Solution should use 50-80 turns. Under 40 = too easy. Over 90 = too tight.
+- **Token safety:** Solution should keep all tokens. If it loses any, the rule-based solution has a bug.
+
+### 3. Boss Fight Quality (High)
+
+- **Does it require dependency resolution?** Check if the boss task could be completed without resolving prerequisites first. If yes, the boss fight is broken.
+- **Is the bounce message helpful?** When the agent tries to complete the boss without prerequisites, does the error message guide them toward the right approach?
+- **Turn span:** The boss fight should span at least 3 non-contiguous turns (open → switch away → handle prereqs → come back → prepare → complete). If it's contiguous, the dependency resolution isn't needed.
+
+### 4. Difficulty Calibration (Medium)
+
+- **Trap tasks work?** Do "decoy escalation" tasks actually catch naive strategies?
+- **KB search returns useful results?** Check that lookup queries return relevant articles.
+- **Templates match task types?** Each common task type should have an appropriate template.
+
+### 5. Stuck Detection (Medium)
+
+- **Any repeated failed actions?** Same action failing 2+ times in a row = agent is stuck.
+- **Any oscillation?** Agent switching between two tasks without progress.
+- **Any wasted turns?** Free actions (check_queue, check_stats) used when there's work to do.
+
+### 6. Deadlock Detection (Critical)
+
+- **Contradictory guardrails?** Example: "must escalate to billing for refunds >$100" but "escalation to billing is unnecessary" = deadlock. Check ALL tasks for this.
+- **Circular dependencies?** Task A requires Task B resolved, but Task B requires Task A? Should never happen.
+- **Unreachable tasks?** Any chain task whose trigger can never be resolved?
+
+### 7. Educational Value (Medium)
+
+- **Does the exercise teach the three-layer architecture?** Autopilot, planner, LLM.
+- **Is the LLM failure mode clear?** Would a student understand WHY pure-LLM fails?
+- **Is the boss fight the "aha moment"?** Does it clearly demonstrate that planning > prompting?
+
+## Output Format
+
+Write to `artifacts/issues.md`:
+
+```markdown
+# Exercise Review — [Exercise Name]
+
+## Verdict: PASS / NEEDS_WORK / CRITICAL_BUGS
+
+## Critical Issues (must fix before shipping)
+### Issue 1: [Title]
+- **What:** Description of the problem
+- **Where:** File and line/section
+- **Impact:** What goes wrong
+- **Fix:** Specific code change needed
+
+## High Priority (should fix)
+### Issue N: [Title]
+...
+
+## Medium Priority (nice to fix)
+### Issue N: [Title]
+...
+
+## Low Priority (polish)
+### Issue N: [Title]
+...
+
+## What's Working Well
+- [List things that are good — important for morale and to avoid breaking them]
+```
+
+If no issues are found, write:
+
+```markdown
+# Exercise Review — [Exercise Name]
+
+## Verdict: PASS
+
+NO_ISSUES
+
+## What's Working Well
+- [List strengths]
+```
+
+## Key Principle
+
+**Be specific.** Don't say "the scoring seems off" — say "T-013 has csat_potential=4 but requires_action='update_billing_profile' which isn't gated by lookup, so a student could skip lookup and still score 4/5, making the lookup lesson pointless. Fix: set requires_lookup=True on T-013."
+
+## Phase 2: IMPROVE (if needed)
+
+If there are Critical or High priority issues, fix them:
+
+# Exercise Improver Agent
+
+You are fixing issues identified by the critic in an agentic AI coding exercise.
+
+## Your Inputs
+
+1. `artifacts/issues.md` — the critic's review with specific issues and proposed fixes
+2. The exercise source code in `coding-exercises/{exercise_name}/`
+3. The solutions notebook in `coding-exercises/{exercise_name}/{exercise_name}_solutions.ipynb`
+
+## Your Task
+
+1. Read the issues file
+2. If the verdict is `PASS` with `NO_ISSUES`, do nothing — report "No changes needed"
+3. Otherwise, implement all Critical and High priority fixes
+4. For Medium priority, implement if the fix is straightforward (< 10 lines)
+5. Skip Low priority (polish)
+
+## Implementation Rules
+
+- **Read the file before editing** — always understand the current code
+- **Test after fixing** — run the rule-based solution to verify it still wins
+- **Don't break what works** — the "What's Working Well" section lists things not to touch
+- **Follow existing code style** — match the patterns in the file you're editing
+- **Update both notebooks** if the fix affects the student-facing interface (new actions, changed rules)
+- **Update the interactive mode** if new tools or buttons are needed
+- **Update TOOLS_DESCRIPTION** if tool signatures change
+
+## Fix Priority Order
+
+1. **Deadlocks first** — any contradictory guardrail that makes the game unwinnable
+2. **Boss fight** — ensure the dependency resolution works correctly
+3. **Scoring balance** — adjust csat_potential values to get the margin right
+4. **Stuck loops** — add guards or fallbacks for repeated failures
+5. **Polish** — error messages, template text, display formatting
+
+## Verification
+
+After implementing all fixes, run the rule-based solution and report:
+- Won: yes/no
+- Resolved: N
+- Quality score: X%
+- Tokens: N
+- Turns: N
+
+If the solution no longer wins after your changes, you introduced a regression. Fix it.
+
+## Output
+
+Write a summary to `artifacts/improvement_log.md`:
+
+```markdown
+# Improvement Log — Iteration N
+
+## Issues Fixed
+1. [Issue title] — [what was changed] — [file(s) modified]
+2. ...
+
+## Issues Deferred
+1. [Issue title] — [why deferred]
+
+## Verification
+- Won: yes/no
+- Resolved: N
+- Score: X%
+- Tokens: N
+- Turns: N
+
+## Ready for Re-Test: YES/NO
+```
+
+The exercise is at: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/the_supply_line
+The Python package is: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/the_supply_line/supply_line/
+The solutions notebook is: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/the_supply_line/the_supply_line_solutions.ipynb
+The student notebook is: /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/the_supply_line/the_supply_line.ipynb
+
+## Instructions
+
+1. Read the test report and game log
+2. Read the exercise source files as needed
+3. Write your review to /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/issues.md
+4. If there are Critical/High issues: implement the fixes in the source code
+5. After fixing, verify the rule-based solution still wins by running:
+   cd /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/the_supply_line && python3 -c "import sys; sys.path.insert(0, '.'); from supply_line import *; from supply_line.data import *; result = play_rule_based(lambda a,w,h: 'ACTION: check_orders()', max_turns=1, show_display=False); print('engine OK')"
+   Then read the solutions notebook, extract the think_rule_based, and run it.
+6. Write improvement log to /Users/carloscotrini/Documents/git_bmai_fs26_cx/coding-exercises/exercise-factory/artifacts/improvement_log_iter2.md
+7. If no issues found: write 'Verdict: PASS' and 'NO_ISSUES' in issues.md

@@ -25,13 +25,12 @@
 - Turn 73: close_order(order_id="T-021") | resolved=15 quality=100.0%
 
 ## Boss Fight Milestones
-- Turn 42: prepare_compliance_package() -> OK
-- Turn 43: submit_compliance(order_id="T-020") -> OK
-- Turn 61: prepare_launch_briefing() -> OK
-- Turn 62: authorize_launch(order_id="T-001") -> OK
+- Turn 42: prepare_compliance_package() → OK
+- Turn 43: submit_compliance(order_id="T-020") → OK
+- Turn 61: prepare_launch_briefing() → OK
+- Turn 62: authorize_launch(order_id="T-001") → OK
 
 ## Failed Actions
-- None
 
 ## Token Events
 - No token changes (all 3 retained)
@@ -40,6 +39,14 @@
 - None
 
 ## Edge Case Tests
+(Automated — checking game engine guardrails)
 - Boss without prereqs: BLOCKED (correct)
 - Authorize without briefing: BLOCKED (correct)
 - Blacklisted supplier: BLOCKED+PENALTY (correct)
+
+## LLM Solution Test
+- **Won:** yes
+- **Resolved:** 15
+- **Quality Score:** 84.5%
+- **Tokens Remaining:** 3
+- **Turns Used:** 79/100
