@@ -269,6 +269,33 @@ class SupportTools:
                 f"Unknown team '{team}'. Available: {', '.join(sorted(valid_teams))}"
             )
 
+        # Check if briefing is required but not prepared
+        if ticket.requires_briefing and not ticket.briefing_prepared:
+            bounce_key = f"briefing_bounce_{ticket_id}"
+            bounce_count = sum(1 for n in self.agent.notes if n == bounce_key)
+            self.agent.notes.append(bounce_key)
+
+            if bounce_count == 0:
+                # First bounce: free warning
+                return ToolResult(False,
+                    f"The {team} team reviewed the escalation for {ticket_id} and sent it back. "
+                    "They need a VIP Account Briefing before they can take action on a VP-level contact. "
+                    "Use prepare_briefing(ticket_id) to compile evidence from related resolved tickets. "
+                    "Hint: check the knowledge base for 'VIP briefing protocol'."
+                )
+            else:
+                # Repeated attempts: cost a token
+                self.agent.escalation_tokens -= 1
+                self.agent.notes.append(
+                    f"Escalated {ticket_id} without briefing (REJECTED, token lost)"
+                )
+                return ToolResult(False,
+                    f"The {team} team rejected the escalation AGAIN — no briefing prepared. "
+                    f"Lost 1 escalation token. Remaining: {self.agent.escalation_tokens}. "
+                    f"You MUST call prepare_briefing(ticket_id=\"{ticket_id}\") first. "
+                    "Resolve prerequisite tickets, then prepare the briefing."
+                )
+
         # Check if escalation is correct
         if ticket.requires_escalation:
             if team == ticket.requires_escalation:
@@ -453,6 +480,58 @@ class SupportTools:
         return ToolResult(True, self.agent.status_text())
 
     # ------------------------------------------------------------------
+    # Tool: prepare_briefing
+    # ------------------------------------------------------------------
+    def prepare_briefing(self, ticket_id: str = "") -> ToolResult:
+        """Prepare a VIP account briefing by compiling evidence from resolved tickets."""
+        ticket_id = ticket_id.strip()
+
+        if not ticket_id and self.world.active_ticket:
+            ticket_id = self.world.active_ticket.id
+        if not ticket_id:
+            return ToolResult(False, "No ticket specified and no active ticket.")
+
+        ticket = self.world.get_ticket(ticket_id)
+        if not ticket:
+            return ToolResult(False, f"Ticket {ticket_id} not found.")
+
+        if not ticket.requires_briefing:
+            return ToolResult(False, f"Ticket {ticket_id} does not require a briefing.")
+
+        if ticket.briefing_prepared:
+            return ToolResult(True, f"Briefing for {ticket_id} is already prepared.")
+
+        ready, missing = self.world.check_briefing_ready(ticket_id)
+        if not ready:
+            missing_details = []
+            for mid in missing:
+                mt = self.world.get_ticket(mid)
+                if mt:
+                    missing_details.append(f"{mid} ({mt.subject})")
+                else:
+                    missing_details.append(mid)
+            return ToolResult(False,
+                f"Cannot prepare briefing for {ticket_id} yet. "
+                f"Missing evidence from unresolved tickets: {', '.join(missing_details)}. "
+                "Resolve these tickets first to gather the required evidence."
+            )
+
+        # Success!
+        ticket.briefing_prepared = True
+        customer = self.world.get_customer(ticket.customer_id)
+        customer_name = customer.name if customer else "Customer"
+        self.agent.notes.append(f"Prepared VIP briefing for {ticket_id} ({customer_name})")
+
+        return ToolResult(True,
+            f"VIP Account Briefing prepared for {ticket_id} ({customer_name})!\n"
+            "Compiled evidence:\n"
+            "  - API reliability: Rate limit issue identified and resolved (T-008)\n"
+            "  - Bug resolution: Export crash fix confirmed, v2.3 shipping next Tuesday (T-005)\n\n"
+            "The Account Management team now has full context. "
+            "You can proceed to escalate this ticket."
+        )
+
+    # ------------------------------------------------------------------
     # Tool: take_break
     # ------------------------------------------------------------------
     def take_break(self) -> ToolResult:
@@ -490,6 +569,9 @@ class SupportTools:
                 args.get("ticket_id", "")
             ),
             "check_stats": lambda: self.check_stats(),
+            "prepare_briefing": lambda: self.prepare_briefing(
+                args.get("ticket_id", "")
+            ),
             "take_break": lambda: self.take_break(),
         }
 

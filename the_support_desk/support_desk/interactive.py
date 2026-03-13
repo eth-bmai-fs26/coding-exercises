@@ -152,6 +152,11 @@ class InteractiveGame:
             layout=widgets.Layout(gap="4px"),
         )
 
+        # Prepare briefing
+        self._btn_briefing = widgets.Button(
+            description="\U0001f4cb Prepare Briefing", layout=btn_layout, button_style="warning")
+        self._btn_briefing.on_click(lambda _: self._do_briefing())
+
         # Resolve
         self._btn_resolve = widgets.Button(
             description="\u2705 Resolve Ticket", layout=btn_layout, button_style="success")
@@ -179,6 +184,7 @@ class InteractiveGame:
             _label("APPLY ACTION"), action_row,
             _label("USE TEMPLATE"), template_row,
             _label("ESCALATE TO TEAM"), escalate_row,
+            _label("VIP BRIEFING"), self._btn_briefing,
             _label(""), self._btn_resolve,
         ], layout=widgets.Layout(padding="8px"))
 
@@ -259,6 +265,10 @@ class InteractiveGame:
         tid = self.world.active_ticket.id if self.world.active_ticket else ""
         self._do_action("use_template", {"ticket_id": tid, "template": template})
 
+    def _do_briefing(self):
+        tid = self.world.active_ticket.id if self.world.active_ticket else ""
+        self._do_action("prepare_briefing", {"ticket_id": tid})
+
     def _do_resolve(self):
         tid = self.world.active_ticket.id if self.world.active_ticket else ""
         self._do_action("resolve_ticket", {"ticket_id": tid})
@@ -313,6 +323,11 @@ class InteractiveGame:
                 steps.append('<span style="color:#16c79a;">\u2705 Lookup</span>')
             else:
                 steps.append('<span style="color:#666;">\u2b1c Lookup</span>')
+            if t.requires_briefing:
+                if t.briefing_prepared:
+                    steps.append('<span style="color:#16c79a;">\u2705 Briefing</span>')
+                else:
+                    steps.append('<span style="color:#e9a045;">\u2b1c Briefing</span>')
             if t.action_applied:
                 steps.append('<span style="color:#16c79a;">\u2705 Action</span>')
             else:

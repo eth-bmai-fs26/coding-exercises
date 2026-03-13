@@ -81,6 +81,9 @@ class SupportWorld:
         self._late_tickets = [copy.deepcopy(t) for t in LATE_TICKETS]
         self._unlocked_chains: set[str] = set()
 
+        # Briefing evidence tracking (resolved ticket IDs)
+        self.briefing_evidence: set[str] = set()
+
         # Load initial tickets
         for t in INITIAL_TICKETS:
             ticket = copy.deepcopy(t)
@@ -166,6 +169,19 @@ class SupportWorld:
         if self.active_ticket and self.active_ticket.id == ticket.id:
             self.active_ticket = None
         self.resolved_tickets.append(ticket)
+        self.briefing_evidence.add(ticket.id)
+
+    def check_briefing_ready(self, ticket_id: str) -> tuple[bool, list[str]]:
+        """Check if all prerequisites for a ticket's briefing are met.
+
+        Returns (ready, missing_ticket_ids).
+        """
+        ticket = self.get_ticket(ticket_id)
+        if not ticket or not ticket.requires_briefing:
+            return False, []
+        missing = [tid for tid in ticket.briefing_prerequisites
+                   if tid not in self.briefing_evidence]
+        return len(missing) == 0, missing
 
     def queue_summary(self) -> str:
         """Summary of current queue state."""

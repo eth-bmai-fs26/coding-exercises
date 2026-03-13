@@ -152,6 +152,11 @@ class Ticket:
     unlocks_ticket: str = ""            # resolving this ticket adds another to queue
     requires_resolved: str = ""         # can't fully resolve until this ticket is done
 
+    # VIP briefing mechanic (boss fight)
+    requires_briefing: bool = False                                  # must prepare_briefing before escalation
+    briefing_prerequisites: list[str] = field(default_factory=list)  # ticket IDs that must be resolved first
+    briefing_prepared: bool = False                                  # True after prepare_briefing succeeds
+
 
 # ---------------------------------------------------------------------------
 # Knowledge Base Article

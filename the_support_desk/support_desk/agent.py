@@ -43,6 +43,11 @@ ACTION: use_template(ticket_id="T-001", template="password_reset")
   known_bug_eta, feature_request_logged, sso_guide, escalation_ack,
   refund_confirmation, spam_close.
 
+ACTION: prepare_briefing(ticket_id="T-007")
+  Prepare a VIP Account Briefing for high-value escalation tickets. Compiles
+  evidence from related resolved tickets. Required before escalating VIP
+  retention cases. Will fail if prerequisite tickets haven't been resolved yet.
+
 ACTION: resolve_ticket(ticket_id="T-001")
   Mark a ticket as resolved. Scores your handling quality (CSAT).
   Make sure you've done everything needed BEFORE resolving!

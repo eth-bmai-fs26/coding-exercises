@@ -147,18 +147,21 @@ INITIAL_TICKETS = [
         correct_template="feature_request_logged",
         csat_potential=2,
     ),
-    # --- VIP Escalation (= dragon fight!) ---
+    # --- VIP Escalation (= dragon fight! requires briefing preparation) ---
     Ticket(
         id="T-007", customer_id="C-104", category=TicketCategory.VIP,
         priority=TicketPriority.CRITICAL, created_turn=0,
         subject="Considering switching to competitor",
         message="This is Elena Rossi, VP of Operations at GlobalBank. We've been customers "
                 "for 4 years and I'm frankly disappointed with the level of service. "
-                "Our API has been unreliable, our last 3 support tickets took over a week "
-                "to resolve, and I've had a meeting with your competitor yesterday. "
-                "I need to speak with someone senior about our contract renewal.",
+                "Our API has been unreliable (David from our team reported rate limit issues), "
+                "the export crash that Isla reported has been going on for THREE releases, "
+                "and I've had a meeting with your competitor yesterday. "
+                "I need to speak with someone senior about our contract C-104 renewal.",
         requires_lookup=True, lookup_query="account C-104",
         requires_escalation="account_management",
+        requires_briefing=True,
+        briefing_prerequisites=["T-005", "T-008"],
         csat_potential=8,
         chain_id="vip_elena",
     ),
@@ -410,7 +413,10 @@ KNOWLEDGE_BASE = [
                 "DO NOT attempt to handle retention yourself. "
                 "DO NOT promise discounts, contract changes, or feature timelines. "
                 "Reply acknowledging their concerns and confirm AM will follow up within 24h. "
-                "Escalation team: account_management.",
+                "Escalation team: account_management.\n\n"
+                "IMPORTANT: For high-value accounts ($100K+) threatening to leave, a VIP "
+                "Account Briefing must be prepared FIRST using prepare_briefing(ticket_id). "
+                "See 'VIP Account Briefing Protocol' for details.",
         actionable=False, action_hint="",
     ),
     KBArticle(
@@ -494,6 +500,24 @@ KNOWLEDGE_BASE = [
                 "- C-105 (Frank Okafor): Charged $199.00 on Mar 10 for annual upgrade. "
                 "Single charge, legitimate — but customer says it was accidental.",
         actionable=False,
+    ),
+    KBArticle(
+        id="KB-016", title="VIP Account Briefing Protocol",
+        category=TicketCategory.VIP,
+        keywords=["vip", "briefing", "prepare", "account briefing", "contract",
+                  "C-104", "competitor", "retention", "elena", "prepare_briefing"],
+        content="CRITICAL: Before escalating high-value VIP retention cases, you MUST "
+                "prepare an Account Briefing using prepare_briefing(ticket_id). "
+                "The briefing compiles evidence from related resolved tickets to give "
+                "the Account Management team full context.\n\n"
+                "Prerequisites for Elena Rossi (T-007):\n"
+                "1. Resolve the API reliability issue (T-008 — David Liu's rate limit ticket)\n"
+                "2. Resolve the open bug report (T-005 — Isla Chen's export crash)\n"
+                "3. Once both are resolved, call prepare_briefing(ticket_id=\"T-007\")\n\n"
+                "Only AFTER the briefing is prepared can you escalate to Account Management. "
+                "Escalating without the briefing will be rejected — AM needs the full picture "
+                "before scheduling a call with a VP-level contact.",
+        actionable=True, action_hint="prepare_briefing",
     ),
 ]
 
