@@ -274,6 +274,7 @@ CHAIN_ORDERS = {
                 "Please confirm the replacement supplier and batch number from the "
                 "ChemPure quality rejection resolution. "
                 "Use place_order to confirm the spec with MechPro.",
+        requires_lookup=True, lookup_query="mechpro engineering specs",
         requires_action="place_order",
         correct_template="reorder_confirmation",
         score_potential=3,
@@ -315,6 +316,7 @@ CHAIN_ORDERS = {
                 "dispute, we need to either renegotiate terms or find an alternative "
                 "supplier for industrial parts.\n\n"
                 "Escalate to procurement for contract renewal negotiation.",
+        requires_lookup=True, lookup_query="supplier dispute pricing",
         requires_escalation="procurement",
         correct_template="dispute_resolution",
         score_potential=4,

@@ -56,6 +56,11 @@ class SupplyTools:
         if order.status == OrderStatus.RESOLVED:
             return ToolResult(False, f"Order {order_id} is already resolved.")
 
+        # Track if this order has been read before (regardless of which order is active).
+        # This ensures the LLM always sees progress info when re-visiting an order,
+        # even when oscillating between two different orders.
+        is_reread = order.has_been_read
+
         order.has_been_read = True
         order.status = OrderStatus.IN_PROGRESS
         self.world.active_order = order
@@ -74,7 +79,7 @@ class SupplyTools:
         sla_info = f"SLA: {order.priority.sla_turns} turns"
         value_info = f" | Value: EUR {order.order_value:,}" if order.order_value else ""
 
-        return ToolResult(True,
+        base_text = (
             f"--- Order {order.id} ---\n"
             f"Subject: {order.subject}\n"
             f"Category: {order.category.value} | "
@@ -82,6 +87,34 @@ class SupplyTools:
             f"{entity_info}\n\n"
             f"Details:\n{order.message}"
         )
+
+        # On re-read: append progress so the LLM knows what it already did
+        if is_reread:
+            progress = ["\n\n⚠️ YOU ALREADY HAVE THIS ORDER OPEN. Progress so far:"]
+            progress.append(f"  KB lookup: {'done' if order.lookup_done else 'not done'}")
+            if order.action_applied:
+                progress.append(f"  Main action ({order.requires_action}): COMPLETED")
+            elif order.requires_action:
+                progress.append(f"  Main action needed: {order.requires_action} — DO THIS NEXT")
+            if order.requires_claim:
+                progress.append(f"  Claim filed: {'YES' if order.claim_filed else 'NO — REQUIRED'}")
+            if order.requires_escalation:
+                if order.escalated_to:
+                    progress.append(f"  Escalated to: {order.escalated_to}")
+                else:
+                    progress.append(f"  Escalation needed: {order.requires_escalation}")
+            progress.append(f"  Client notified: {'yes' if order.notification_sent else 'no'}")
+            if order.notification_sent and order.action_applied:
+                progress.append("  → All steps done. CLOSE THIS ORDER NOW.")
+            elif order.action_applied and not order.notification_sent:
+                if order.correct_template:
+                    progress.append(f"  → Action done. Notify client with '{order.correct_template}' template, then close.")
+                else:
+                    progress.append("  → Action done. Notify client, then close.")
+            progress.append("  DO NOT re-read this order again. Take the next action.")
+            base_text += "\n".join(progress)
+
+        return ToolResult(True, base_text)
 
     # ------------------------------------------------------------------
     # Tool: lookup_kb
@@ -389,7 +422,7 @@ class SupplyTools:
             f"Import records compiled for period: {period or 'past 30 days'}.\n"
             "Records include: 47 import shipments, 12 customs clearances, "
             "3 rejected shipments, all supplier invoices.\n"
-            "Ready for submission."
+            "Records compiled successfully. Notify the client and close this audit order."
         )
 
     # ------------------------------------------------------------------
