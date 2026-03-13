@@ -1,3 +1,14 @@
 /.claude
 /.idea
 /.vscode
+
+# Secrets
+.env
+.env.*
+
+# Game logs
+*_log_*.json
+
+# Python
+__pycache__/
+*.pyc
