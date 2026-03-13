@@ -124,6 +124,11 @@ mkdir -p "$ARTIFACTS_DIR"
 
 run_test() {
     log_step "TEST — Running rule-based solution"
+    echo "  Exercise: $EXERCISE_DIR"
+    echo "  Package: $PKG_NAME"
+    echo "  Solutions: $SOLUTIONS_NB"
+    echo ""
+    echo "  [1/3] Extracting think_rule_based from solutions notebook..."
 
     cd "$EXERCISE_DIR"
 
@@ -162,6 +167,8 @@ if not rb_code:
     print("ERROR: Could not find think_rule_based in solutions notebook")
     sys.exit(1)
 
+print("  [2/3] Running rule-based solution (100 turns max)...", flush=True)
+
 # Execute it to define the function
 exec_globals = {}
 # Import everything the function might need
@@ -181,6 +188,10 @@ else:
     # Fallback: use play_rule_based
     play_rb = getattr(pkg, 'play_rule_based')
     result = play_rb(think_fn, max_turns=100, show_display=False)
+
+won = result.get('won', False)
+print(f"  Rule-based: {'WON' if won else 'LOST'} | Resolved: {result.get('resolved')} | Quality: {result.get('quality')}% | Tokens: {result.get('tokens')} | Turns: {result.get('turns')}", flush=True)
+print(f"  [3/3] Generating test report...", flush=True)
 
 # ── Read and copy game log ──
 import glob, shutil
@@ -258,6 +269,8 @@ if game_log_data and 'turns' in game_log_data:
         report.append("- None")
     report.append("")
 
+print("  Running edge case tests (guardrails)...", flush=True)
+
 # Edge case tests
 report.append("## Edge Case Tests")
 report.append("(Automated — checking game engine guardrails)")
@@ -282,15 +295,23 @@ report.append("")
 # ── LLM solution test (if GEMINI_API_KEY is available) ──
 gemini_key = os.environ.get('GEMINI_API_KEY', '')
 if gemini_key and gemini_key != 'paste-your-key-here':
+    print("", flush=True)
+    print("  ╔══════════════════════════════════════════════╗", flush=True)
+    print("  ║  LLM SOLUTION TEST (Gemini API)             ║", flush=True)
+    print("  ║  This makes ~100 API calls, takes 2-5 min   ║", flush=True)
+    print("  ╚══════════════════════════════════════════════╝", flush=True)
+    print("", flush=True)
     report.append("## LLM Solution Test")
     try:
         # Ensure google-genai is installed
+        print("  Installing/checking google-genai...", flush=True)
         try:
             from google import genai
         except ImportError:
             import subprocess
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'google-genai', '--quiet'])
             from google import genai
+        print("  Extracting think_llm from solutions notebook...", flush=True)
         # Extract think_llm and all its helpers from solutions notebook
         llm_code_cells = []
         for cell in nb['cells']:
@@ -525,25 +546,50 @@ PYTEST
 }
 
 # ============================================================================
-# Step 2: CRITIC + IMPROVER — Single claude call per iteration
+# Step 2: CRITIC + IMPROVER with GUARD — Inner loop
 # ============================================================================
 
 run_critique_and_improve() {
     local iteration=$1
-    log_step "CRITIQUE + IMPROVE (iteration $iteration)"
 
-    # Combine critic and improver into one prompt
-    # Build the prompt
     CRITIC_PROMPT=$(cat "$PROMPTS_DIR/critic.md")
     IMPROVER_PROMPT=$(cat "$PROMPTS_DIR/improver.md")
+    GUARD_PROMPT=$(cat "$PROMPTS_DIR/guard.md")
     CONCEPT_LINE=""
     if [ -f "$ARTIFACTS_DIR/concept.md" ]; then
         CONCEPT_LINE="- Concept: $ARTIFACTS_DIR/concept.md"
     fi
 
-    cat > "$ARTIFACTS_DIR/_iterate_prompt.txt" << PROMPT_EOF
-You are reviewing and improving an agentic AI coding exercise.
+    local max_guard_passes=2
+    local guard_feedback=""
 
+    for guard_pass in $(seq 1 "$max_guard_passes"); do
+
+        # ── CRITIC + IMPROVER ──────────────────────────────────────────
+        if [ "$guard_pass" -eq 1 ]; then
+            log_step "CRITIQUE + IMPROVE (iteration $iteration)"
+        else
+            log_step "REVISION (iteration $iteration, guard pass $guard_pass)"
+        fi
+
+        # Build the prompt — include guard feedback if this is a revision
+        GUARD_SECTION=""
+        if [ -n "$guard_feedback" ]; then
+            GUARD_SECTION="
+## IMPORTANT: Guard Agent Feedback (from previous pass)
+
+The guard agent reviewed your previous changes and found over-automation issues.
+You MUST address these before proceeding. Here is the guard's feedback:
+
+$guard_feedback
+
+Fix these issues: revert over-automated code and replace with prompt/memory/guardrail improvements.
+"
+        fi
+
+        cat > "$ARTIFACTS_DIR/_iterate_prompt.txt" << PROMPT_EOF
+You are reviewing and improving an agentic AI coding exercise.
+$GUARD_SECTION
 ## Phase 1: CRITIQUE
 
 Read ALL of these files carefully — especially the full raw game logs:
@@ -558,10 +604,13 @@ If it fails, you MUST understand exactly why by reading the raw log turn by turn
 Don't just look at the summary — read the actual sequence of actions and results.
 
 For every problem you find, trace it back to the root cause in the code:
-- Is it a missing autopilot case? (order type not handled deterministically)
-- Is it a missing guardrail? (LLM outputs a bad action that should be intercepted)
-- Is it a prompt issue? (LLM doesn't have enough info to make the right decision)
-- Is it a game engine bug? (scoring, ordering, or gating logic is wrong)
+- Is it a prompt issue? (LLM doesn't have enough info or clear enough rules to decide)
+- Is it a memory/context issue? (LLM can't see what it already did, or KB results are missing)
+- Is it a missing guardrail? (LLM outputs a catastrophic action that should be blocked)
+- Is it a game engine bug? (scoring, ordering, or gating logic is wrong in tools.py/game.py)
+IMPORTANT: Do NOT fix LLM decision failures by adding logic to the autopilot.
+The autopilot should ONLY handle: queue management, system alerts, KB lookups, boss fights.
+Fix LLM failures by improving the prompt, memory, or guardrails instead.
 
 Analyze using this framework:
 
@@ -592,15 +641,93 @@ The student notebook is: $EXERCISE_DIR/${EXERCISE_NAME}.ipynb
 8. If no issues found: write 'Verdict: PASS' and 'NO_ISSUES' in issues.md
 PROMPT_EOF
 
-    claude -p "$(cat "$ARTIFACTS_DIR/_iterate_prompt.txt")" \
-        --allowedTools "Read,Write,Edit,Bash,Glob,Grep" \
-        --permission-mode "bypassPermissions" \
-        --add-dir "$EXERCISES_DIR" \
-        2>&1 | tail -30
+        echo ""
+        echo "  ╔══════════════════════════════════════════════╗"
+        echo "  ║  CRITIC + IMPROVER (Claude CLI)              ║"
+        echo "  ║  Reading logs, analyzing, fixing code...     ║"
+        echo "  ║  This takes 2-5 min. Output shown below.     ║"
+        echo "  ╚══════════════════════════════════════════════╝"
+        echo ""
 
-    rm -f "$ARTIFACTS_DIR/_iterate_prompt.txt"
+        claude -p "$(cat "$ARTIFACTS_DIR/_iterate_prompt.txt")" \
+            --allowedTools "Read,Write,Edit,Bash,Glob,Grep" \
+            --permission-mode "bypassPermissions" \
+            --add-dir "$EXERCISES_DIR" \
+            2>&1
 
-    log_ok "Critique + improve complete for iteration $iteration"
+        local exit_code=$?
+        rm -f "$ARTIFACTS_DIR/_iterate_prompt.txt"
+
+        if [ $exit_code -ne 0 ]; then
+            log_err "Claude CLI exited with code $exit_code"
+            break
+        fi
+        log_ok "Critique + improve complete"
+
+        # ── GUARD REVIEW ───────────────────────────────────────────────
+        log_step "GUARD REVIEW (iteration $iteration, pass $guard_pass)"
+
+        echo ""
+        echo "  ╔══════════════════════════════════════════════╗"
+        echo "  ║  GUARD AGENT — Checking for over-automation  ║"
+        echo "  ╚══════════════════════════════════════════════╝"
+        echo ""
+
+        cat > "$ARTIFACTS_DIR/_guard_prompt.txt" << GUARD_EOF
+You are the Agentic AI Guard Agent.
+
+$GUARD_PROMPT
+
+## Your Task
+
+Review the LLM solution in the solutions notebook and check for over-automation.
+
+Files to review:
+- Solutions notebook: $SOLUTIONS_NB (read the LLM solution cell — look for _auto_handle, think_llm, _build_memory, SYSTEM_PROMPT)
+- Improvement log: $ARTIFACTS_DIR/improvement_log_iter${iteration}.md (what changes were just made)
+- Issues file: $ARTIFACTS_DIR/issues.md (what the critic found)
+
+Write your review to: $ARTIFACTS_DIR/guard_review.md
+
+If you find over-automation, be SPECIFIC about:
+1. Which code is over-automated (quote the lines)
+2. Why it defeats the educational purpose
+3. Exactly how to fix it (what to move from autopilot to prompt/memory/guardrails)
+GUARD_EOF
+
+        claude -p "$(cat "$ARTIFACTS_DIR/_guard_prompt.txt")" \
+            --allowedTools "Read,Write,Edit,Glob,Grep" \
+            --permission-mode "bypassPermissions" \
+            --add-dir "$EXERCISES_DIR" \
+            2>&1
+
+        rm -f "$ARTIFACTS_DIR/_guard_prompt.txt"
+
+        # Check guard verdict
+        if [ ! -f "$ARTIFACTS_DIR/guard_review.md" ]; then
+            log_warn "Guard review not generated — skipping guard check"
+            break
+        fi
+
+        if grep -q "Verdict: PASS" "$ARTIFACTS_DIR/guard_review.md" 2>/dev/null; then
+            log_ok "Guard approved — no over-automation detected"
+            break
+        fi
+
+        if grep -q "OVER_AUTOMATED" "$ARTIFACTS_DIR/guard_review.md" 2>/dev/null; then
+            log_warn "Guard flagged over-automation — sending feedback for revision"
+            guard_feedback=$(cat "$ARTIFACTS_DIR/guard_review.md")
+
+            if [ "$guard_pass" -eq "$max_guard_passes" ]; then
+                log_warn "Max guard passes reached — proceeding with current solution"
+                break
+            fi
+        else
+            log_ok "Guard review complete"
+            break
+        fi
+
+    done
 }
 
 # ============================================================================
@@ -659,11 +786,19 @@ print(m.group(1) if m else '0')
 
     if grep -q "Verdict: PASS" "$ARTIFACTS_DIR/issues.md" 2>/dev/null; then
         log_ok "Exercise passes review!"
-        # In automated mode, we stop when critic says PASS
+        # Show what the critic said
+        echo ""
+        echo "  Critic verdict:"
+        head -20 "$ARTIFACTS_DIR/issues.md" | sed 's/^/    /'
+        echo ""
         break
     fi
 
     log_warn "Issues found — will re-test in next iteration"
+    echo ""
+    echo "  Issues summary:"
+    grep -E "^###|^\*\*|^1\.|^2\.|^3\." "$ARTIFACTS_DIR/issues.md" 2>/dev/null | head -10 | sed 's/^/    /'
+    echo ""
 done
 
 # ── Summary ──────────────────────────────────────────────────────────────

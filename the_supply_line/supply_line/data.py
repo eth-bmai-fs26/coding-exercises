@@ -129,6 +129,7 @@ class Order:
     requires_lookup: bool = False
     lookup_query: str = ""
     requires_action: str = ""           # e.g. "place_order", "reject_shipment"
+    requires_claim: bool = False        # quality orders: must file_claim
     requires_escalation: str = ""       # department to escalate to
     correct_template: str = ""
     order_value: int = 0                # EUR value
@@ -141,6 +142,7 @@ class Order:
     escalated_to: str = ""
     escalation_response: str = ""
     escalation_turn: int = -1
+    claim_filed: bool = False
 
     # Scoring
     score_potential: int = 5

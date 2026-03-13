@@ -310,6 +310,7 @@ class SupplyTools:
 
         if self.world.active_order:
             self.world.active_order.action_applied = True
+            self.world.active_order.claim_filed = True
 
         return ToolResult(True,
             f"Claim filed against {supplier} for EUR {amount or 'pending assessment'}. "
@@ -707,6 +708,11 @@ class SupplyTools:
                 feedback.append(
                     f"Required action '{order.requires_action}' not applied ({order.penalty_wrong_action})"
                 )
+
+            # Should have filed a claim if required (quality orders)
+            if order.requires_claim and not order.claim_filed:
+                score -= 2
+                feedback.append("Quality issue requires filing a claim against supplier (-2)")
 
             # Should have escalated if required
             if order.requires_escalation and order.escalated_to != order.requires_escalation:

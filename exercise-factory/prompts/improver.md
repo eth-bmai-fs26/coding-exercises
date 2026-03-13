@@ -26,6 +26,27 @@ You are fixing issues identified by the critic in an agentic AI coding exercise.
 - **Update the interactive mode** if new tools or buttons are needed
 - **Update TOOLS_DESCRIPTION** if tool signatures change
 
+### CRITICAL: Do NOT over-automate the LLM solution
+
+The LLM solution exists to teach students agentic AI. The autopilot should ONLY handle:
+- Queue management (pick next order, switch away from blocked bosses)
+- System alerts (trivial acknowledge)
+- KB lookups (deterministic trigger)
+- Boss fight state machines (dependency resolution)
+
+The LLM must make the actual decisions: which action to take, which supplier, what parameters,
+which template, whether to escalate. If the LLM makes a mistake:
+- **DO** improve the system prompt (add clearer rules)
+- **DO** add a guardrail (block the catastrophic action, redirect to re-read)
+- **DO** improve the memory/context (include more relevant info)
+- **DO NOT** hardcode the correct answer in the autopilot
+- **DO NOT** add supplier routing, template selection, or action routing to _auto_handle
+
+If you move LLM decisions into the autopilot, you've just written a second rule-based solution
+and the exercise loses its educational value. The LLM solution quality may be 85-95% instead of
+100% — that's fine and expected. It must WIN (15 resolved, 80%+ quality, keep tokens) but
+doesn't need to be perfect.
+
 ## Fix Priority Order
 
 1. **Deadlocks first** — any contradictory guardrail that makes the game unwinnable

@@ -195,6 +195,7 @@ INITIAL_ORDERS = [
                 "NOTE: This coating is also a critical component for Project Aurora.",
         requires_lookup=True, lookup_query="quality control rejection",
         requires_action="reject_shipment",
+        requires_claim=True,
         correct_template="quality_issue",
         score_potential=5,
         chain_id="chempure_quality",
@@ -302,6 +303,7 @@ CHAIN_ORDERS = {
                 "compile_records. Submit within 48 hours.",
         requires_lookup=True, lookup_query="compliance audit procedures",
         requires_action="compile_records",
+        correct_template="compliance_status",
         score_potential=4,
     ),
     # T-009 (dispute) → T-017 (contract renewal)
@@ -314,6 +316,7 @@ CHAIN_ORDERS = {
                 "supplier for industrial parts.\n\n"
                 "Escalate to procurement for contract renewal negotiation.",
         requires_escalation="procurement",
+        correct_template="dispute_resolution",
         score_potential=4,
     ),
 }
@@ -394,6 +397,7 @@ LATE_ORDERS = [
                 "Recommend: file claim for affected units and notify client.",
         requires_lookup=True, lookup_query="quality control rejection",
         requires_action="file_claim",
+        requires_claim=True,
         correct_template="quality_issue",
         score_potential=4,
     ),

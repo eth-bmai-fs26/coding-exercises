@@ -12,3 +12,6 @@
 # Python
 __pycache__/
 *.pyc
+
+# Exercise factory — generated artifacts (logs, reports, prompts)
+exercise-factory/artifacts/
