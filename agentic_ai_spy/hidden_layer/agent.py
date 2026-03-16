@@ -192,6 +192,11 @@ def run_agent(
         # PERCEIVE: auto-scan each turn
         observation = tools.execute("scan", {}).message
 
+        # On the first turn, prepend the mission briefing to the observation.
+        # The agent finds a briefing document at the insertion point.
+        if turn == 0:
+            observation = MISSION_BRIEFING + "\n" + observation
+
         # Build context for the think function
         history.append({"role": "observation", "content": observation})
 
@@ -203,6 +208,10 @@ def run_agent(
             action_text = "TOOL: scan()"
             think_error = str(e)
             history.append({"role": "error", "content": f"Think function error: {e}"})
+            # Print error so students notice immediately
+            if turn < 3:
+                print(f"\n⚠️  think_fn crashed: {e}")
+                print("    Fix your think_llm() function. The agent is stuck!\n")
 
         # Parse the action
         tool_name, args = parse_tool_call(action_text)
