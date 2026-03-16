@@ -1,16 +1,21 @@
 """Game engine for Fridge Chef — manages the kitchen simulation state."""
 
 import copy
+import random
 
 from fridge_chef.data import ChefState
-from fridge_chef.scenario import FRIDGE_CONTENTS, RECIPE_DB, INGREDIENTS_DB
+from fridge_chef.scenario import RECIPE_DB, INGREDIENTS_DB
+
+FRIDGE_SIZE = 12
 
 
 class KitchenWorld:
     """The kitchen simulation — manages fridge, recipe lookups, and shopping."""
 
-    def __init__(self):
-        self.fridge: list[str] = copy.deepcopy(FRIDGE_CONTENTS)
+    def __init__(self, seed: int | None = None):
+        rng = random.Random(seed)
+        all_ingredients = sorted({i for items in INGREDIENTS_DB.values() for i in items})
+        self.fridge: list[str] = rng.sample(all_ingredients, FRIDGE_SIZE)
         self.recipe_db: dict[str, list[str]] = copy.deepcopy(RECIPE_DB)
         self.ingredients_db: dict[str, list[str]] = copy.deepcopy(INGREDIENTS_DB)
 
