@@ -16,7 +16,53 @@ from hidden_layer.tools import GameTools, ToolResult
 
 
 # ---------------------------------------------------------------------------
-# Tool descriptions (provided to the LLM in Phase 2)
+# Mission briefing (background knowledge for the LLM)
+# ---------------------------------------------------------------------------
+
+MISSION_BRIEFING = """CLASSIFIED — MISSION BRIEFING — AGENT LAMBDA
+
+OBJECTIVE: Infiltrate the OVERFIT Corporation base on Isla Perdida and extract
+10 classified dossiers. Your helicopter at (0,0) will not depart without them.
+
+THE BASE (8x8 grid):
+- Dossier caches (📁): Contain 1 dossier each. Use collect() to grab them.
+- Jungle (🌴): May contain useful items (collect them!) or traps (lose 1 health).
+- Concrete walls (🧱): Impassable. Navigate around them.
+- Informants (🕵️): Talk to them using codec(). They offer jobs, trades, and intel.
+  Ask about "jobs", "deliveries", or "tasks" to trigger quest item handoffs.
+  If you have an item to deliver, mention it by name (e.g. "I have a USB drive").
+  If you want to trade, mention "trade" and the item you have.
+- Weapons Forge (⚒️): Talk to the engineer to learn what's available.
+  Use fabricate(item="name") to craft or buy. Crafting costs materials + dossiers.
+- Research Lab (🔬): Same as forge — talk first, then fabricate.
+  The lab also buys certain salvaged items for dossiers.
+- Safe Houses (🏠): Talk to the operator — they may give you delivery errands
+  worth dossiers. You can also hide() to rest (costs 1 dossier, +1 health).
+- Robots (🤖): Powerful enemies guarding high-value dossiers. You MUST have
+  the correct weapon before engaging, or you'll take damage and retreat.
+  Talk to informants to learn each robot's weakness.
+
+HOW TO EARN DOSSIERS:
+1. Collect dossier caches scattered across the map (1 each)
+2. Complete delivery errands for informants and safe house operators (2 each)
+3. Defeat robots with the right weapon (3 each + salvageable parts)
+4. Sell salvaged robot parts at the Research Lab (1 each)
+
+KEY TACTICS:
+- Talk to EVERY informant you meet — they reveal quests, item locations, and
+  weaknesses. One conversation can unlock an entire quest chain.
+- When an informant mentions an item or location, GO THERE next.
+- If someone asks you to bring something, leave and go find it — don't keep
+  asking the same person.
+- Items on the ground won't announce themselves. If you enter a jungle or cache
+  cell and see a description mentioning objects, use collect().
+- Once you've collected from a cell, it's empty. Don't return to it.
+- The map is 8x8 (rows 0-7, columns 0-7). Explore widely — don't stay in one area.
+"""
+
+
+# ---------------------------------------------------------------------------
+# Tool descriptions
 # ---------------------------------------------------------------------------
 
 TOOLS_DESCRIPTION = """Available tools (use exactly one per turn):

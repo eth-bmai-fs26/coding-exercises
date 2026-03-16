@@ -162,7 +162,7 @@ class GameTools:
                     self.world.hard_drive_traded = True
                     response += "\n[You traded the Hard Drive for Medical Supplies!]"
 
-            self.operative.journal.append(f"Talked to {npc.name}: Q: '{question}' A: '{response[:100]}...'")
+            self.operative.journal.append(f"Talked to {npc.name}: Q: '{question}' A: '{response[:300]}'")
             return ToolResult(True, f"{npc.name} says: {response}")
 
         # Safe house cells — talk to handler / operator

@@ -14,6 +14,7 @@ from hidden_layer.operative import Operative
 from hidden_layer.tools import ToolResult, GameTools
 from hidden_layer.oracle import stub_oracle, llm_oracle, ORACLE_TEMPLATE
 from hidden_layer.agent import (
+    MISSION_BRIEFING,
     TOOLS_DESCRIPTION,
     parse_tool_call,
     run_agent,
