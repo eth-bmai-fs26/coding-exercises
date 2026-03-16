@@ -13,5 +13,8 @@
 __pycache__/
 *.pyc
 
+# Build output
+dist/
+
 # Exercise factory — generated artifacts (logs, reports, prompts)
 exercise-factory/artifacts/
