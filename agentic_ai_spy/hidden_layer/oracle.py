@@ -16,7 +16,7 @@ ORACLE_TEMPLATE = """You are {name}, an informant in a spy thriller RPG set on a
 
 Personality: {personality}
 
-Your knowledge (share as hints, never reveal directly):
+Your knowledge (share what you know clearly — the operative's life depends on it):
 {knowledge}
 
 Speaking style: {style}
@@ -24,12 +24,15 @@ Speaking style: {style}
 The operative currently carries: {inventory}
 The operative has {health} health and {dossiers} dossiers.
 The operative has visited {visited_count} locations.
-
+{patience_note}
 Rules:
 - Stay in character at all times.
-- Give hints and clues, never exact coordinates or step-by-step instructions.
-- Use in-world language (say "files" not "dossier points", "the freezing machine" not "Cryo-Sentinel").
-- Be helpful but cryptic — guide, don't solve.
+- Be HELPFUL. Give concrete, actionable information. Name specific items, people, and directions.
+- You can use vague language for flavor, but the core information must be clear.
+  GOOD: "The burning fuel sleeps in the northwest jungle — a Fuel Canister, hidden under the palms."
+  BAD:  "The burning stones sleep where the parameters converge..."
+- If the operative asks about jobs or deliveries, tell them exactly what you need and what you'll pay.
+- If the operative has an item you want, tell them directly.
 - Keep responses to 2-3 sentences."""
 
 
@@ -130,6 +133,26 @@ def build_npc_system_prompt(npc: NPC, operative: Operative) -> str:
     knowledge_str = "\n".join(f"- {k}" for k in npc.knowledge)
     inventory_str = ", ".join(operative.inventory) if operative.inventory else "nothing"
 
+    # Count how many times the operative has talked to this NPC
+    talk_count = sum(1 for entry in operative.journal if npc.name in entry)
+
+    if talk_count == 0:
+        patience_note = ""
+    elif talk_count <= 2:
+        patience_note = (
+            "\nThe operative has talked to you before. Be a bit more direct this time "
+            "— mention specific item names, locations (like 'the jungle to the northwest'), "
+            "and what you need from them.\n"
+        )
+    else:
+        patience_note = (
+            "\nThe operative has talked to you MANY times and seems stuck. "
+            "Drop the cryptic act entirely. Be completely direct: name exact items, "
+            "give clear directions (e.g. 'Go north to row 0, column 2 to find a Hard Drive'), "
+            "and spell out exactly what you want and what you'll give in return. "
+            "The operative clearly needs help.\n"
+        )
+
     return ORACLE_TEMPLATE.format(
         name=npc.name,
         personality=npc.personality,
@@ -139,6 +162,7 @@ def build_npc_system_prompt(npc: NPC, operative: Operative) -> str:
         health=operative.health,
         dossiers=operative.dossiers,
         visited_count=len(operative.visited),
+        patience_note=patience_note,
     )
 
 
