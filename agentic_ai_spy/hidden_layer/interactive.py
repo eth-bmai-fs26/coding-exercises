@@ -1,7 +1,6 @@
 """Interactive play mode for The Hidden Layer — play the game yourself in a notebook."""
 
-import time
-from typing import Optional
+from typing import Callable, Optional
 
 from IPython.display import display, clear_output, HTML
 import ipywidgets as widgets
@@ -21,19 +20,37 @@ from hidden_layer.display import (
 
 
 class InteractiveGame:
-    """Interactive game UI using ipywidgets."""
+    """Interactive game UI using ipywidgets.
 
-    def __init__(self, oracle_fn=None):
-        self.operative, self.world, self.tools = self._create_game()
+    Accepts an optional ``game_factory`` callable so that the micro and
+    training missions can reuse the same UI with their custom worlds/tools.
+
+    ``game_factory()`` must return ``(operative, world, tools)``.
+    If omitted, the full 8x8 game is created.
+    """
+
+    def __init__(
+        self,
+        oracle_fn: Optional[Callable] = None,
+        game_factory: Optional[Callable] = None,
+        max_turns: int = 100,
+        goal_dossiers: int = 10,
+        title: str = "THE HIDDEN LAYER",
+    ):
+        if game_factory is not None:
+            self.operative, self.world, self.tools = game_factory()
+        else:
+            self.operative, self.world, self.tools = self._create_full_game()
         self.tools.set_oracle(oracle_fn or stub_oracle)
+        self.max_turns = max_turns
+        self.goal_dossiers = goal_dossiers
+        self.title = title
         self.turn = 0
-        self.max_turns = 100
         self.last_action = ""
-        self.last_result = "Your mission begins! Infiltrate the base and collect 10 dossiers."
+        self.last_result = f"Your mission begins! Collect {goal_dossiers} dossiers to complete the mission."
         self.game_over = False
 
         # -- Widgets --
-        # Display area
         self._game_display = widgets.Output()
 
         # Direction buttons (cross layout)
@@ -80,7 +97,7 @@ class InteractiveGame:
             layout=widgets.Layout(gap="4px"),
         )
 
-        # Codec input
+        # Talk input
         self._talk_input = widgets.Text(
             placeholder='Say something... (e.g. "Do you have a job for me?")',
             layout=widgets.Layout(flex="1"),
@@ -143,7 +160,7 @@ class InteractiveGame:
             layout=widgets.Layout(max_width="700px"),
         )
 
-    def _create_game(self):
+    def _create_full_game(self):
         world = GameWorld()
         operative = Operative()
         tools = GameTools(operative, world)
@@ -230,7 +247,7 @@ class InteractiveGame:
                     '<div style="text-align:center;padding:12px;background:#2a1a0a;'
                     'border:2px solid #e9a045;border-radius:8px;margin-top:8px;">'
                     '<span style="font-size:24px;color:#e9a045;'
-                    f'font-weight:bold;">TIME\'S UP! {self.operative.dossiers}/10 dossiers</span></div>'
+                    f'font-weight:bold;">TIME\'S UP! {self.operative.dossiers}/{self.goal_dossiers} dossiers</span></div>'
                 )
 
         html = f"""
@@ -242,7 +259,7 @@ class InteractiveGame:
   <div style="background:linear-gradient(90deg,#0a1a0a,#1a2a1a);padding:8px 16px;
     display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #00ff41;">
     <span style="color:#00ff41;font-weight:bold;font-size:16px;letter-spacing:2px;">
-      \U0001f575\ufe0f THE HIDDEN LAYER</span>
+      \U0001f575\ufe0f {self.title}</span>
     <span style="color:#00ff41;font-size:13px;font-weight:bold;">INTERACTIVE MODE</span>
     <span style="color:#444;font-size:12px;">({row}, {col})</span>
   </div>
@@ -334,7 +351,7 @@ class InteractiveGame:
 
 
 def play_interactive(oracle_fn=None):
-    """Launch an interactive game session.
+    """Launch an interactive full-mission game session (8x8, 10 dossiers, 100 turns).
 
     Usage in a notebook cell:
         from hidden_layer.interactive import play_interactive
