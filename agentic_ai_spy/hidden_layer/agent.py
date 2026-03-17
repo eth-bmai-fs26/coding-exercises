@@ -95,10 +95,7 @@ TOOL: engage()
   3 dossiers and Scrap Metal.
 
 TOOL: hide()
-  Hide at a safe house. Costs 1 dossier, restores 1 health (max 3).
-
-TOOL: sitrep()
-  Check your current health, dossiers, inventory, and position."""
+  Hide at a safe house. Costs 1 dossier, restores 1 health (max 3)."""
 
 
 # ---------------------------------------------------------------------------

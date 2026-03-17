@@ -395,13 +395,6 @@ class GameTools:
             f"You rest at the safe house. Restored 1 health. Health: {self.operative.health}/{self.operative.MAX_HEALTH}")
 
     # ------------------------------------------------------------------
-    # Tool: sitrep
-    # ------------------------------------------------------------------
-    def sitrep(self) -> ToolResult:
-        """Check current operative state."""
-        return ToolResult(True, self.operative.status_text())
-
-    # ------------------------------------------------------------------
     # Dispatcher
     # ------------------------------------------------------------------
     def execute(self, tool_name: str, args: dict) -> ToolResult:
@@ -415,7 +408,6 @@ class GameTools:
             "use": lambda: self.use(args.get("item", "")),
             "engage": lambda: self.engage(),
             "hide": lambda: self.hide(),
-            "sitrep": lambda: self.sitrep(),
         }
 
         fn = tool_map.get(tool_name.lower().strip())

@@ -171,8 +171,6 @@ def _action_icon(action: str) -> str:
         return "\u2728"
     if "scan" in action:
         return "\U0001f4e1"
-    if "sitrep" in action:
-        return "\U0001f4cb"
     return "\u2753"
 
 

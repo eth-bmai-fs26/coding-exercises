@@ -76,17 +76,13 @@ class InteractiveGame:
                                         button_style="warning")
         self._btn_scan = widgets.Button(description="\U0001f4e1 Scan", layout=act_style,
                                         button_style="info")
-        self._btn_sitrep = widgets.Button(description="\U0001f4cb Sitrep", layout=act_style,
-                                           button_style="info")
         self._btn_collect.on_click(lambda _: self._do_action("collect", {}))
         self._btn_engage.on_click(lambda _: self._do_action("engage", {}))
         self._btn_hide.on_click(lambda _: self._do_action("hide", {}))
         self._btn_scan.on_click(lambda _: self._do_action("scan", {}))
-        self._btn_sitrep.on_click(lambda _: self._do_action("sitrep", {}))
 
         quick_actions = widgets.HBox(
-            [self._btn_collect, self._btn_engage, self._btn_hide,
-             self._btn_scan, self._btn_sitrep],
+            [self._btn_collect, self._btn_engage, self._btn_hide, self._btn_scan],
             layout=widgets.Layout(gap="4px"),
         )
 
@@ -169,7 +165,7 @@ class InteractiveGame:
         args_str = ", ".join(f'{k}="{v}"' for k, v in args.items())
         self.last_action = f"{tool_name}({args_str})"
         self.last_result = result.message
-        if tool_name not in ("scan", "sitrep"):
+        if tool_name != "scan":
             self.turn += 1
         self._check_game_state()
         self._render()
