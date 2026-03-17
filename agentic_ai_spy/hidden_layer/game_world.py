@@ -77,9 +77,6 @@ ITEM_CATALOG: dict[str, Item] = {
     "Computer Virus": Item("Computer Virus", "A compiled virus on a USB stick. Lethal to AI systems.", quest_item=True),
     # Loot
     "Scrap Metal": Item("Scrap Metal", "Salvaged robot parts. Might be worth something at the lab."),
-    # Consumables
-    "Field Rations": Item("Field Rations", "Military rations. Restores 1 health."),
-    "Med Kit": Item("Med Kit", "A full medical kit. Restores 2 health."),
 }
 
 
@@ -158,7 +155,7 @@ FORGE_CATALOG: dict[tuple[int, int], ForgeInfo] = {
     (6, 2): ForgeInfo(
         name="Weapons Forge",
         description="A makeshift workshop. A burly engineer wipes grease from his hands.",
-        sells={"Field Rations": 1},
+        sells={},
         crafts={"Flamethrower": ("Fuel Canister", 1)},
         buys={},
     ),
@@ -168,7 +165,7 @@ LAB_CATALOG: dict[tuple[int, int], ForgeInfo] = {
     (4, 1): ForgeInfo(
         name="Research Lab",
         description="A cluttered lab full of screens and wires. A wild-haired scientist spins in his chair.",
-        sells={"Med Kit": 2},
+        sells={},
         crafts={"Computer Virus": ("Virus Code", 1)},
         buys={"Scrap Metal": 1},
     ),

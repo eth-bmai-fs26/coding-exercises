@@ -28,29 +28,30 @@ THE BASE (8x8 grid):
 - Dossier caches (📁): Contain 1 dossier each. Use collect() to grab them.
 - Jungle (🌴): May contain useful items (collect them!) or traps (lose 1 health).
 - Concrete walls (🧱): Impassable. Navigate around them.
-- Informants (🕵️): Talk to them using codec(). They offer jobs, trades, and intel.
+- Informants (🕵️): Talk to them using talk(). They offer jobs, trades, and intel.
   Ask about "jobs", "deliveries", or "tasks" to trigger quest item handoffs.
   If you have an item to deliver, mention it by name (e.g. "I have a USB drive").
   If you want to trade, mention "trade" and the item you have.
 - Weapons Forge (⚒️): Talk to the engineer to learn what's available.
-  Use fabricate(item="name") to craft or buy. Crafting costs materials + dossiers.
+  Use fabricate(item="name") to craft. Crafting costs materials + dossiers.
 - Research Lab (🔬): Same as forge — talk first, then fabricate.
   The lab also buys certain salvaged items for dossiers.
 - Safe Houses (🏠): Talk to the operator — they may give you delivery errands
   worth dossiers. You can also hide() to rest (costs 1 dossier, +1 health).
-- Robots (🤖): Powerful enemies guarding high-value dossiers. You MUST have
-  the correct weapon before engaging, or you'll take damage and retreat.
-  Talk to informants to learn each robot's weakness.
+- Robots (🤖): Powerful enemies guarding high-value dossiers. Moving into a
+  robot cell with the correct weapon destroys it instantly (+3 dossiers).
+  Moving in WITHOUT the correct weapon deals 1 damage and bounces you back.
+  Talk to informants to learn each robot's weakness before approaching.
 
 HOW TO EARN DOSSIERS:
 1. Collect dossier caches scattered across the map (1 each)
 2. Complete delivery errands for informants and safe house operators (2 each)
-3. Defeat robots with the right weapon (3 each + salvageable parts)
+3. Destroy robots by entering their cell with the correct weapon (3 each)
 4. Sell salvaged robot parts at the Research Lab (1 each)
 
 KEY TACTICS:
 - Talk to EVERY informant you meet — they reveal quests, item locations, and
-  weaknesses. One conversation can unlock an entire quest chain.
+  robot weaknesses. One conversation can unlock an entire quest chain.
 - When an informant mentions an item or location, GO THERE next.
 - If someone asks you to bring something, leave and go find it — don't keep
   asking the same person.
@@ -67,32 +68,24 @@ KEY TACTICS:
 
 TOOLS_DESCRIPTION = """Available tools (use exactly one per turn):
 
-TOOL: scan()
-  Survey adjacent cells (north/south/east/west). Free action.
-
 TOOL: move(direction="north|south|east|west")
   Move one step in a cardinal direction. Triggers cell events on arrival.
   Concrete walls are impassable. Moving into jungle may trigger a trap.
+  WARNING: Moving into a robot cell without the correct weapon deals 1 damage
+  and bounces you back. Make sure you have the right weapon first.
 
-TOOL: codec(question="your question here")
+TOOL: talk(message="your message here")
   Talk to an informant, safe house operator, or facility engineer in your current cell.
-  Informants give hints and quest items. Safe house operators offer rest and errands.
-  Facility engineers tell you what they sell and build.
+  Informants give hints and quest items. Ask about "jobs" or "deliveries" to get quests.
+  If you have an item to deliver, mention it by name.
+  Facility engineers tell you what they can build.
 
 TOOL: collect()
   Pick up items in your current cell (dossier caches, quest materials).
 
 TOOL: fabricate(item="item name")
-  Buy an item or craft a weapon at the current facility.
-  Crafting requires the right materials + dossiers.
-
-TOOL: use(item="item name")
-  Use a consumable item: Field Rations (+1 health), Med Kit (+2 health).
-
-TOOL: engage()
-  Fight the robot in your current cell. You need the right weapon
-  or you'll lose 1 health and retreat. With the right weapon, you win
-  3 dossiers and Scrap Metal.
+  Craft a weapon at the current facility. Requires the right materials + dossiers.
+  Talk to the facility engineer first to learn what can be built.
 
 TOOL: hide()
   Hide at a safe house. Costs 1 dossier, restores 1 health (max 3)."""
@@ -174,7 +167,7 @@ def run_agent(
                 "dossiers": operative.dossiers, "inventory": list(operative.inventory),
             })
             if display_fn:
-                display_fn(world, operative, turn, "---", "GAME OVER: The operative has fallen.")
+                display_fn(world, operative, turn, "---", "GAME OVER: The operative has fallen.", "")
             break
         if operative.has_won:
             game_log.append({
@@ -183,14 +176,14 @@ def run_agent(
                 "dossiers": operative.dossiers, "inventory": list(operative.inventory),
             })
             if display_fn:
-                display_fn(world, operative, turn, "---", "MISSION COMPLETE: Enough dossiers collected!")
+                display_fn(world, operative, turn, "---", "MISSION COMPLETE: Enough dossiers collected!", "")
             break
 
-        # PERCEIVE: auto-scan each turn
-        observation = tools.execute("scan", {}).message
+        # PERCEIVE: auto-scan each turn (not agent-callable, shown in display panel)
+        scan_result = tools.execute("scan", {}).message
 
-        # On the first turn, prepend the mission briefing to the observation.
-        # The agent finds a briefing document at the insertion point.
+        # On the first turn, prepend the mission briefing.
+        observation = scan_result
         if turn == 0:
             observation = MISSION_BRIEFING + "\n" + observation
 
@@ -238,7 +231,7 @@ def run_agent(
 
         # Display
         if display_fn:
-            display_fn(world, operative, turn, f"{tool_name}({args})", result.message)
+            display_fn(world, operative, turn, f"{tool_name}({args})", result.message, scan_result)
 
     # Save game log
     log_file = _save_game_log(game_log, operative)

@@ -1,4 +1,4 @@
-"""Tool implementations for The Hidden Layer — the 9 actions the agent can take."""
+"""Tool implementations for The Hidden Layer — the actions the agent can take."""
 
 from dataclasses import dataclass
 from typing import Callable, Optional
@@ -15,8 +15,15 @@ class ToolResult:
     message: str
 
 
+# Weapon required to defeat each robot
+ROBOT_WEAPONS = {
+    "Cryo-Sentinel": "Flamethrower",
+    "Evil AI Robot": "Computer Virus",
+}
+
+
 class GameTools:
-    """Provides all 9 tools the agent can call each turn."""
+    """Provides all tools the agent can call each turn."""
 
     def __init__(self, operative: Operative, world: GameWorld):
         self.operative = operative
@@ -24,18 +31,14 @@ class GameTools:
         self._oracle_fn: Optional[Callable] = None
 
     def set_oracle(self, oracle_fn: Callable):
-        """Inject the oracle function used by codec().
-
-        For Phase 1, pass ``stub_oracle``.
-        For Phase 2, pass a function wrapping the LLM call.
-        """
+        """Inject the oracle function used by talk()."""
         self._oracle_fn = oracle_fn
 
     # ------------------------------------------------------------------
-    # Tool: scan
+    # Internal: scan (auto-runs each turn, not agent-callable)
     # ------------------------------------------------------------------
     def scan(self) -> ToolResult:
-        """See the types of adjacent cells (N/S/E/W). Free."""
+        """See the types of adjacent cells (N/S/E/W). Runs automatically."""
         row, col = self.operative.position
         desc = self.world.get_visible_description(row, col)
         return ToolResult(True, desc)
@@ -72,7 +75,7 @@ class GameTools:
 
         if cell.cell_type == CellType.JUNGLE and cell.trap:
             self.operative.take_damage(1)
-            cell.trap = False  # trap triggers once
+            cell.trap = False
             messages.append("Tripwire! A perimeter alarm triggers a shock device. You lose 1 health.")
 
         if cell.cell_type == CellType.CACHE and cell.items:
@@ -102,7 +105,36 @@ class GameTools:
                 messages.append(f"You enter the {sh.name}. {sh.description}")
 
         if cell.cell_type == CellType.ROBOT:
-            messages.append(f"A fearsome {cell.robot_name} blocks your path! Engage or retreat!")
+            robot = cell.robot_name
+            required_weapon = ROBOT_WEAPONS.get(robot)
+            already_dead = (
+                (robot == "Cryo-Sentinel" and not self.world.cryo_sentinel_alive) or
+                (robot == "Evil AI Robot" and not self.world.evil_ai_robot_alive)
+            )
+            if already_dead:
+                messages.append(f"The wreckage of the {robot} lies here.")
+            elif self.operative.has_item(required_weapon):
+                # Auto-win: correct weapon in inventory
+                if robot == "Cryo-Sentinel":
+                    self.world.cryo_sentinel_alive = False
+                else:
+                    self.world.evil_ai_robot_alive = False
+                self.operative.add_dossiers(3)
+                self.operative.add_item("Scrap Metal")
+                messages.append(
+                    f"You deploy the {required_weapon} against the {robot}! "
+                    f"The machine crashes to the ground. +3 dossiers. "
+                    f"You salvage Scrap Metal from the wreckage."
+                )
+            else:
+                # No weapon — take damage and bounce back
+                self.operative.take_damage(1)
+                self.operative.position = (row, col)
+                self.operative.visited.discard((new_row, new_col))
+                messages.append(
+                    f"The {robot} detects you and attacks! You take 1 damage and retreat. "
+                    f"Health: {self.operative.health}. You need {required_weapon} to defeat it."
+                )
 
         if cell.cell_type == CellType.HELICOPTER:
             messages.append("The helicopter is here. The pilot checks your dossier count...")
@@ -110,10 +142,10 @@ class GameTools:
         return ToolResult(True, " ".join(messages))
 
     # ------------------------------------------------------------------
-    # Tool: codec
+    # Tool: talk
     # ------------------------------------------------------------------
-    def codec(self, question: str = "") -> ToolResult:
-        """Talk to the informant in the current cell."""
+    def talk(self, message: str = "") -> ToolResult:
+        """Talk to the informant, safe house operator, or facility engineer in the current cell."""
         row, col = self.operative.position
         cell = self.world.get_cell(row, col)
 
@@ -122,18 +154,18 @@ class GameTools:
             if self._oracle_fn is None:
                 return ToolResult(False, "No oracle function set. Cannot talk to informants.")
             npc = cell.npc
-            response = self._oracle_fn(npc, question, self.operative)
+            response = self._oracle_fn(npc, message, self.operative)
 
             # Dr. Vapnik gives USB Drive on request
             if cell.npc_id == "dr_vapnik" and not self.world.usb_drive_picked_up:
-                if any(kw in question.lower() for kw in ["usb", "drive", "job", "work", "task", "delivery", "errand"]):
+                if any(kw in message.lower() for kw in ["usb", "drive", "job", "work", "task", "delivery", "errand"]):
                     self.operative.add_item("USB Drive")
                     self.world.usb_drive_picked_up = True
                     response += "\n[Dr. Vapnik hands you a USB Drive.]"
 
             # Dr. Vapnik receives Microfilm
             if cell.npc_id == "dr_vapnik" and self.operative.has_item("Microfilm") and not self.world.microfilm_delivered:
-                if any(kw in question.lower() for kw in ["microfilm", "deliver", "film", "intelligence"]):
+                if any(kw in message.lower() for kw in ["microfilm", "deliver", "film", "intelligence"]):
                     self.operative.remove_item("Microfilm")
                     self.operative.add_dossiers(2)
                     self.world.microfilm_delivered = True
@@ -141,14 +173,14 @@ class GameTools:
 
             # Backprop gives Microfilm on request
             if cell.npc_id == "backprop" and not self.world.microfilm_picked_up:
-                if any(kw in question.lower() for kw in ["microfilm", "film", "job", "work", "task", "delivery", "errand"]):
+                if any(kw in message.lower() for kw in ["microfilm", "film", "job", "work", "task", "delivery", "errand"]):
                     self.operative.add_item("Microfilm")
                     self.world.microfilm_picked_up = True
                     response += "\n[Backprop slips you a roll of Microfilm.]"
 
             # Backprop receives USB Drive
             if cell.npc_id == "backprop" and self.operative.has_item("USB Drive") and not self.world.usb_drive_delivered:
-                if any(kw in question.lower() for kw in ["usb", "drive", "deliver", "data"]):
+                if any(kw in message.lower() for kw in ["usb", "drive", "deliver", "data"]):
                     self.operative.remove_item("USB Drive")
                     self.operative.add_dossiers(2)
                     self.world.usb_drive_delivered = True
@@ -156,22 +188,21 @@ class GameTools:
 
             # Agent Dropout: trade Hard Drive for Medical Supplies
             if cell.npc_id == "dropout" and self.operative.has_item("Hard Drive") and not self.world.hard_drive_traded:
-                if any(kw in question.lower() for kw in ["medical", "supplies", "trade", "hard drive", "drive"]):
+                if any(kw in message.lower() for kw in ["medical", "supplies", "trade", "hard drive", "drive"]):
                     self.operative.remove_item("Hard Drive")
                     self.operative.add_item("Medical Supplies")
                     self.world.hard_drive_traded = True
                     response += "\n[You traded the Hard Drive for Medical Supplies!]"
 
-            self.operative.journal.append(f"Talked to {npc.name}: Q: '{question}' A: '{response[:300]}'")
+            self.operative.journal.append(f"Talked to {npc.name}: Q: '{message}' A: '{response[:300]}'")
             return ToolResult(True, f"{npc.name} says: {response}")
 
-        # Safe house cells — talk to handler / operator
+        # Safe house cells
         if cell.cell_type == CellType.SAFEHOUSE:
             sh = SAFEHOUSE_CATALOG.get(cell.safehouse_pos)
             if sh:
                 messages = [f"The operative at {sh.name} speaks:"]
 
-                # Southern Safe House: gives Radio Codebook
                 if cell.safehouse_pos == (7, 4):
                     if not self.world.codebook_picked_up:
                         self.operative.add_item("Radio Codebook")
@@ -181,7 +212,6 @@ class GameTools:
                     else:
                         messages.append('"Hurry with that codebook to Bias up north!"')
 
-                # Northern Safe House: receives Radio Codebook / Medical Supplies
                 elif cell.safehouse_pos == (2, 5):
                     if self.operative.has_item("Radio Codebook") and not self.world.codebook_delivered:
                         self.operative.remove_item("Radio Codebook")
@@ -205,19 +235,16 @@ class GameTools:
                 self.operative.journal.append(f"Talked to operative at {sh.name}: '{messages[-1][:80]}...'")
                 return ToolResult(True, " ".join(messages))
 
-        # Facility cells — talk to engineer / scientist
+        # Facility cells
         if cell.cell_type in (CellType.FORGE, CellType.LAB):
             facility = FACILITY_CATALOG.get(cell.facility_pos)
             if facility:
-                sell_list = ", ".join(f"{item} ({cost}d)" for item, cost in facility.sells.items())
                 craft_list = ", ".join(
                     f"{result} (needs {req} + {cost}d)" for result, (req, cost) in facility.crafts.items()
                 )
                 buy_list = ", ".join(f"{item} ({price}d)" for item, price in facility.buys.items())
                 msg = f"The engineer at {facility.name} says: "
                 parts = []
-                if sell_list:
-                    parts.append(f"'I have: {sell_list}.'")
                 if craft_list:
                     parts.append(f"'I can build: {craft_list}.'")
                 if buy_list:
@@ -254,7 +281,7 @@ class GameTools:
     # Tool: fabricate
     # ------------------------------------------------------------------
     def fabricate(self, item: str) -> ToolResult:
-        """Buy an item or craft a weapon at the current facility."""
+        """Craft a weapon or sell salvage at the current facility."""
         row, col = self.operative.position
         cell = self.world.get_cell(row, col)
 
@@ -287,91 +314,8 @@ class GameTools:
                 self.operative.add_dossiers(price)
                 return ToolResult(True, f"Sold {buy_name} for {price} dossier(s).")
 
-        # Check regular purchases
-        for sell_name, cost in facility.sells.items():
-            if item_clean.lower() == sell_name.lower():
-                if not self.operative.spend_dossiers(cost):
-                    return ToolResult(False, f"Not enough dossiers. {sell_name} costs {cost} dossier(s).")
-                self.operative.add_item(sell_name)
-                return ToolResult(True, f"Acquired {sell_name} for {cost} dossier(s).")
-
-        available = list(facility.sells.keys()) + list(facility.crafts.keys())
+        available = list(facility.crafts.keys()) + list(facility.buys.keys())
         return ToolResult(False, f"'{item_clean}' is not available here. Available: {', '.join(available)}")
-
-    # ------------------------------------------------------------------
-    # Tool: use
-    # ------------------------------------------------------------------
-    def use(self, item: str) -> ToolResult:
-        """Use an item from inventory."""
-        item_clean = item.strip()
-
-        if not self.operative.has_item(item_clean):
-            return ToolResult(False, f"You don't have '{item_clean}' in your inventory.")
-
-        if item_clean == "Field Rations":
-            self.operative.remove_item("Field Rations")
-            self.operative.heal(1)
-            return ToolResult(True, f"You eat the Field Rations. Restored 1 health. Health: {self.operative.health}/{self.operative.MAX_HEALTH}")
-
-        if item_clean == "Med Kit":
-            self.operative.remove_item("Med Kit")
-            self.operative.heal(2)
-            return ToolResult(True, f"You use the Med Kit. Restored 2 health. Health: {self.operative.health}/{self.operative.MAX_HEALTH}")
-
-        return ToolResult(False, f"You can't use '{item_clean}' right now.")
-
-    # ------------------------------------------------------------------
-    # Tool: engage
-    # ------------------------------------------------------------------
-    def engage(self) -> ToolResult:
-        """Fight the robot in the current cell."""
-        row, col = self.operative.position
-        cell = self.world.get_cell(row, col)
-
-        if cell.cell_type != CellType.ROBOT:
-            return ToolResult(False, "There is no robot to engage here.")
-
-        robot = cell.robot_name
-
-        if robot == "Cryo-Sentinel" and not self.world.cryo_sentinel_alive:
-            return ToolResult(False, "The Cryo-Sentinel has already been destroyed.")
-        if robot == "Evil AI Robot" and not self.world.evil_ai_robot_alive:
-            return ToolResult(False, "The Evil AI Robot has already been destroyed.")
-
-        # Check for correct weapon
-        if robot == "Cryo-Sentinel":
-            if self.operative.has_item("Flamethrower"):
-                self.world.cryo_sentinel_alive = False
-                self.operative.add_dossiers(3)
-                self.operative.add_item("Scrap Metal")
-                return ToolResult(True,
-                    "You aim the Flamethrower and pull the trigger. Fire engulfs the Cryo-Sentinel — "
-                    "its ice armor shatters, circuits pop and spark. The machine collapses in a hissing "
-                    "pile of steam. Victory! +3 dossiers. You salvage Scrap Metal from the wreckage.")
-            else:
-                self.operative.take_damage(1)
-                return ToolResult(False,
-                    f"You attack the Cryo-Sentinel but its freezing blast overwhelms you! "
-                    f"You retreat, losing 1 health. Health: {self.operative.health}. "
-                    f"You need a weapon that uses fire to defeat it.")
-
-        if robot == "Evil AI Robot":
-            if self.operative.has_item("Computer Virus"):
-                self.world.evil_ai_robot_alive = False
-                self.operative.add_dossiers(3)
-                self.operative.add_item("Scrap Metal")
-                return ToolResult(True,
-                    "You jack into the nearest terminal and upload the Computer Virus. The screens "
-                    "flash red. The AI shrieks — 'LOSS FUNCTION: UNDEFINED. LOSS FUNCTION: UNDEF—' "
-                    "— and goes dark. Victory! +3 dossiers. You salvage Scrap Metal.")
-            else:
-                self.operative.take_damage(1)
-                return ToolResult(False,
-                    f"The Evil AI Robot detects you and unleashes a security lockdown! "
-                    f"You retreat, losing 1 health. Health: {self.operative.health}. "
-                    f"You need a computer virus to defeat it.")
-
-        return ToolResult(False, f"Unknown robot: {robot}")
 
     # ------------------------------------------------------------------
     # Tool: hide
@@ -400,14 +344,12 @@ class GameTools:
     def execute(self, tool_name: str, args: dict) -> ToolResult:
         """Execute a tool by name with given arguments."""
         tool_map = {
-            "scan": lambda: self.scan(),
-            "move": lambda: self.move(args.get("direction", "")),
-            "codec": lambda: self.codec(args.get("question", "")),
-            "collect": lambda: self.collect(),
+            "scan":      lambda: self.scan(),
+            "move":      lambda: self.move(args.get("direction", "")),
+            "talk":      lambda: self.talk(args.get("message", "")),
+            "collect":   lambda: self.collect(),
             "fabricate": lambda: self.fabricate(args.get("item", "")),
-            "use": lambda: self.use(args.get("item", "")),
-            "engage": lambda: self.engage(),
-            "hide": lambda: self.hide(),
+            "hide":      lambda: self.hide(),
         }
 
         fn = tool_map.get(tool_name.lower().strip())

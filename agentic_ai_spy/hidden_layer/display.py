@@ -157,7 +157,7 @@ def _action_icon(action: str) -> str:
     """Get an icon for the action type."""
     if "move" in action:
         return "\U0001f9ed"
-    if "codec" in action:
+    if "talk" in action:
         return "\U0001f4ac"
     if "collect" in action:
         return "\u270b"
@@ -230,6 +230,7 @@ def display_turn(
     turn: int,
     action: str,
     result: str,
+    scan_result: str = "",
     delay: float = 0.0,
 ) -> None:
     """Display a single turn with spy-themed UI."""
@@ -301,6 +302,9 @@ def display_turn(
           \U0001f392 Inventory</div>
         <div style="font-size:12px;">{inventory_html}</div>
       </div>
+
+      <!-- Auto-scan -->
+      {f'<div style="background:#0a1a0a;border-radius:8px;padding:8px 10px;border:1px solid #1a3a1a;"><div style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📡 Scan</div><div style="font-size:11px;color:#557755;">{scan_result}</div></div>' if scan_result else ''}
     </div>
   </div>
 

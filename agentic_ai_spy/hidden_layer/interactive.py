@@ -70,50 +70,41 @@ class InteractiveGame:
         act_style = widgets.Layout(width="auto", height="36px")
         self._btn_collect = widgets.Button(description="\u270b Collect", layout=act_style,
                                            button_style="success")
-        self._btn_engage = widgets.Button(description="\u2694 Engage", layout=act_style,
-                                          button_style="danger")
         self._btn_hide = widgets.Button(description="\U0001f634 Hide", layout=act_style,
                                         button_style="warning")
-        self._btn_scan = widgets.Button(description="\U0001f4e1 Scan", layout=act_style,
-                                        button_style="info")
         self._btn_collect.on_click(lambda _: self._do_action("collect", {}))
-        self._btn_engage.on_click(lambda _: self._do_action("engage", {}))
         self._btn_hide.on_click(lambda _: self._do_action("hide", {}))
-        self._btn_scan.on_click(lambda _: self._do_action("scan", {}))
 
         quick_actions = widgets.HBox(
-            [self._btn_collect, self._btn_engage, self._btn_hide, self._btn_scan],
+            [self._btn_collect, self._btn_hide],
             layout=widgets.Layout(gap="4px"),
         )
 
         # Codec input
-        self._codec_input = widgets.Text(
-            placeholder='Ask a question... (e.g. "Do you have a job for me?")',
+        self._talk_input = widgets.Text(
+            placeholder='Say something... (e.g. "Do you have a job for me?")',
             layout=widgets.Layout(flex="1"),
         )
-        self._btn_codec = widgets.Button(description="\U0001f4ac Codec", layout=act_style,
-                                          button_style="success")
-        self._btn_codec.on_click(lambda _: self._do_codec())
-        self._codec_input.on_submit(lambda _: self._do_codec())
-        codec_row = widgets.HBox(
-            [self._codec_input, self._btn_codec],
+        self._btn_talk = widgets.Button(description="\U0001f4ac Talk", layout=act_style,
+                                         button_style="success")
+        self._btn_talk.on_click(lambda _: self._do_talk())
+        self._talk_input.on_submit(lambda _: self._do_talk())
+        talk_row = widgets.HBox(
+            [self._talk_input, self._btn_talk],
             layout=widgets.Layout(gap="4px"),
         )
 
-        # Fabricate/Use input
+        # Fabricate input
         self._item_input = widgets.Text(
-            placeholder='Item name... (e.g. "Flamethrower", "Field Rations")',
+            placeholder='Item name... (e.g. "Flamethrower")',
             layout=widgets.Layout(flex="1"),
         )
         self._btn_fabricate = widgets.Button(description="\U0001f527 Fabricate", layout=act_style,
                                               button_style="warning")
-        self._btn_use = widgets.Button(description="\u2728 Use", layout=act_style,
-                                        button_style="info")
         self._btn_fabricate.on_click(lambda _: self._do_fabricate())
-        self._btn_use.on_click(lambda _: self._do_use())
         self._item_input.on_submit(lambda _: self._do_fabricate())
         item_row = widgets.HBox(
-            [self._item_input, self._btn_fabricate, self._btn_use],
+            [self._item_input, self._btn_fabricate],
             layout=widgets.Layout(gap="4px"),
         )
 
@@ -131,18 +122,18 @@ class InteractiveGame:
             '<div style="font-family:Courier New,monospace;color:#555;'
             'font-size:11px;margin-top:8px;">QUICK ACTIONS</div>'
         )
-        codec_label = widgets.HTML(
+        talk_label = widgets.HTML(
             '<div style="font-family:Courier New,monospace;color:#555;'
-            'font-size:11px;margin-top:8px;">CODEC — TALK TO INFORMANT / OPERATOR</div>'
+            'font-size:11px;margin-top:8px;">TALK — SPEAK TO INFORMANT / OPERATOR / ENGINEER</div>'
         )
         item_label = widgets.HTML(
             '<div style="font-family:Courier New,monospace;color:#555;'
-            'font-size:11px;margin-top:8px;">FABRICATE / USE ITEM</div>'
+            'font-size:11px;margin-top:8px;">FABRICATE ITEM</div>'
         )
 
         controls = widgets.VBox(
             [controls_title, move_label, dpad, action_label, quick_actions,
-             codec_label, codec_row, item_label, item_row],
+             talk_label, talk_row, item_label, item_row],
             layout=widgets.Layout(padding="8px"),
         )
 
@@ -165,17 +156,16 @@ class InteractiveGame:
         args_str = ", ".join(f'{k}="{v}"' for k, v in args.items())
         self.last_action = f"{tool_name}({args_str})"
         self.last_result = result.message
-        if tool_name != "scan":
-            self.turn += 1
+        self.turn += 1
         self._check_game_state()
         self._render()
 
-    def _do_codec(self):
-        question = self._codec_input.value.strip()
-        if not question:
-            question = "Hello!"
-        self._codec_input.value = ""
-        self._do_action("codec", {"question": question})
+    def _do_talk(self):
+        message = self._talk_input.value.strip()
+        if not message:
+            message = "Hello!"
+        self._talk_input.value = ""
+        self._do_action("talk", {"message": message})
 
     def _do_fabricate(self):
         item = self._item_input.value.strip()
@@ -183,13 +173,6 @@ class InteractiveGame:
             return
         self._item_input.value = ""
         self._do_action("fabricate", {"item": item})
-
-    def _do_use(self):
-        item = self._item_input.value.strip()
-        if not item:
-            return
-        self._item_input.value = ""
-        self._do_action("use", {"item": item})
 
     def _check_game_state(self):
         if not self.operative.is_alive:
@@ -321,7 +304,7 @@ class InteractiveGame:
         if cell.items:
             hints.append('\U0001f4a1 <span style="color:#00ff41;">Items here! Use Collect</span>')
         if cell.cell_type == CellType.INFORMANT and cell.npc:
-            hints.append(f'\U0001f4a1 <span style="color:#00ff41;">Talk to {cell.npc.name} via Codec</span>')
+            hints.append(f'\U0001f4a1 <span style="color:#00ff41;">Talk to {cell.npc.name} via Talk</span>')
         if cell.cell_type == CellType.ROBOT:
             alive = True
             if cell.robot_name == "Cryo-Sentinel":
@@ -329,7 +312,7 @@ class InteractiveGame:
             elif cell.robot_name == "Evil AI Robot":
                 alive = self.world.evil_ai_robot_alive
             if alive:
-                hints.append(f'\U0001f4a1 <span style="color:#e94560;">{cell.robot_name} here! Engage if you have the right weapon</span>')
+                hints.append(f'\U0001f4a1 <span style="color:#e94560;">{cell.robot_name} here! Move in with the correct weapon to destroy it, or you will take damage.</span>')
             else:
                 hints.append('<span style="color:#444;">The robot has been destroyed.</span>')
         if cell.cell_type in (CellType.FORGE, CellType.LAB):
@@ -338,7 +321,7 @@ class InteractiveGame:
                 items = list(facility.sells.keys()) + list(facility.crafts.keys())
                 hints.append(f'\U0001f4a1 <span style="color:#e9a045;">Facility: {", ".join(items)}</span>')
         if cell.cell_type == CellType.SAFEHOUSE:
-            hints.append('\U0001f4a1 <span style="color:#e9a045;">Safe House: Talk via Codec or Hide (1 dossier)</span>')
+            hints.append('\U0001f4a1 <span style="color:#e9a045;">Safe House: Talk or Hide (1 dossier to restore 1 health)</span>')
 
         if hints:
             return '<br>' + '<br>'.join(hints)
