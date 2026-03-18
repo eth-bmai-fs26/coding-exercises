@@ -201,7 +201,13 @@ def run_agent(
                 print("    Fix your think_llm() function. The agent is stuck!\n")
 
         # Parse the action
-        tool_name, args = parse_tool_call(action_text)
+        try:
+            tool_name, args = parse_tool_call(action_text)
+        except ValueError as e:
+            tool_name, args = "scan", {}
+            history.append({"role": "error", "content": f"Parse error: {e}"})
+            if turn < 3:
+                print(f"\n⚠️  Could not parse tool call: {e}\n")
 
         # ACT: execute the chosen tool
         result = tools.execute(tool_name, args)

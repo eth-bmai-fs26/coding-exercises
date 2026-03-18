@@ -319,7 +319,7 @@ def display_turn(
     <div style="margin-top:8px;padding:8px 10px;background:#0a1a0a;border-radius:6px;
       border-left:3px solid {result_border};font-size:12px;color:{result_color};
       max-height:60px;overflow-y:auto;">
-      {result[:400]}
+      {result}
     </div>
   </div>
 </div>
