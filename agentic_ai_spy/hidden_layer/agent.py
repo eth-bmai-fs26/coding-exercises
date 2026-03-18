@@ -114,7 +114,7 @@ def parse_tool_call(text: str) -> tuple[str, dict]:
         simple = re.search(r'TOOL:\s*(\w+)', text)
         if simple:
             return simple.group(1), {}
-        return "scan", {}
+        raise ValueError(f"No TOOL: call found in LLM response. Got: {text[:300]!r}")
 
     tool_name = match.group(1)
     args_str = match.group(2).strip()
