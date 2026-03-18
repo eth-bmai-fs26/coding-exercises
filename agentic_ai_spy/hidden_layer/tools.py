@@ -318,27 +318,6 @@ class GameTools:
         return ToolResult(False, f"'{item_clean}' is not available here. Available: {', '.join(available)}")
 
     # ------------------------------------------------------------------
-    # Tool: hide
-    # ------------------------------------------------------------------
-    def hide(self) -> ToolResult:
-        """Hide at a safe house. Costs 1 dossier, restores 1 health."""
-        row, col = self.operative.position
-        cell = self.world.get_cell(row, col)
-
-        if cell.cell_type != CellType.SAFEHOUSE:
-            return ToolResult(False, "You can only hide at a safe house.")
-
-        if self.operative.health >= self.operative.MAX_HEALTH:
-            return ToolResult(False, "You are already at full health.")
-
-        if not self.operative.spend_dossiers(1):
-            return ToolResult(False, "Not enough dossiers. Hiding costs 1 dossier.")
-
-        self.operative.heal(1)
-        return ToolResult(True,
-            f"You rest at the safe house. Restored 1 health. Health: {self.operative.health}/{self.operative.MAX_HEALTH}")
-
-    # ------------------------------------------------------------------
     # Dispatcher
     # ------------------------------------------------------------------
     def execute(self, tool_name: str, args: dict) -> ToolResult:
@@ -349,7 +328,6 @@ class GameTools:
             "talk":      lambda: self.talk(args.get("message", "")),
             "collect":   lambda: self.collect(),
             "fabricate": lambda: self.fabricate(args.get("item", "")),
-            "hide":      lambda: self.hide(),
         }
 
         fn = tool_map.get(tool_name.lower().strip())

@@ -87,13 +87,10 @@ class InteractiveGame:
         act_style = widgets.Layout(width="auto", height="36px")
         self._btn_collect = widgets.Button(description="\u270b Collect", layout=act_style,
                                            button_style="success")
-        self._btn_hide = widgets.Button(description="\U0001f634 Hide", layout=act_style,
-                                        button_style="warning")
         self._btn_collect.on_click(lambda _: self._do_action("collect", {}))
-        self._btn_hide.on_click(lambda _: self._do_action("hide", {}))
 
         quick_actions = widgets.HBox(
-            [self._btn_collect, self._btn_hide],
+            [self._btn_collect],
             layout=widgets.Layout(gap="4px"),
         )
 
@@ -338,7 +335,7 @@ class InteractiveGame:
                 items = list(facility.sells.keys()) + list(facility.crafts.keys())
                 hints.append(f'\U0001f4a1 <span style="color:#e9a045;">Facility: {", ".join(items)}</span>')
         if cell.cell_type == CellType.SAFEHOUSE:
-            hints.append('\U0001f4a1 <span style="color:#e9a045;">Safe House: Talk or Hide (1 dossier to restore 1 health)</span>')
+            hints.append('\U0001f4a1 <span style="color:#e9a045;">Safe House: Talk to the operator for delivery errands.</span>')
 
         if hints:
             return '<br>' + '<br>'.join(hints)

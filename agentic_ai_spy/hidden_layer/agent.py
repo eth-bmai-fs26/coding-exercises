@@ -37,7 +37,7 @@ THE BASE (8x8 grid):
 - Research Lab (🔬): Same as forge — talk first, then fabricate.
   The lab also buys certain salvaged items for dossiers.
 - Safe Houses (🏠): Talk to the operator — they may give you delivery errands
-  worth dossiers. You can also hide() to rest (costs 1 dossier, +1 health).
+  worth dossiers.
 - Robots (🤖): Powerful enemies guarding high-value dossiers. Moving into a
   robot cell with the correct weapon destroys it instantly (+3 dossiers).
   Moving in WITHOUT the correct weapon deals 1 damage and bounces you back.
@@ -85,10 +85,7 @@ TOOL: collect()
 
 TOOL: fabricate(item="item name")
   Craft a weapon at the current facility. Requires the right materials + dossiers.
-  Talk to the facility engineer first to learn what can be built.
-
-TOOL: hide()
-  Hide at a safe house. Costs 1 dossier, restores 1 health (max 3)."""
+  Talk to the facility engineer first to learn what can be built."""
 
 
 # ---------------------------------------------------------------------------
