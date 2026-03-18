@@ -10,7 +10,7 @@ from supply_line.agent import (
     TOOLS_DESCRIPTION, parse_action, run_agent,
 )
 from supply_line.display import display_turn, display_final
-from supply_line.main import create_game, play_rule_based, play_with_llm
+from supply_line.main import create_game, play_with_llm
 
 def play_interactive():
     """Launch an interactive supply line session (requires IPython/Colab)."""

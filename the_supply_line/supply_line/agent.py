@@ -260,14 +260,6 @@ def _save_game_log(game_log: list[dict], agent: AgentState) -> str:
 # Think function stubs
 # ---------------------------------------------------------------------------
 
-def think_rule_based(agent: AgentState, world: SupplyWorld, history: list[dict]) -> str:
-    """Decide the next action using rule-based logic.
-
-    TODO: Implement this function.
-    """
-    raise NotImplementedError("TODO: Implement think_rule_based")
-
-
 def think_llm(agent: AgentState, world: SupplyWorld, history: list[dict]) -> str:
     """Decide the next action using an LLM.
 
