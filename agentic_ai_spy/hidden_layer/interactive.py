@@ -148,13 +148,17 @@ class InteractiveGame:
         controls = widgets.VBox(
             [controls_title, move_label, dpad, action_label, quick_actions,
              talk_label, talk_row, item_label, item_row],
-            layout=widgets.Layout(padding="8px"),
+            layout=widgets.Layout(
+                padding="8px",
+                min_width="260px",
+                border_left="2px solid #1a3a1a",
+            ),
         )
 
-        # Main layout
-        self._main = widgets.VBox(
+        # Main layout — game display and controls side by side
+        self._main = widgets.HBox(
             [self._game_display, controls],
-            layout=widgets.Layout(max_width="700px"),
+            layout=widgets.Layout(align_items="flex-start"),
         )
 
     def _create_full_game(self):
@@ -301,7 +305,7 @@ class InteractiveGame:
     <div style="color:#00cc33;font-size:13px;margin-top:2px;">{icon} {self.last_action or '(none yet)'}</div>
     <div style="margin-top:6px;padding:8px 10px;background:#0a1a0a;border-radius:6px;
       border-left:3px solid {result_border};font-size:12px;color:{result_color};
-      min-height:180px;overflow-y:auto;">
+      max-height:180px;overflow-y:auto;">
       {self.last_result}
     </div>
     {game_over_banner}
