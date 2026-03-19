@@ -15,27 +15,8 @@
 
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, fit, backgrounds, decorations.markings}
 
-% Pre-define parameterized TikZ styles (avoids ## issues inside beamer frames)
-\tikzset{
-  colorbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
-              minimum width=3.2cm, minimum height=2cm,
-              align=center, text=textmain, font=\small,
-              line width=2pt},
-  bigbox/.style={draw=#1, fill=bgcard, rounded corners=10pt, line width=2pt},
-  subbox/.style={draw=#1, fill=bgcard, rounded corners=5pt, line width=1.5pt,
-                 minimum width=2.8cm, minimum height=0.7cm,
-                 font=\scriptsize\bfseries, text=textmain},
-  colorarr/.style={-{Stealth[length=4pt]}, line width=1.5pt, color=#1},
-  stepbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
-               minimum width=2.8cm, minimum height=1.5cm,
-               align=center, text=textmain, font=\small, line width=2pt},
-  smallbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
-              minimum width=2.5cm, minimum height=0.9cm,
-              align=center, text=textmain, font=\small\bfseries, line width=2pt},
-}
-
 % ============================================================
-% COLOR DEFINITIONS
+% COLOR DEFINITIONS (must come before \tikzset)
 % ============================================================
 \definecolor{bgdark}{HTML}{0a0f1a}
 \definecolor{bgcard}{HTML}{111827}
@@ -90,6 +71,27 @@
 }
 \setbeamertemplate{itemize items}{\color{ethteal}\small$\blacktriangleright$}
 \setbeamertemplate{itemize subitem}{\color{textmuted}$\cdot$}
+
+% ============================================================
+% TIKZ STYLES (must be after color definitions)
+% ============================================================
+\tikzset{
+  colorbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+              minimum width=3.2cm, minimum height=2cm,
+              align=center, text=textmain, font=\small,
+              line width=2pt},
+  bigbox/.style={draw=#1, fill=bgcard, rounded corners=10pt, line width=2pt},
+  subbox/.style={draw=#1, fill=bgcard, rounded corners=5pt, line width=1.5pt,
+                 minimum width=2.8cm, minimum height=0.7cm,
+                 font=\scriptsize\bfseries, text=textmain},
+  colorarr/.style={-{Stealth[length=4pt]}, line width=1.5pt, color=#1},
+  stepbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+               minimum width=2.8cm, minimum height=1.5cm,
+               align=center, text=textmain, font=\small, line width=2pt},
+  smallbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+              minimum width=2.5cm, minimum height=0.9cm,
+              align=center, text=textmain, font=\small\bfseries, line width=2pt},
+}
 
 % ============================================================
 % LISTINGS (CODE)
@@ -825,7 +827,7 @@ The engine handles everything else -- parsing, execution, display, logging.}}
   \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal] (coach)   -- (improve);
   \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal, dashed] (improve) -- (run);
 
-  \node[font=\small\bfseries, text=ethteal] at (0,0) {Repeat until\\mission complete!};
+  \node[font=\small\bfseries, text=ethteal, align=center] at (0,0) {Repeat until\\mission complete!};
 \end{tikzpicture}
 \end{frame}
 
@@ -965,29 +967,29 @@ The debrief instructs ChatGPT to follow a \textbf{coaching protocol}:
 \begin{frame}{Your Workflow}
 \centering
 \begin{tikzpicture}[
-  step/.style={draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+  wfstep/.style={draw=bordersubtle, fill=bgcard, rounded corners=6pt,
                text width=10cm, inner sep=6pt, text=textmain, font=\small,
                align=left},
-  num/.style={circle, minimum size=0.55cm, inner sep=0pt,
+  wfnum/.style={circle, minimum size=0.55cm, inner sep=0pt,
               font=\small\bfseries, text=white},
-  arr/.style={color=bordersubtle, line width=1pt},
+  wfarr/.style={color=bordersubtle, line width=1pt},
 ]
-  \node[step] (s1) at (0,0)    {\textbf{Play manually} -- use the interactive mode to understand the game mechanics};
-  \node[step] (s2) at (0,-1.1) {\textbf{Write a basic \texttt{think\_llm()}} -- system prompt + status + history + API call};
-  \node[step] (s3) at (0,-2.2) {\textbf{Run the Micro Mission} -- see what happens in 30 turns};
-  \node[step] (s4) at (0,-3.3) {\textbf{Debrief $\rightarrow$ ChatGPT} -- get coaching on what went wrong};
-  \node[step] (s5) at (0,-4.4) {\textbf{Improve your prompt} -- apply the coaching suggestions};
-  \node[step] (s6) at (0,-5.5) {\textbf{Repeat 3--5} until the micro mission is solved, then try training $\rightarrow$ full};
+  \node[wfstep] (s1) at (0,0)    {\textbf{Play manually} -- use the interactive mode to understand the game mechanics};
+  \node[wfstep] (s2) at (0,-1.1) {\textbf{Write a basic \texttt{think\_llm()}} -- system prompt + status + history + API call};
+  \node[wfstep] (s3) at (0,-2.2) {\textbf{Run the Micro Mission} -- see what happens in 30 turns};
+  \node[wfstep] (s4) at (0,-3.3) {\textbf{Debrief $\rightarrow$ ChatGPT} -- get coaching on what went wrong};
+  \node[wfstep] (s5) at (0,-4.4) {\textbf{Improve your prompt} -- apply the coaching suggestions};
+  \node[wfstep] (s6) at (0,-5.5) {\textbf{Repeat 3--5} until the micro mission is solved, then try training $\rightarrow$ full};
 
-  \node[num, fill=ethblue]     at ([xshift=-0.6cm]s1.west) {1};
-  \node[num, fill=ethblue]     at ([xshift=-0.6cm]s2.west) {2};
-  \node[num, fill=ethteal]     at ([xshift=-0.6cm]s3.west) {3};
-  \node[num, fill=ethteal]     at ([xshift=-0.6cm]s4.west) {4};
-  \node[num, fill=accentgreen!80!black] at ([xshift=-0.6cm]s5.west) {5};
-  \node[num, fill=accentgreen!80!black] at ([xshift=-0.6cm]s6.west) {6};
+  \node[wfnum, fill=ethblue]     at ([xshift=-0.6cm]s1.west) {1};
+  \node[wfnum, fill=ethblue]     at ([xshift=-0.6cm]s2.west) {2};
+  \node[wfnum, fill=ethteal]     at ([xshift=-0.6cm]s3.west) {3};
+  \node[wfnum, fill=ethteal]     at ([xshift=-0.6cm]s4.west) {4};
+  \node[wfnum, fill=accentgreen!80!black] at ([xshift=-0.6cm]s5.west) {5};
+  \node[wfnum, fill=accentgreen!80!black] at ([xshift=-0.6cm]s6.west) {6};
 
   \foreach \i/\j in {s1/s2, s2/s3, s3/s4, s4/s5, s5/s6} {
-    \draw[arr] ([xshift=-0.6cm]\i.south west) -- ([xshift=-0.6cm]\j.north west);
+    \draw[wfarr] ([xshift=-0.6cm]\i.south west) -- ([xshift=-0.6cm]\j.north west);
   }
 \end{tikzpicture}
 \end{frame}
