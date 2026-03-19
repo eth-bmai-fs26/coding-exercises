@@ -76,21 +76,21 @@
 % TIKZ STYLES (must be after color definitions)
 % ============================================================
 \tikzset{
-  colorbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+  colorbox/.style={draw=#1, fill=#1!20, rounded corners=8pt,
               minimum width=3.2cm, minimum height=2cm,
-              align=center, text=textmain, font=\small,
+              align=center, text=white, font=\small,
               line width=2pt},
   bigbox/.style={draw=#1, fill=bgcard, rounded corners=10pt, line width=2pt},
   subbox/.style={draw=#1, fill=bgcard, rounded corners=5pt, line width=1.5pt,
                  minimum width=2.8cm, minimum height=0.7cm,
                  font=\scriptsize\bfseries, text=textmain},
   colorarr/.style={-{Stealth[length=4pt]}, line width=1.5pt, color=#1},
-  stepbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+  stepbox/.style={draw=#1, fill=#1!20, rounded corners=8pt,
                minimum width=2.8cm, minimum height=1.5cm,
-               align=center, text=textmain, font=\small, line width=2pt},
-  smallbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
-              minimum width=2.5cm, minimum height=0.9cm,
-              align=center, text=textmain, font=\small\bfseries, line width=2pt},
+               align=center, text=white, font=\small, line width=2pt},
+  smallbox/.style={draw=#1, fill=#1!25, rounded corners=8pt,
+              minimum width=2.2cm, minimum height=0.9cm,
+              align=center, text=white, font=\small\bfseries, line width=2pt},
 }
 
 % ============================================================
@@ -1007,9 +1007,9 @@ The debrief instructs ChatGPT to follow a \textbf{coaching protocol}:
 
 \begin{tikzpicture}
   \node[smallbox=ethteal]     (p) at (0,0)    {Play manually};
-  \node[smallbox=accentgreen] (w) at (3.8,0)  {Write think\_llm()};
-  \node[smallbox=orange]      (r) at (7.6,0)  {Run \& Debrief};
-  \node[smallbox=ethblue]     (i) at (11.4,0) {Iterate with ChatGPT};
+  \node[smallbox=accentgreen] (w) at (3.2,0)  {Write think\_llm()};
+  \node[smallbox=orange]      (r) at (6.4,0)  {Run \& Debrief};
+  \node[smallbox=ethblue]     (i) at (9.6,0)  {Iterate with ChatGPT};
   \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (p) -- (w);
   \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (w) -- (r);
   \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (r) -- (i);
