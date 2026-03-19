@@ -76,7 +76,7 @@
 % TIKZ STYLES (must be after color definitions)
 % ============================================================
 \tikzset{
-  colorbox/.style={draw=#1, fill=#1!20, rounded corners=8pt,
+  colorbox/.style={draw=#1, fill=#1!40!bgdark, rounded corners=8pt,
               minimum width=3.2cm, minimum height=2cm,
               align=center, text=white, font=\small,
               line width=2pt},
@@ -85,10 +85,10 @@
                  minimum width=2.8cm, minimum height=0.7cm,
                  font=\scriptsize\bfseries, text=textmain},
   colorarr/.style={-{Stealth[length=4pt]}, line width=1.5pt, color=#1},
-  stepbox/.style={draw=#1, fill=#1!20, rounded corners=8pt,
+  stepbox/.style={draw=#1, fill=#1!40!bgdark, rounded corners=8pt,
                minimum width=2.8cm, minimum height=1.5cm,
                align=center, text=white, font=\small, line width=2pt},
-  smallbox/.style={draw=#1, fill=#1!25, rounded corners=8pt,
+  smallbox/.style={draw=#1, fill=#1!40!bgdark, rounded corners=8pt,
               minimum width=2.2cm, minimum height=0.9cm,
               align=center, text=white, font=\small\bfseries, line width=2pt},
 }
@@ -144,7 +144,7 @@
 }
 \newcommand{\badge}[2]{%
   \tikz[baseline=(X.base)]{%
-    \node[draw=#1, fill=#1!15, text=#1,
+    \node[draw=#1, fill=#1!30!bgdark, text=white,
           font=\bfseries\tiny,
           inner sep=2pt, rounded corners=8pt] (X) {#2};%
   }%
@@ -198,7 +198,7 @@ Unlike a chatbot that answers one question, an agent \hl{pursues goals over mult
 \begin{column}{0.42\textwidth}
 \centering
 \begin{tikzpicture}
-  \node[draw=ethteal, fill=ethteal!8, rounded corners=6pt,
+  \node[draw=ethteal, fill=ethteal!20!bgdark, rounded corners=6pt,
         minimum width=5.5cm, minimum height=1.6cm, align=center,
         text=textmain, font=\small] (chatbot) {
     \mutedtext{\scriptsize Chatbot}\\[2pt]
@@ -206,7 +206,7 @@ Unlike a chatbot that answers one question, an agent \hl{pursues goals over mult
     \mutedtext{\scriptsize (single turn)}
   };
   \node[below=0.4cm of chatbot, font=\large, text=textmuted] (arrow) {$\Downarrow$};
-  \node[draw=accentgreen, fill=accentgreen!8, rounded corners=6pt,
+  \node[draw=accentgreen, fill=accentgreen!20!bgdark, rounded corners=6pt,
         minimum width=5.5cm, minimum height=1.6cm, align=center,
         text=textmain, font=\small, below=0.4cm of arrow] (agent) {
     \hlgreen{\scriptsize Agent}\\[2pt]
@@ -313,7 +313,7 @@ Every agent follows the same fundamental cycle:
 \end{itemize}
 \vspace{0.5em}
 \begin{tikzpicture}
-  \node[draw=ethteal!40, fill=ethteal!5, rounded corners=4pt,
+  \node[draw=ethteal!40, fill=ethteal!15!bgdark, rounded corners=4pt,
         text width=6cm, inner sep=6pt, text=textmain, font=\small\itshape] {
     ``The next frontier isn't smarter models -- it's models that can \textbf{take action}.''
   };
@@ -366,7 +366,7 @@ The key shift: the LLM output is not the final answer -- \hl{it's an instruction
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
   \begin{tikzpicture}
-    \node[draw=ethteal, fill=ethteal!8, rounded corners=6pt,
+    \node[draw=ethteal, fill=ethteal!20!bgdark, rounded corners=6pt,
           text width=6.2cm, inner sep=8pt, align=left, text=textmain, font=\small] {
       {\color{ethteal}\textbf{Objective}}\\[3pt]
       You are \hlgreen{Agent Lambda}. Infiltrate OVERFIT's base on Isla Perdida. \textbf{Collect 10 dossiers} of classified data before you run out of turns or health.
@@ -676,7 +676,7 @@ return response.text
 \end{lstlisting}
 \vspace{0.5em}
 \begin{center}
-\fcolorbox{ethteal}{ethteal!8}{\parbox{12.5cm}{\centering\small\color{textmain}%
+\fcolorbox{ethteal}{ethteal!25!bgdark}{\parbox{12.5cm}{\centering\small\color{textmain}%
 \textbf{That's it!} Three components: system prompt + user message + API call.
 The engine handles everything else -- parsing, execution, display, logging.}}
 \end{center}
@@ -739,7 +739,7 @@ generate_debrief_paste()
 \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
-\fcolorbox{ethteal}{ethteal!8}{\parbox{5.6cm}{\color{textmain}\small%
+\fcolorbox{ethteal}{ethteal!25!bgdark}{\parbox{5.6cm}{\color{textmain}\small%
 {\color{ethteal}\textbf{How to use it}}\\[6pt]
 {\scriptsize
 \textbf{1.} Run the debrief cell\\[2pt]
@@ -842,7 +842,7 @@ The debrief instructs ChatGPT to follow a \textbf{coaching protocol}:
 \end{columns}
 \vspace{0.5em}
 \begin{center}
-\fcolorbox{ethteal}{ethteal!8}{\parbox{12.5cm}{\centering\small\color{textmain}%
+\fcolorbox{ethteal}{ethteal!25!bgdark}{\parbox{12.5cm}{\centering\small\color{textmain}%
 \textbf{The secret:} A good agent isn't about clever code -- it's about a \hl{clear, well-structured prompt} that gives the LLM the right context to make good decisions.}}
 \end{center}
 \end{frame}
