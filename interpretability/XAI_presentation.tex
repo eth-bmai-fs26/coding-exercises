@@ -49,6 +49,9 @@
 % ── Navigation symbols off ──────────────────────────────────────────────────
 \setbeamertemplate{navigation symbols}{}
 
+% ── Covered items appear at reduced opacity ──────────────────────────────────
+\setbeamercovered{transparent=20}
+
 % ── Section outline ──────────────────────────────────────────────────────────
 \AtBeginSection[]{
   \begin{frame}{Outline}
@@ -113,14 +116,14 @@
 \begin{frame}{What is Explainable AI (XAI)?}
   \begin{columns}[T]
     \column{0.47\textwidth}
-      \begin{block}{Interpretability}
+      \begin{block}<1->{Interpretability}
         \textbf{Intrinsic property}\\[0.4em]
         The model structure is directly human-readable --- no external
         tool needed.\\[0.4em]
         \textit{Examples: linear regression, decision trees}
       \end{block}
     \column{0.47\textwidth}
-      \begin{block}{Explainability}
+      \begin{block}<2->{Explainability}
         \textbf{Post-hoc}\\[0.4em]
         A black-box model is described after training via an external
         method.\\[0.4em]
@@ -133,14 +136,14 @@
 \begin{frame}{Interpretability Refresher}
   \begin{columns}[T]
     \column{0.47\textwidth}
-      \begin{block}{Linear Regression}
+      \begin{block}<1->{Linear Regression}
 Each coefficient $\beta_i$ directly quantifies the effect of
         feature $x_i$ on the output. The prediction is a weighted sum
         --- every contribution is explicit and additive.\\[0.4em]
         \textit{$\hat{y} = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p$}
       \end{block}
     \column{0.47\textwidth}
-      \begin{block}{Decision Trees}
+      \begin{block}<2->{Decision Trees}
 A prediction is produced by following a sequence of
         human-readable if/else rules from root to leaf. The full
         reasoning path is visible and can be stated in plain
@@ -151,7 +154,7 @@ A prediction is produced by following a sequence of
 \end{frame}
 
 \begin{frame}{Why Does XAI Matter?}
-  \begin{block}{Applications}
+  \begin{block}<1->{Applications}
     \begin{itemize}
       \item \faHospital\ \textbf{Healthcare}
       \item \faChartBar\ \textbf{Finance}
@@ -161,7 +164,7 @@ A prediction is produced by following a sequence of
     \end{itemize}
   \end{block}
   \vspace{0.4em}
-  \begin{block}{Technical value}
+  \begin{block}<2->{Technical value}
     \begin{itemize}
       \item \textbf{Debugging}: find data and/or modelling errors
       \item \textbf{Scientific discovery}: gain better insights
@@ -171,18 +174,18 @@ A prediction is produced by following a sequence of
 
 % ── Shortcut Learning ─────────────────────────────────────────────────────────
 \begin{frame}{Why High Accuracy Is Not Enough? Shortcut Learning}
-  \begin{alertblock}{Definition}
+  \begin{alertblock}<1->{Definition}
     A model minimises training loss by relying on features \textbf{irrelevant to
     the true task} --- spurious correlations instead of genuine patterns.
   \end{alertblock}
   \vspace{0.4em}
-  \begin{block}{Real-world example}
+  \begin{block}<2->{Real-world example}
     \textbf{Skin-cancer classifier}: learned to detect \highlight{ruler marks} in
     dermoscopy images. Rulers appeared more often next to malignant lesions in
     training data.
   \end{block}
   \vspace{0.4em}
-  \begin{block}{Takeaway}
+  \begin{block}<3->{Takeaway}
     \highlight{High accuracy $\neq$ correct reasoning.}\\
     XAI catches shortcut effects \emph{before} deployment.
   \end{block}
@@ -196,7 +199,7 @@ A prediction is produced by following a sequence of
   \vspace{-0.2em}
   \begin{columns}[T]
     \column{0.47\textwidth}
-      \begin{block}{\faUnlock\ White-box models}
+      \begin{block}<1->{\faUnlock\ White-box models}
         \begin{itemize}
           \item Structure \& parameters fully \textbf{accessible}
           \item Examples: linear regression, logistic regression, decision trees
@@ -205,7 +208,7 @@ A prediction is produced by following a sequence of
         \end{itemize}
       \end{block}
     \column{0.47\textwidth}
-      \begin{alertblock}{\faLock\ Black-box models}
+      \begin{alertblock}<2->{\faLock\ Black-box models}
         \begin{itemize}
           \item Only input--output behavior exposed
           \item Deep neural networks, proprietary APIs
@@ -215,7 +218,7 @@ A prediction is produced by following a sequence of
       \end{alertblock}
   \end{columns}
   \vspace{0.5em}
-  \begin{exampleblock}{Reality is a spectrum}
+  \begin{exampleblock}<3->{Reality is a spectrum}
     Shallow NNs, regularised ensembles, attention visualization --- occupy an
     \textbf{intermediate} space. The choice involves a practical trade-off between predictive power and understanding.
   \end{exampleblock}
@@ -225,7 +228,7 @@ A prediction is produced by following a sequence of
 \begin{frame}{Local vs.\ Global Explanations}
   \begin{columns}[T]
     \column{0.47\textwidth}
-      \begin{block}{\faSearchLocation\ Local explanations}
+      \begin{block}<1->{\faSearchLocation\ Local explanations}
         \emph{Why did the model produce \textbf{this} output for \textbf{this} input?}
         \begin{itemize}
           \item Valid only in the neighborhood of one data point
@@ -234,7 +237,7 @@ A prediction is produced by following a sequence of
         \end{itemize}
       \end{block}
     \column{0.47\textwidth}
-      \begin{block}{\faGlobe\ Global explanations}
+      \begin{block}<2->{\faGlobe\ Global explanations}
         \emph{What patterns has the model learned \textbf{in general}?}
         \begin{itemize}
           \item Summarise behavior over the full input distribution
@@ -280,12 +283,12 @@ A prediction is produced by following a sequence of
 % ============================================================================
 
 \begin{frame}{LIME --- Core Idea}
-  \begin{block}{Core insight}
+  \begin{block}<1->{Core insight}
     Even if a model is globally complex, its behavior can be approximated
     \highlight{locally} around any input by a simple surrogate model.
   \end{block}
   \vspace{0.5em}
-  \begin{block}{Three steps}
+  \begin{block}<2->{Three steps}
     \begin{enumerate}
       \item \textbf{Perturb} the input $x$ to generate $\{z_1,\dots,z_n\}$
       \item \textbf{Query} the black box $f$ and weight by proximity $\pi_x(z_i)$
@@ -295,7 +298,7 @@ A prediction is produced by following a sequence of
 \end{frame}
 
 \begin{frame}{LIME --- Strengths \& Limitations}
-  \begin{exampleblock}{Strengths}
+  \begin{exampleblock}<1->{Strengths}
     \begin{itemize}
       \item \textbf{Model-agnostic}: works with any classifier
       \item Applicable across \textbf{images, text, tabular} data
@@ -303,7 +306,7 @@ A prediction is produced by following a sequence of
     \end{itemize}
   \end{exampleblock}
   \vspace{0.5em}
-  \begin{alertblock}{Limitations}
+  \begin{alertblock}<2->{Limitations}
     \begin{itemize}
       \item Explanation valid \textbf{only locally}
       \item Quality depends on perturbation strategy
@@ -317,7 +320,7 @@ A prediction is produced by following a sequence of
 % ============================================================================
 
 \begin{frame}{SHAP --- Core Idea}
-  \begin{block}{Game-theory foundation}
+  \begin{block}<1->{Game-theory foundation}
     Features are \textbf{players}; the model's prediction is the \textbf{payoff}.
     The Shapley value of feature $i$ is its average marginal contribution
     across all possible feature subsets:
@@ -328,7 +331,7 @@ A prediction is produced by following a sequence of
     \]
   \end{block}
   \vspace{0.4em}
-  \begin{block}{Practical variants}
+  \begin{block}<2->{Practical variants}
     \begin{description}
       \item[KernelSHAP] LIME-like sampling; provably recovers Shapley values
       \item[TreeSHAP] Exact, polynomial-time for tree-based models
@@ -403,7 +406,7 @@ A prediction is produced by following a sequence of
 \end{frame}
 
 \begin{frame}{Grad-CAM --- Strengths \& Limitations}
-  \begin{exampleblock}{Strengths}
+  \begin{exampleblock}<1->{Strengths}
     \begin{itemize}
       \item \textbf{No retraining} required
       \item \textbf{Class-discriminative}: different class $\Rightarrow$ different heatmap
@@ -411,14 +414,14 @@ A prediction is produced by following a sequence of
     \end{itemize}
   \end{exampleblock}
   \vspace{0.4em}
-  \begin{alertblock}{Limitations}
+  \begin{alertblock}<2->{Limitations}
     \begin{itemize}
       \item Inherits spatial resolution of last conv.\ layer
       \item CNN-specific (not model-agnostic)
     \end{itemize}
   \end{alertblock}
   \vspace{0.4em}
-  \begin{block}{Practical use}
+  \begin{block}<3->{Practical use}
     Verify the model attends to the \textbf{right} image regions (stethoscope)
     vs.\ spurious ones (face).
   \end{block}
@@ -429,13 +432,13 @@ A prediction is produced by following a sequence of
 % ============================================================================
 
 \begin{frame}{Probing Classifiers --- Core Idea}
-  \begin{block}{What is probing?}
+  \begin{block}<1->{What is probing?}
     Train a simple classifier (the \textbf{probe}) on top of a frozen
     intermediate representation to test whether a specific concept is
     \highlight{linearly decodable} from that layer.
   \end{block}
   \vspace{0.4em}
-  \begin{block}{Three steps}
+  \begin{block}<2->{Three steps}
     \begin{enumerate}
       \item \textbf{Extract} activations $h^{(\ell)}$ from layer $\ell$ of the
             frozen model for a labelled dataset
@@ -447,7 +450,7 @@ A prediction is produced by following a sequence of
 \end{frame}
 
 \begin{frame}{Probing Classifiers --- Strengths \& Limitations}
-  \begin{exampleblock}{Strengths}
+  \begin{exampleblock}<1->{Strengths}
     \begin{itemize}
       \item Reveals \textbf{what} information is encoded layer-by-layer
       \item Non-invasive: the original model is never modified
@@ -455,7 +458,7 @@ A prediction is produced by following a sequence of
     \end{itemize}
   \end{exampleblock}
   \vspace{0.4em}
-  \begin{alertblock}{Limitations}
+  \begin{alertblock}<2->{Limitations}
     \begin{itemize}
       \item High probe accuracy shows a concept is \emph{present}, not that
             the model \emph{uses} it for its predictions
