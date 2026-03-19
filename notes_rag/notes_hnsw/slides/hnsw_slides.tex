@@ -9,8 +9,8 @@
 \newcommand{\lw}{\ell_w}
 \newcommand{\neigh}{\mathrm{neigh}}
 
-\title{HNSW}
-\subtitle{Hierarchical Navigable Small World Graphs}
+\title{Building ML AI Applications}
+\subtitle{HNSW: Hierarchical Navigable Small World Graphs}
 \author{Carlos Cotrini}
 \date{Spring 2026}
 \institute{D-INFK, ETH Zurich}
@@ -83,7 +83,7 @@ $\Rightarrow$ $\bigO(N)$ per query
 \begin{frame}{Goal: Sublinear Search}
 
 \centering
-\begin{tikzpicture}[scale=0.9]
+\begin{tikzpicture}[scale=0.75]
   % Axis
   \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (10,0)
     node[right, font=\small] {$N$ (dataset size)};
@@ -104,7 +104,7 @@ $\Rightarrow$ $\bigO(N)$ per query
     node[midway, right, font=\footnotesize\bfseries, text=BMAIgoldDark] {speedup};
 \end{tikzpicture}
 
-\bigskip
+\medskip
 \begin{insightbox}[\bfseries Key idea]
   Build a \bfgold{multi-layer graph} that enables \bfgold{greedy navigation} to nearest neighbors.
 \end{insightbox}
@@ -196,6 +196,299 @@ $\Rightarrow$ $\bigO(N)$ per query
   \end{itemize}
 \end{column}
 \end{columns}
+
+\end{frame}
+
+% ------ Slide: Skip List Search Example ------
+\begin{frame}{Skip-List Search: Finding 21}
+
+\centering
+\begin{tikzpicture}[
+  node distance=1.2cm and 1.4cm,
+  slnode/.style={circle, draw=BMAIpurple!40, fill=BMAIpurplePale,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries},
+  slvisited/.style={circle, draw=BMAIgoldDark, fill=BMAIgold!40,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries, line width=1.2pt},
+  slfound/.style={circle, draw=BMAIteal, fill=BMAIteal!30,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries, line width=1.5pt},
+  sllink/.style={draw=BMAIpurple!25, line width=0.6pt, -},
+  searchmove/.style={draw=BMAIcoral, line width=2pt, -{Stealth[length=2.5mm]}},
+  dropmove/.style={draw=BMAIgoldDark, line width=1.5pt, densely dashed, -{Stealth[length=2mm]}},
+  layerlab/.style={font=\footnotesize\bfseries, text=BMAIpurple, anchor=east},
+  steplbl/.style={circle, fill=BMAIcoral, text=white, font=\tiny\bfseries,
+    inner sep=0.5pt, minimum size=3.5mm},
+  scale=0.95
+]
+
+  % Layer labels
+  \node[layerlab] at (-1.2,0) {Layer 0};
+  \node[layerlab] at (-1.2,1.5) {Layer 1};
+  \node[layerlab] at (-1.2,3.0) {Layer 2};
+
+  % Layer 0
+  \foreach \i/\val in {0/2, 1/5, 2/8, 3/12, 4/17, 5/21, 6/29, 7/35} {
+    \node[slnode] (L0-\i) at (\i*1.4,0) {\val};
+  }
+  \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6} {
+    \draw[sllink] (L0-\i) -- (L0-\j);
+  }
+
+  % Layer 1
+  \foreach \i/\val in {0/2, 2/8, 4/17, 7/35} {
+    \node[slnode, fill=BMAIgold!15] (L1-\i) at (\i*1.4,1.5) {\val};
+  }
+  \draw[sllink, draw=BMAIgold!30] (L1-0) -- (L1-2);
+  \draw[sllink, draw=BMAIgold!30] (L1-2) -- (L1-4);
+  \draw[sllink, draw=BMAIgold!30] (L1-4) -- (L1-7);
+
+  % Layer 2
+  \foreach \i/\val in {0/2, 7/35} {
+    \node[slnode, fill=BMAIcoral!15] (L2-\i) at (\i*1.4,3.0) {\val};
+  }
+  \draw[sllink, draw=BMAIcoral!25] (L2-0) -- (L2-7);
+
+  % Vertical
+  \foreach \i in {0,2,4,7} {
+    \draw[BMAIgray, dashed, line width=0.3pt] (L1-\i) -- (L0-\i);
+  }
+  \foreach \i in {0,7} {
+    \draw[BMAIgray, dashed, line width=0.3pt] (L2-\i) -- (L1-\i);
+  }
+
+  % Highlight visited nodes
+  \node[slvisited] at (0,3.0) {2};
+  \node[slvisited] at (0,1.5) {2};
+  \node[slvisited] at (2.8,1.5) {8};
+  \node[slvisited] at (5.6,1.5) {17};
+  \node[slvisited] at (5.6,0) {17};
+  \node[slfound] at (7.0,0) {21};
+
+  % Search path
+  % Step 1: L2, at 2 — next is 35 > 21, drop
+  \draw[dropmove] (L2-0.south) -- (L1-0.north);
+  \node[steplbl] at (-0.4,2.25) {1};
+
+  % Step 2: L1, at 2 → 8
+  \draw[searchmove] (L1-0) -- (L1-2);
+  \node[steplbl] at (1.4,2.0) {2};
+
+  % Step 3: L1, at 8 → 17
+  \draw[searchmove] (L1-2) -- (L1-4);
+  \node[steplbl] at (4.2,2.0) {3};
+
+  % Step 4: L1, at 17 — next is 35 > 21, drop
+  \draw[dropmove] (L1-4.south) -- (L0-4.north);
+  \node[steplbl] at (6.1,0.75) {4};
+
+  % Step 5: L0, at 17 → 21, found!
+  \draw[searchmove] (L0-4) -- (L0-5);
+  \node[steplbl] at (6.3,-0.5) {5};
+
+\end{tikzpicture}
+
+\medskip
+\begin{columns}[t]
+\begin{column}{0.55\textwidth}
+  {\small
+  \begin{enumerate}
+    \item \textbf{L2, at 2:} next is 35 $> 21$ $\Rightarrow$ drop
+    \item \textbf{L1, at 2:} next is 8 $\leq 21$ $\Rightarrow$ move right
+    \item \textbf{L1, at 8:} next is 17 $\leq 21$ $\Rightarrow$ move right
+    \item \textbf{L1, at 17:} next is 35 $> 21$ $\Rightarrow$ drop
+    \item \textbf{L0, at 17:} next is \bfteal{21} $\Rightarrow$ found!
+  \end{enumerate}
+  }
+\end{column}
+\begin{column}{0.4\textwidth}
+  \begin{insightbox}
+    5 comparisons vs.\ 6 for linear scan.
+    Express lanes skip most elements.
+  \end{insightbox}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: Skip List Search Analogy to HNSW ------
+\begin{frame}{Skip-List Search $\longleftrightarrow$ HNSW \textsc{find-nn}}
+
+\begin{columns}[c]
+\begin{column}{0.45\textwidth}
+\centering
+\bfpurple{Skip-List Search}
+
+\bigskip
+\begin{tikzpicture}[
+  slnode/.style={circle, draw=BMAIpurple, fill=BMAIpurplePale,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries},
+  sllink/.style={draw=BMAIpurple!40, line width=0.6pt, -},
+  searchmove/.style={draw=BMAIcoral, line width=1.5pt, -{Stealth[length=2mm]}},
+  dropmove/.style={draw=BMAIgoldDark, line width=1pt, densely dashed, -{Stealth[length=2mm]}},
+  layerlab/.style={font=\scriptsize\bfseries, text=BMAIpurple, anchor=east},
+  scale=0.7
+]
+  \node[layerlab] at (-0.6,0) {L0};
+  \node[layerlab] at (-0.6,1.3) {L1};
+  \node[layerlab] at (-0.6,2.6) {L2};
+
+  % Simplified skip list
+  \foreach \i/\val in {0/2, 1/8, 2/17, 3/35} {
+    \node[slnode, minimum size=4mm] (A\i) at (\i*1.5,0) {\val};
+  }
+  \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,2} {
+    \draw[sllink] (A\i) -- (A\j);
+  }
+  \node[slnode, fill=BMAIgold!20, minimum size=4mm] (B0) at (0,1.3) {2};
+  \node[slnode, fill=BMAIgold!20, minimum size=4mm] (B1) at (3,1.3) {17};
+  \draw[sllink] (B0) -- (B1);
+  \node[slnode, fill=BMAIcoral!20, minimum size=4mm] (C0) at (0,2.6) {2};
+
+  \draw[searchmove] (C0) -- (B0);
+  \draw[searchmove] (B0) -- (B1);
+  \draw[dropmove] (B1) -- (A2);
+
+  \node[font=\scriptsize, text=BMAIcoral, below] at (2.25,-0.5) {Move \textbf{right}};
+\end{tikzpicture}
+\end{column}
+
+\begin{column}{0.45\textwidth}
+\centering
+\bfgold{HNSW \textsc{find-nn}}
+
+\bigskip
+\begin{tikzpicture}[scale=0.7]
+  % Simplified HNSW layers
+  \fill[BMAIcoral!6, rounded corners=2pt] (-0.3,4.2) rectangle (5.3,5.4);
+  \fill[BMAIgold!8, rounded corners=2pt] (-0.3,2.0) rectangle (5.3,3.2);
+  \fill[BMAIpurplePale!30, rounded corners=2pt] (-0.3,-0.2) rectangle (5.3,1.0);
+
+  \node[font=\scriptsize\bfseries, text=BMAIpurple, anchor=east] at (-0.5,0.4) {L0};
+  \node[font=\scriptsize\bfseries, text=BMAIpurple, anchor=east] at (-0.5,2.6) {L1};
+  \node[font=\scriptsize\bfseries, text=BMAIpurple, anchor=east] at (-0.5,4.8) {L2};
+
+  \node[graphnode, minimum size=4mm] (h2a) at (0.5,4.8) {};
+  \node[graphnode, minimum size=4mm] (h2b) at (3,4.8) {};
+  \draw[graphedge] (h2a) -- (h2b);
+
+  \node[graphnode highlight, minimum size=4mm] (h1a) at (0.5,2.6) {};
+  \node[graphnode highlight, minimum size=4mm] (h1b) at (2.5,2.6) {};
+  \node[graphnode highlight, minimum size=4mm] (h1c) at (4.5,2.6) {};
+  \draw[BMAIgold, line width=0.6pt] (h1a) -- (h1b);
+  \draw[BMAIgold, line width=0.6pt] (h1b) -- (h1c);
+
+  \foreach \x in {0.5,1.5,2.5,3.5,4.5} {
+    \node[graphnode, minimum size=3.5mm] at (\x,0.4) {};
+  }
+
+  % Search path
+  \draw[BMAIcoral, line width=1.5pt, -{Stealth[length=2mm]}] (h2a) -- (h2b);
+  \draw[BMAIgoldDark, line width=1pt, densely dashed, -{Stealth[length=2mm]}] (h2b) -- (h1c);
+  \draw[BMAIcoral, line width=1.5pt, -{Stealth[length=2mm]}] (h1c) -- (h1b);
+
+  \node[font=\scriptsize, text=BMAIcoral, below] at (2.5,-0.5) {Move to \textbf{closer neighbor}};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  Same strategy: start at top layer, greedily advance, drop when stuck.\\
+  \bfpurple{Skip list:} ``next in sorted order'' \quad$\longleftrightarrow$\quad
+  \bfgold{HNSW:} ``closest in metric distance''
+\end{insightbox}
+
+\end{frame}
+
+% ------ Slide: Skip List Insert Example ------
+\begin{frame}{Skip-List Insert: Adding 14}
+
+\begin{columns}[c]
+\begin{column}{0.35\textwidth}
+  \bfpurple{Three steps:}
+
+  \medskip
+  \begin{enumerate}
+    \item \textbf{Search} for position\\
+      {\small $\to$ between 12 and 17}
+
+    \medskip
+    \item \textbf{Coin flips} for layer\\
+      {\small H, T $\Rightarrow \ell_{14} = 1$}
+
+    \medskip
+    \item \textbf{Splice} into lists\\
+      {\small L0: $12 \to \bm{14} \to 17$\\
+       L1: $8 \to \bm{14} \to 17$}
+  \end{enumerate}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+\centering
+\begin{tikzpicture}[
+  slnode/.style={circle, draw=BMAIpurple!40, fill=BMAIpurplePale,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries},
+  slnew/.style={circle, draw=BMAIcoral, fill=BMAIcoral!20,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries, line width=1.5pt},
+  sllink/.style={draw=BMAIpurple!25, line width=0.6pt, -},
+  newlink/.style={draw=BMAIcoral, line width=1.5pt, -},
+  layerlab/.style={font=\footnotesize\bfseries, text=BMAIpurple, anchor=east},
+  scale=0.85
+]
+
+  % Layer labels
+  \node[layerlab] at (-1.2,0) {Layer 0};
+  \node[layerlab] at (-1.2,1.5) {Layer 1};
+  \node[layerlab] at (-1.2,3.0) {Layer 2};
+
+  % Layer 0 (with 14 inserted)
+  \foreach \i/\val/\x in {0/2/0, 1/5/1.1, 2/8/2.2, 3/12/3.3, 5/17/5.5, 6/21/6.6, 7/29/7.7, 8/35/8.8} {
+    \node[slnode] (L0-\i) at (\x,0) {\val};
+  }
+  \node[slnew] (L0-4) at (4.4,0) {\textbf{14}};
+
+  \draw[sllink] (L0-0) -- (L0-1);
+  \draw[sllink] (L0-1) -- (L0-2);
+  \draw[sllink] (L0-2) -- (L0-3);
+  \draw[newlink] (L0-3) -- (L0-4);
+  \draw[newlink] (L0-4) -- (L0-5);
+  \draw[sllink] (L0-5) -- (L0-6);
+  \draw[sllink] (L0-6) -- (L0-7);
+  \draw[sllink] (L0-7) -- (L0-8);
+
+  % Layer 1 (with 14 inserted)
+  \node[slnode, fill=BMAIgold!15] (L1-0) at (0,1.5) {2};
+  \node[slnode, fill=BMAIgold!15] (L1-2) at (2.2,1.5) {8};
+  \node[slnew] (L1-4) at (4.4,1.5) {\textbf{14}};
+  \node[slnode, fill=BMAIgold!15] (L1-5) at (5.5,1.5) {17};
+  \node[slnode, fill=BMAIgold!15] (L1-8) at (8.8,1.5) {35};
+
+  \draw[sllink, draw=BMAIgold!30] (L1-0) -- (L1-2);
+  \draw[newlink] (L1-2) -- (L1-4);
+  \draw[newlink] (L1-4) -- (L1-5);
+  \draw[sllink, draw=BMAIgold!30] (L1-5) -- (L1-8);
+
+  % Layer 2
+  \node[slnode, fill=BMAIcoral!15] (L2-0) at (0,3.0) {2};
+  \node[slnode, fill=BMAIcoral!15] (L2-8) at (8.8,3.0) {35};
+  \draw[sllink, draw=BMAIcoral!25] (L2-0) -- (L2-8);
+
+  % Vertical
+  \foreach \src/\dst in {L2-0/L1-0, L2-8/L1-8, L1-0/L0-0, L1-2/L0-2, L1-5/L0-5, L1-8/L0-8} {
+    \draw[BMAIgray, dashed, line width=0.3pt] (\src) -- (\dst);
+  }
+  \draw[BMAIcoral, dashed, line width=0.8pt] (L1-4) -- (L0-4);
+
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  \textbf{Analogy to HNSW \textsc{insert}:}\quad
+  search $\to$ \textsc{beam-search},\quad
+  coin flips $\to$ $\mathrm{Bern}(1/M)$,\quad
+  splice $\to$ wire edges via \textsc{sel-neighbors}
+\end{insightbox}
 
 \end{frame}
 
@@ -633,6 +926,10 @@ $\ef$ & $\geq K$ & Beam width at query time \\
     node[midway, right, font=\tiny\bfseries, text=BMAIgoldDark] {drop};
   \draw[BMAIpurple, line width=2pt, -{Stealth[length=3mm]}] (l0g) -- (l0f)
     node[midway, below, font=\tiny\bfseries, text=BMAIpurple] {closer!};
+
+  % Connect search result to target
+  \draw[BMAIteal, dashed, line width=1.5pt] (l0f) -- (query)
+    node[midway, right, font=\tiny\bfseries, text=BMAIteal] {nearest};
 
   % Entry label
   \node[font=\scriptsize\bfseries, text=BMAIcoral, above=2pt] at (ep.north) {$\eps$};
