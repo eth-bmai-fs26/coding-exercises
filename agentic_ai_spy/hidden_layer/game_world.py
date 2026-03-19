@@ -255,7 +255,7 @@ class GameWorld:
         ]
 
         # Row 0: 🚁 · 🌴 · · 🌴! · 📁
-        self._set(0, 0, Cell(CellType.HELICOPTER, description="A helicopter sits on the landing pad, rotors still. The pilot shakes his head — 'Not without 10 dossiers.'"))
+        self._set(0, 0, Cell(CellType.HELICOPTER, description="A helicopter sits on the landing pad, rotors still. The northwest corner of the base."))
         self._set(0, 2, Cell(CellType.JUNGLE, items=["Hard Drive"], description="Dark jungle. A weathered case is half-buried in the mud."))
         self._set(0, 5, Cell(CellType.JUNGLE, trap=True, description="Thick jungle with tripwires strung between the trees."))
         self._set(0, 7, Cell(CellType.CACHE, items=["dossier_1"], description="An unlocked filing cabinet behind a collapsed wall."))
