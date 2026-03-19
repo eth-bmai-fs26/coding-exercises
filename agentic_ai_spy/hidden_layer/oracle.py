@@ -4,8 +4,35 @@ Phase 1: Uses stub_oracle with canned keyword-matched responses.
 Phase 2: Uses llm_oracle powered by the Gemini API.
 """
 
+import time
+
 from hidden_layer.game_world import NPC
 from hidden_layer.operative import Operative
+
+
+# ---------------------------------------------------------------------------
+# Retry helper for Gemini API calls
+# ---------------------------------------------------------------------------
+
+def gemini_call_with_retry(client, max_retries: int = 3, **kwargs):
+    """Call client.models.generate_content with exponential backoff.
+
+    Retries on transient errors (rate limits, server errors).
+    Returns the response object, or raises after exhausting retries.
+    """
+    from google.api_core.exceptions import ResourceExhausted, ServiceUnavailable
+    delay = 2.0
+    for attempt in range(max_retries):
+        try:
+            return client.models.generate_content(**kwargs)
+        except (ResourceExhausted, ServiceUnavailable) as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(delay)
+            delay *= 2
+        except Exception as e:
+            # For unexpected errors (e.g. safety blocks), don't retry
+            raise
 
 
 # ---------------------------------------------------------------------------
@@ -182,7 +209,8 @@ def llm_oracle(npc: NPC, question: str, operative: Operative, client) -> str:
 
     system_prompt = build_npc_system_prompt(npc, operative)
 
-    response = client.models.generate_content(
+    response = gemini_call_with_retry(
+        client,
         model="gemini-2.5-flash",
         contents=question,
         config=genai.types.GenerateContentConfig(
@@ -191,4 +219,4 @@ def llm_oracle(npc: NPC, question: str, operative: Operative, client) -> str:
         ),
     )
 
-    return response.text
+    return response.text or f"{npc.name} stares at you silently."

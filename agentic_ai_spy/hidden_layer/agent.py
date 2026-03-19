@@ -22,7 +22,7 @@ from hidden_layer.tools import GameTools, ToolResult
 MISSION_BRIEFING = """CLASSIFIED — MISSION BRIEFING — AGENT LAMBDA
 
 OBJECTIVE: Infiltrate the OVERFIT Corporation base on Isla Perdida and extract
-10 classified dossiers. Your helicopter at (0,0) will not depart without them.
+10 classified dossiers. The mission is complete once you have all 10.
 
 THE BASE (8x8 grid):
 - Dossier caches (📁): Contain 1 dossier each. Use collect() to grab them.

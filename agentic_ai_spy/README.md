@@ -17,8 +17,8 @@ Open the student notebook and follow the instructions inside.
 ## Game overview
 
 You are **Agent Lambda**, inserted on the south shore of Isla Perdida.  Your
-helicopter waits at (0, 0) but the pilot won't leave without **10 classified
-dossiers**.  Navigate the 8x8 base grid, talk to informants, gather materials,
+mission: recover **10 classified dossiers** from the OVERFIT Corporation base.
+Navigate the 8x8 base grid, talk to informants, gather materials,
 craft weapons, and defeat the two robots guarding the most sensitive files.
 
 ## Structure
