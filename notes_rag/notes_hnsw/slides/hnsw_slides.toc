@@ -1,0 +1,9 @@
+\beamer@sectionintoc {1}{Nearest Neighbor Search}{2}{0}{1}
+\beamer@sectionintoc {2}{The Skip-List Analogy}{5}{0}{2}
+\beamer@sectionintoc {3}{Why Layers?}{8}{0}{3}
+\beamer@sectionintoc {4}{Data Structure}{11}{0}{4}
+\beamer@sectionintoc {5}{The Algorithms}{14}{0}{5}
+\beamer@sectionintoc {6}{Complexity}{22}{0}{6}
+\beamer@sectionintoc {7}{Worked Example}{24}{0}{7}
+\beamer@sectionintoc {8}{Practical Tuning}{26}{0}{8}
+\beamer@sectionintoc {9}{Summary}{28}{0}{9}
