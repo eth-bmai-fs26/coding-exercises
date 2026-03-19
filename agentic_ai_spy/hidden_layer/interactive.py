@@ -51,7 +51,9 @@ class InteractiveGame:
         self.game_over = False
 
         # -- Widgets --
-        self._game_display = widgets.Output()
+        self._game_display = widgets.Output(
+            layout=widgets.Layout(flex="0 0 auto"),
+        )
 
         # Direction buttons (cross layout)
         btn_style = widgets.Layout(width="64px", height="40px")
@@ -253,7 +255,7 @@ class InteractiveGame:
 
         html = f"""
 <div style="font-family:'Courier New',monospace;background:linear-gradient(180deg,#0a0a0a 0%,#0a1a0a 100%);
-  color:#b0b0b0;padding:0;border-radius:12px;max-width:680px;border:2px solid #1a3a1a;
+  color:#b0b0b0;padding:0;border-radius:12px;display:inline-block;border:2px solid #1a3a1a;
   box-shadow:0 4px 24px rgba(0,20,0,0.6);overflow:hidden;">
 
   <!-- Title bar -->
