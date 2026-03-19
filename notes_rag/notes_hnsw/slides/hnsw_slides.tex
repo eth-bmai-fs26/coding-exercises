@@ -1,0 +1,1218 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{BMAI}
+
+\usepackage[vlined]{algorithm2e}
+
+% ---- HNSW-specific notation ----
+\newcommand{\eps}{\mathit{ep}}
+\newcommand{\ef}{\mathit{ef}}
+\newcommand{\lw}{\ell_w}
+\newcommand{\neigh}{\mathrm{neigh}}
+
+\title{HNSW}
+\subtitle{Hierarchical Navigable Small World Graphs}
+\author{Carlos Cotrini}
+\date{Spring 2026}
+\institute{D-INFK, ETH Zurich}
+
+\begin{document}
+
+% ============================================================
+% TITLE
+% ============================================================
+\titleframe
+
+% ============================================================
+% SECTION 1: THE PROBLEM
+% ============================================================
+\section{Nearest Neighbor Search}
+\sectionframe[Find the $K$ closest points to a query --- fast.]
+
+% ------ Slide: The Task ------
+\begin{frame}{The Task}
+
+\begin{columns}[c]
+\begin{column}{0.35\textwidth}
+\begin{itemize}
+  \item $N$ data points
+  \item Query $t$
+  \item Find $K$ nearest
+\end{itemize}
+
+\bigskip
+\bfpurple{Exact:} scan all $N$
+
+$\Rightarrow$ $\bigO(N)$ per query
+\end{column}
+
+\begin{column}{0.6\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Data points
+  \foreach \x/\y in {
+    0.5/3.2, 1.1/1.5, 1.8/4.1, 2.3/0.8, 2.9/2.7,
+    3.5/4.5, 3.8/1.2, 4.2/3.0, 4.8/0.5, 5.1/3.8,
+    5.5/1.8, 6.0/4.2, 6.3/2.5, 6.8/0.9, 7.2/3.5,
+    1.5/2.5, 3.2/3.5, 4.5/2.2, 5.8/2.8, 7.0/1.5
+  }{
+    \node[graphnode, minimum size=4mm] at (\x,\y) {};
+  }
+
+  % Query point
+  \node[fill=BMAIcoral!50, draw=BMAIcoral, line width=1.5pt,
+        circle, minimum size=7mm, inner sep=0pt,
+        font=\footnotesize\bfseries, label={[BMAIcoral,font=\bfseries]above:$t$}]
+    (query) at (4.0,2.4) {};
+
+  % Nearest neighbors (highlight 3)
+  \foreach \x/\y in {4.2/3.0, 3.2/3.5, 4.5/2.2}{
+    \draw[BMAIgold, line width=2pt, dashed] (query) -- (\x,\y);
+    \node[graphnode highlight, minimum size=4mm] at (\x,\y) {};
+  }
+
+  % Distance indicator
+  \draw[BMAIcoral, line width=1pt, <->] (4.0,2.4) -- (4.2,3.0)
+    node[midway, right, font=\scriptsize, text=BMAIcoral] {$d$};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: Goal ------
+\begin{frame}{Goal: Sublinear Search}
+
+\centering
+\begin{tikzpicture}[scale=0.9]
+  % Axis
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (10,0)
+    node[right, font=\small] {$N$ (dataset size)};
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (0,5.5)
+    node[above, font=\small] {query time};
+
+  % Linear
+  \draw[BMAIcoral, line width=2pt] (0,0) -- (9,4.5);
+  \node[BMAIcoral, font=\small\bfseries] at (8,5) {Exact: $\bigO(N)$};
+
+  % Log
+  \draw[BMAIteal, line width=2.5pt] plot[smooth,domain=0.2:9,samples=50]
+    (\x, {1.2*ln(\x+1)});
+  \node[BMAIteal, font=\small\bfseries] at (7,3) {HNSW: $\bigO(\log N)$};
+
+  % Annotation
+  \draw[BMAIgold, line width=1.5pt, <->] (6,3.0) -- (6,1.65)
+    node[midway, right, font=\footnotesize\bfseries, text=BMAIgoldDark] {speedup};
+\end{tikzpicture}
+
+\bigskip
+\begin{insightbox}[\bfseries Key idea]
+  Build a \bfgold{multi-layer graph} that enables \bfgold{greedy navigation} to nearest neighbors.
+\end{insightbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 2: SKIP-LIST ANALOGY
+% ============================================================
+\section{The Skip-List Analogy}
+\sectionframe[HNSW is a skip list generalized to metric spaces.]
+
+% ------ Slide: Skip List ------
+\begin{frame}{Skip Lists: Express Lanes}
+
+\centering
+\begin{tikzpicture}[
+  node distance=1.2cm and 1.4cm,
+  slnode/.style={circle, draw=BMAIpurple, fill=BMAIpurplePale,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize\bfseries},
+  slnodeghost/.style={circle, draw=BMAIgray!40, fill=BMAIgrayLight,
+    minimum size=5mm, inner sep=0pt, font=\scriptsize, text=BMAIgray},
+  sllink/.style={draw=BMAIpurple!50, line width=0.8pt, -},
+  expresslinkA/.style={draw=BMAIgold, line width=1.5pt, -},
+  expresslinkB/.style={draw=BMAIcoral, line width=1.5pt, -},
+  layerlab/.style={font=\footnotesize\bfseries, text=BMAIpurple, anchor=east},
+  scale=0.95
+]
+
+  % Layer labels
+  \node[layerlab] at (-1.2,0) {Layer 0};
+  \node[layerlab] at (-1.2,1.5) {Layer 1};
+  \node[layerlab] at (-1.2,3.0) {Layer 2};
+
+  % Layer 0 — all elements
+  \foreach \i/\val in {0/2, 1/5, 2/8, 3/12, 4/17, 5/21, 6/29, 7/35} {
+    \node[slnode] (L0-\i) at (\i*1.4,0) {\val};
+  }
+  \foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,6} {
+    \draw[sllink] (L0-\i) -- (L0-\j);
+  }
+
+  % Layer 1 — subset
+  \foreach \i/\val in {0/2, 2/8, 4/17, 7/35} {
+    \node[slnode, fill=BMAIgold!25] (L1-\i) at (\i*1.4,1.5) {\val};
+  }
+  \draw[expresslinkA] (L1-0) -- (L1-2);
+  \draw[expresslinkA] (L1-2) -- (L1-4);
+  \draw[expresslinkA] (L1-4) -- (L1-7);
+
+  % Vertical connections
+  \foreach \i in {0,2,4,7} {
+    \draw[BMAIgray, dashed, line width=0.5pt] (L1-\i) -- (L0-\i);
+  }
+
+  % Layer 2 — sparser
+  \foreach \i/\val in {0/2, 7/35} {
+    \node[slnode, fill=BMAIcoral!25] (L2-\i) at (\i*1.4,3.0) {\val};
+  }
+  \draw[expresslinkB] (L2-0) -- (L2-7);
+
+  \foreach \i in {0,7} {
+    \draw[BMAIgray, dashed, line width=0.5pt] (L2-\i) -- (L1-\i);
+  }
+
+  % Annotations
+  \node[annot, anchor=west] at (10.5,0) {all elements};
+  \node[annot, anchor=west, text=BMAIgoldDark] at (10.5,1.5) {$\sim\!N/M$ elements};
+  \node[annot, anchor=west, text=BMAIcoral] at (10.5,3.0) {$\sim\!N/M^2$ elements};
+
+\end{tikzpicture}
+
+\bigskip
+\begin{columns}[t]
+\begin{column}{0.45\textwidth}
+  \bfpurple{Search strategy:}
+  \begin{enumerate}
+    \item Start at top layer
+    \item Move right while possible
+    \item Drop down, repeat
+  \end{enumerate}
+\end{column}
+\begin{column}{0.45\textwidth}
+  \bfgold{Complexity:}
+  \begin{itemize}
+    \item $\bigO(\log N)$ expected
+    \item Upper layers = express lanes
+  \end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: Skip List to HNSW ------
+\begin{frame}{From 1D to Metric Spaces}
+
+\begin{columns}[c]
+\begin{column}{0.45\textwidth}
+\centering
+{\small
+\begin{tabular}{@{}p{3.2cm}p{3.2cm}@{}}
+\toprule
+\bfpurple{Skip List} & \bfgold{HNSW} \\
+\midrule
+Sorted linked list & Proximity graph \\[4pt]
+Left/right neighbors & $M$ nearest neighbors \\[4pt]
+Promotion prob.\ $\frac{1}{2}$ & Promotion prob.\ $\frac{1}{M}$ \\[4pt]
+``Move right'' & ``Move closer'' \\[4pt]
+Drop to next layer & Drop to next layer \\
+\bottomrule
+\end{tabular}
+}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.65]
+  % Layer 0: dense proximity graph
+  \node[graphnode, minimum size=4mm] (a) at (0,0) {};
+  \node[graphnode, minimum size=4mm] (b) at (1.5,0.5) {};
+  \node[graphnode, minimum size=4mm] (c) at (3,0) {};
+  \node[graphnode, minimum size=4mm] (d) at (2,-1.5) {};
+  \node[graphnode, minimum size=4mm] (e) at (0.5,-1.2) {};
+  \node[graphnode, minimum size=4mm] (f) at (4.5,0.5) {};
+  \node[graphnode, minimum size=4mm] (g) at (4,-1) {};
+  \node[graphnode, minimum size=4mm] (h) at (5.5,-0.5) {};
+
+  \foreach \u/\v in {a/b, b/c, c/d, d/e, e/a, b/d, c/f, f/g, g/h, f/h, c/g} {
+    \draw[graphedge] (\u) -- (\v);
+  }
+  \node[layerlabel, anchor=east] at (-0.8,-0.5) {Layer 0};
+
+  % Layer 1: sparser
+  \node[graphnode highlight, minimum size=4mm] (B) at (1.5,3) {};
+  \node[graphnode highlight, minimum size=4mm] (C) at (3,2.5) {};
+  \node[graphnode highlight, minimum size=4mm] (F) at (4.5,3) {};
+  \node[graphnode highlight, minimum size=4mm] (H) at (5.5,2) {};
+
+  \draw[BMAIgold, line width=1pt] (B) -- (C);
+  \draw[BMAIgold, line width=1pt] (C) -- (F);
+  \draw[BMAIgold, line width=1pt] (F) -- (H);
+  \draw[BMAIgold, line width=1pt] (B) -- (F);
+  \node[layerlabel, anchor=east] at (-0.8,2.5) {Layer 1};
+
+  % Layer 2
+  \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=4mm] (BB) at (1.5,5.5) {};
+  \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=4mm] (HH) at (5.5,5) {};
+  \draw[BMAIcoral, line width=1pt] (BB) -- (HH);
+  \node[layerlabel, anchor=east] at (-0.8,5.2) {Layer 2};
+
+  % Vertical dashed
+  \foreach \top/\bot in {B/b, C/c, F/f, H/h} {
+    \draw[BMAIgray, dashed, line width=0.5pt] (\top) -- (\bot);
+  }
+  \draw[BMAIgray, dashed, line width=0.5pt] (BB) -- (B);
+  \draw[BMAIgray, dashed, line width=0.5pt] (HH) -- (H);
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  In 1D with $M{=}2$, HNSW \emph{is} a skip list.
+  In higher dimensions, proximity graphs replace sorted linked lists.
+\end{insightbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 3: WHY LAYERS?
+% ============================================================
+\section{Why Layers?}
+\sectionframe[Separating long-range and short-range links.]
+
+% ------ Slide: The Hub Problem ------
+\begin{frame}{The Hub Problem}
+
+\begin{columns}[c]
+\begin{column}{0.35\textwidth}
+  \bfcoral{Flat graph:}
+  \begin{itemize}
+    \item All links in one layer
+    \item Hub nodes get many connections
+    \item Every search funnels through hubs
+    \item Cost grows with $N$
+  \end{itemize}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.8]
+  % Hub node
+  \node[graphnode, fill=BMAIcoral!40, draw=BMAIcoral,
+        minimum size=10mm, font=\footnotesize\bfseries] (hub) at (4,2.5) {hub};
+
+  % Surrounding nodes
+  \foreach \i/\x/\y in {
+    1/1.0/4.0, 2/2.0/4.5, 3/3.0/4.8,
+    4/5.5/4.5, 5/6.5/4.0, 6/7.0/3.0,
+    7/6.5/1.0, 8/5.5/0.3, 9/3.0/0.0,
+    10/1.5/0.5, 11/0.5/1.5, 12/0.5/3.0
+  }{
+    \node[graphnode, minimum size=4mm] (n\i) at (\x,\y) {};
+    \draw[BMAIcoral!50, line width=0.6pt] (hub) -- (n\i);
+  }
+
+  % Some peripheral connections
+  \draw[graphedge] (n1) -- (n2);
+  \draw[graphedge] (n2) -- (n3);
+  \draw[graphedge] (n4) -- (n5);
+  \draw[graphedge] (n5) -- (n6);
+  \draw[graphedge] (n7) -- (n8);
+  \draw[graphedge] (n10) -- (n11);
+  \draw[graphedge] (n11) -- (n12);
+
+  % Bottleneck annotation
+  \draw[BMAIcoral, line width=2pt, -{Stealth}] (1.0,2.5) -- (3.2,2.5)
+    node[midway, above, font=\scriptsize\bfseries, text=BMAIcoral] {bottleneck!};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: The Solution ------
+\begin{frame}{The Solution: Layered Hierarchy}
+
+\centering
+\begin{tikzpicture}[scale=0.75]
+  % Road metaphor with actual graph layers
+
+  % Layer 0: city streets
+  \fill[BMAIpurplePale, rounded corners=5pt] (-0.5,-1.0) rectangle (11.5,1.2);
+  \node[layerlabel, anchor=east] at (-0.8,0.1) {Layer 0};
+  \node[annot, anchor=west] at (11.8,0.1) {\textit{city streets}};
+
+  \foreach \i/\xpos in {1/0.5, 2/1.5, 3/2.5, 4/3.5, 5/4.5, 6/5.5, 7/6.5, 8/7.5, 9/8.5, 10/9.5, 11/10.5} {
+    \node[graphnode, minimum size=3.5mm] (La\i) at (\xpos,0.1) {};
+  }
+  \foreach \i [evaluate=\i as \j using int(\i+1)] in {1,...,10} {
+    \draw[graphedge] (La\i) -- (La\j);
+  }
+  % Extra cross connections
+  \draw[graphedge] (La1) to[bend left=20] (La3);
+  \draw[graphedge] (La4) to[bend left=20] (La6);
+  \draw[graphedge] (La7) to[bend left=20] (La9);
+
+  % Layer 1: arterials
+  \fill[BMAIgold!15, rounded corners=5pt] (-0.5,2.0) rectangle (11.5,3.8);
+  \node[layerlabel, anchor=east] at (-0.8,2.9) {Layer 1};
+  \node[annot, anchor=west, text=BMAIgoldDark] at (11.8,2.9) {\textit{arterials}};
+
+  \node[graphnode highlight, minimum size=4mm] (Lb1) at (1.5,2.9) {};
+  \node[graphnode highlight, minimum size=4mm] (Lb2) at (4.5,2.9) {};
+  \node[graphnode highlight, minimum size=4mm] (Lb3) at (7.5,2.9) {};
+  \node[graphnode highlight, minimum size=4mm] (Lb4) at (10.5,2.9) {};
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lb1) -- (La2);
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lb2) -- (La5);
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lb3) -- (La8);
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lb4) -- (La11);
+  \draw[BMAIgold, line width=1.2pt] (Lb1) -- (Lb2);
+  \draw[BMAIgold, line width=1.2pt] (Lb2) -- (Lb3);
+  \draw[BMAIgold, line width=1.2pt] (Lb3) -- (Lb4);
+
+  % Layer 2: highway
+  \fill[BMAIcoral!10, rounded corners=5pt] (-0.5,5.0) rectangle (11.5,6.5);
+  \node[layerlabel, anchor=east] at (-0.8,5.75) {Layer 2};
+  \node[annot, anchor=west, text=BMAIcoral] at (11.8,5.75) {\textit{highway}};
+
+  \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=5mm] (Lc1) at (1.5,5.75) {};
+  \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=5mm] (Lc2) at (10.5,5.75) {};
+  \draw[BMAIcoral, line width=1.5pt] (Lc1) -- (Lc2);
+
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lc1) -- (Lb1);
+  \draw[BMAIgray, dashed, line width=0.5pt] (Lc2) -- (Lb4);
+
+  % Search path annotation
+  \draw[BMAIcoral, line width=2pt, -{Stealth[length=3mm]}] (1.5,5.75) -- (10.5,5.75);
+  \draw[BMAIgoldDark, line width=2pt, -{Stealth[length=3mm]}] (10.5,2.9) -- (7.5,2.9);
+  \draw[BMAIpurple, line width=2pt, -{Stealth[length=3mm]}] (7.5,0.1) -- (8.5,0.1);
+
+  % Arrow labels
+  \node[font=\scriptsize\bfseries, text=BMAIcoral, above] at (6,6.0) {coarse};
+  \node[font=\scriptsize\bfseries, text=BMAIgoldDark, above] at (9,3.2) {medium};
+  \node[font=\scriptsize\bfseries, text=BMAIpurple, below] at (8,-0.2) {fine};
+\end{tikzpicture}
+
+\bigskip
+\begin{insightbox}
+  Each layer has bounded degree $\leq M$ \quad$\Rightarrow$\quad no hubs, no bottlenecks.
+\end{insightbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 4: DATA STRUCTURE
+% ============================================================
+\section{Data Structure}
+\sectionframe[How elements are organized across layers.]
+
+% ------ Slide: Layer Assignment ------
+\begin{frame}{Layer Assignment: Coin Flips}
+
+\begin{columns}[c]
+\begin{column}{0.4\textwidth}
+  Flip a biased coin (heads prob.\ $\frac{1}{M}$).
+
+  \bigskip
+  Count heads before first tail:
+
+  \[
+    \lw = 0, 1, 2, \ldots
+  \]
+
+  \bigskip
+  \bfpurple{Geometric distribution:}
+  \[
+    \Pr[\lw \geq k] = \left(\tfrac{1}{M}\right)^k
+  \]
+\end{column}
+
+\begin{column}{0.55\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.7]
+  % Bar chart showing expected elements per layer
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (0,6)
+    node[above, font=\small] {elements};
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (8,0)
+    node[right, font=\small] {layer};
+
+  % Bars
+  \fill[BMAIpurple!70] (0.5,0) rectangle (2.0,5.0);
+  \node[below, font=\scriptsize] at (1.25,-0.1) {0};
+  \node[above, font=\scriptsize\bfseries, text=BMAIpurple] at (1.25,5.0) {$N$};
+
+  \fill[BMAIgold!80] (2.5,0) rectangle (4.0,2.5);
+  \node[below, font=\scriptsize] at (3.25,-0.1) {1};
+  \node[above, font=\scriptsize\bfseries, text=BMAIgoldDark] at (3.25,2.5) {$N/M$};
+
+  \fill[BMAIcoral!70] (4.5,0) rectangle (6.0,0.8);
+  \node[below, font=\scriptsize] at (5.25,-0.1) {2};
+  \node[above, font=\scriptsize, text=BMAIcoral] at (5.25,0.8) {$N/M^2$};
+
+  \fill[BMAIteal!70] (6.5,0) rectangle (8.0,0.15);
+  \node[below, font=\scriptsize] at (7.25,-0.1) {3};
+  \node[above, font=\scriptsize, text=BMAIteal] at (7.25,0.35) {$N/M^3$};
+
+  % Example
+  \node[anchor=north west, font=\footnotesize, text=BMAIgray] at (0.5,-1.0) {
+    $M{=}16$, $N{=}10^6$:
+  };
+  \node[anchor=north west, font=\footnotesize, text=BMAIgray] at (0.5,-1.7) {
+    Layer 2 $\approx$ 4000 elements
+  };
+  \node[anchor=north west, font=\footnotesize, text=BMAIgray] at (0.5,-2.3) {
+    Typically 4--6 layers total
+  };
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: Parameters ------
+\begin{frame}{Key Parameters}
+
+\centering
+{\small
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\bfpurple{Parameter} & \bfpurple{Typical} & \bfpurple{Role} \\
+\midrule
+$M$ & 5--48 & Max neighbors per layer \\[6pt]
+$M_{\max 0} = 2M$ & 10--96 & Max neighbors on layer 0 \\[6pt]
+$\ef_{\mathrm{Constr}}$ & 100--500 & Beam width during build \\[6pt]
+$\ef$ & $\geq K$ & Beam width at query time \\
+\bottomrule
+\end{tabular}
+}
+
+\bigskip\bigskip
+\begin{columns}[t]
+\begin{column}{0.45\textwidth}
+\begin{lbox}[\bfseries Build-time (fixed)]
+  $M$ and $\ef_{\mathrm{Constr}}$ are baked into the index.
+  Cannot be changed without rebuilding.
+\end{lbox}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{insightbox}[\bfseries Query-time (tunable)]
+  $\ef$ trades speed for recall.\\
+  Increase $\ef$ $\Rightarrow$ higher recall, slower queries.
+\end{insightbox}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 5: ALGORITHMS
+% ============================================================
+\section{The Algorithms}
+\sectionframe[Five building blocks of HNSW.]
+
+% ------ Slide: Overview ------
+\begin{frame}{Five Algorithms}
+
+\centering
+\begin{tikzpicture}[
+  block/.style={
+    draw=BMAIpurple, fill=BMAIpurplePale,
+    rounded corners=4pt, minimum width=3cm, minimum height=1cm,
+    font=\small\bfseries, text=BMAIpurple, align=center
+  },
+  blockgold/.style={
+    draw=BMAIgoldDark, fill=BMAIgoldPale,
+    rounded corners=4pt, minimum width=3cm, minimum height=1cm,
+    font=\small\bfseries, text=BMAIgoldDark, align=center
+  },
+  arr/.style={-{Stealth[length=3mm]}, line width=1.2pt, BMAIpurple!60},
+  scale=0.9
+]
+  % Top level: user-facing
+  \node[blockgold] (search) at (0,4) {search\\{\scriptsize\normalfont $K$-NN query}};
+  \node[blockgold] (insert) at (6,4) {insert\\{\scriptsize\normalfont build index}};
+
+  % Mid level: composites
+  \node[block] (findnn) at (-2,1.5) {find-nn\\{\scriptsize\normalfont greedy descent}};
+  \node[block] (beam) at (3,1.5) {beam-search\\{\scriptsize\normalfont single-layer}};
+  \node[block] (sel) at (8,1.5) {sel-neighbors\\{\scriptsize\normalfont heuristic}};
+
+  % Arrows
+  \draw[arr] (search) -- (findnn);
+  \draw[arr] (search) -- (beam);
+  \draw[arr] (insert) -- (findnn);
+  \draw[arr] (insert) -- (beam);
+  \draw[arr] (insert) -- (sel);
+\end{tikzpicture}
+
+\end{frame}
+
+% ------ Slide: find-nn ------
+\begin{frame}{\textsc{find-nn}: Greedy Descent}
+
+\begin{columns}[c]
+\begin{column}{0.32\textwidth}
+  \begin{enumerate}
+    \item Start at entry point, top layer
+    \item Move to closest neighbor
+    \item No improvement $\Rightarrow$ drop one layer
+    \item Repeat until target layer
+  \end{enumerate}
+
+  \bigskip
+  {\small\bfpurple{No beam.} Single current node.
+
+  Fast but can hit local minima.}
+\end{column}
+
+\begin{column}{0.65\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.75]
+  % Layer 2
+  \fill[BMAIcoral!8, rounded corners=3pt] (-0.5,7.0) rectangle (10,8.5);
+  \node[layerlabel, anchor=east] at (-0.8,7.75) {L2};
+
+  \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=5mm] (ep) at (1,7.75) {};
+  \node[graphnode, minimum size=5mm] (l2b) at (5,7.75) {};
+  \node[graphnode, minimum size=5mm] (l2c) at (9,7.75) {};
+  \draw[graphedge] (ep) -- (l2b);
+  \draw[graphedge] (l2b) -- (l2c);
+
+  % Layer 1
+  \fill[BMAIgold!8, rounded corners=3pt] (-0.5,4.0) rectangle (10,5.8);
+  \node[layerlabel, anchor=east] at (-0.8,4.9) {L1};
+
+  \node[graphnode highlight, minimum size=5mm] (l1a) at (1,4.9) {};
+  \node[graphnode highlight, minimum size=5mm] (l1b) at (4,4.9) {};
+  \node[graphnode highlight, minimum size=5mm] (l1c) at (7,4.9) {};
+  \node[graphnode highlight, minimum size=5mm] (l1d) at (9,4.9) {};
+  \draw[BMAIgold, line width=0.8pt] (l1a) -- (l1b);
+  \draw[BMAIgold, line width=0.8pt] (l1b) -- (l1c);
+  \draw[BMAIgold, line width=0.8pt] (l1c) -- (l1d);
+  \draw[BMAIgold, line width=0.8pt] (l1a) -- (l1c);
+
+  % Layer 0
+  \fill[BMAIpurplePale!30, rounded corners=3pt] (-0.5,0.5) rectangle (10,2.8);
+  \node[layerlabel, anchor=east] at (-0.8,1.65) {L0};
+
+  \foreach \x/\name in {1/a,2.5/b,4/c,5.5/d,7/e,8.5/f,9/g} {
+    \node[graphnode, minimum size=4mm] (l0\name) at (\x,1.65) {};
+  }
+  \draw[graphedge] (l0a)--(l0b); \draw[graphedge] (l0b)--(l0c);
+  \draw[graphedge] (l0c)--(l0d); \draw[graphedge] (l0d)--(l0e);
+  \draw[graphedge] (l0e)--(l0f); \draw[graphedge] (l0f)--(l0g);
+  \draw[graphedge] (l0a) to[bend left=15] (l0c);
+  \draw[graphedge] (l0c) to[bend left=15] (l0e);
+  \draw[graphedge] (l0e) to[bend left=15] (l0g);
+
+  % Query point
+  \node[fill=BMAIcoral!50, draw=BMAIcoral, line width=1.5pt,
+        circle, minimum size=6mm, inner sep=0pt, font=\scriptsize\bfseries]
+    (query) at (8,0) {$t$};
+
+  % Vertical links
+  \draw[BMAIgray, dashed, line width=0.4pt] (ep) -- (l1a);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l2b) -- (l1b);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l2c) -- (l1d);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l1a) -- (l0a);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l1b) -- (l0c);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l1c) -- (l0e);
+  \draw[BMAIgray, dashed, line width=0.4pt] (l1d) -- (l0g);
+
+  % Search path
+  \draw[BMAIcoral, line width=2.5pt, -{Stealth[length=3mm]}] (ep) -- (l2b)
+    node[midway, above, font=\tiny\bfseries, text=BMAIcoral] {closer!};
+  \draw[BMAIcoral, line width=2.5pt, -{Stealth[length=3mm]}] (l2b) -- (l2c)
+    node[midway, above, font=\tiny\bfseries, text=BMAIcoral] {closer!};
+  \draw[BMAIgoldDark, line width=2pt, -{Stealth[length=3mm]}] (l2c.south) -- (l1d.north)
+    node[midway, right, font=\tiny\bfseries, text=BMAIgoldDark] {drop};
+  \draw[BMAIcoral, line width=2pt, -{Stealth[length=3mm]}] (l1d.south) -- (l0g.north)
+    node[midway, right, font=\tiny\bfseries, text=BMAIgoldDark] {drop};
+  \draw[BMAIpurple, line width=2pt, -{Stealth[length=3mm]}] (l0g) -- (l0f)
+    node[midway, below, font=\tiny\bfseries, text=BMAIpurple] {closer!};
+
+  % Entry label
+  \node[font=\scriptsize\bfseries, text=BMAIcoral, above=2pt] at (ep.north) {$\eps$};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: beam-search ------
+\begin{frame}{\textsc{beam-search}: Single-Layer Exploration}
+
+\begin{columns}[c]
+\begin{column}{0.3\textwidth}
+  Three data structures:
+
+  \bigskip
+  \begin{description}
+    \item[$Q$] candidates (min-heap)
+    \item[$W$] best $\ef$ results (max-heap)
+    \item[$D$] visited (hash set)
+  \end{description}
+
+  \bigskip
+  {\small\bfgold{Stop} when best candidate $>$ worst result.}
+\end{column}
+
+\begin{column}{0.65\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.75]
+  % Nodes
+  \node[graphnode visited, minimum size=6mm] (v1) at (0,3) {$v_1$};
+  \node[graphnode visited, minimum size=6mm] (v2) at (2,4.5) {$v_2$};
+  \node[graphnode active, minimum size=6mm] (v3) at (3,2.5) {$v_3$};
+  \node[graphnode result, minimum size=6mm] (v4) at (5,3.5) {$v_4$};
+  \node[graphnode result, minimum size=6mm] (v5) at (6,1.5) {$v_5$};
+  \node[graphnode, minimum size=6mm] (v6) at (8,3) {$v_6$};
+  \node[graphnode, minimum size=6mm] (v7) at (7,4.5) {$v_7$};
+  \node[graphnode result, minimum size=6mm] (v8) at (4.5,1) {$v_8$};
+
+  % Edges
+  \draw[graphedge] (v1) -- (v2);
+  \draw[graphedge] (v1) -- (v3);
+  \draw[graphedge] (v2) -- (v4);
+  \draw[graphedge] (v3) -- (v4);
+  \draw[graphedge] (v3) -- (v5);
+  \draw[graphedge] (v4) -- (v7);
+  \draw[graphedge] (v4) -- (v6);
+  \draw[graphedge] (v5) -- (v6);
+  \draw[graphedge] (v3) -- (v8);
+  \draw[graphedge] (v5) -- (v8);
+
+  % Query
+  \node[fill=BMAIcoral!50, draw=BMAIcoral, line width=1.5pt,
+        circle, minimum size=7mm, inner sep=0pt, font=\scriptsize\bfseries]
+    (t) at (5.5,0) {$t$};
+
+  % Search expansion
+  \draw[graphedge search] (v3) -- (v4);
+  \draw[graphedge search] (v3) -- (v5);
+  \draw[graphedge search] (v3) -- (v8);
+
+  % Legend
+  \node[graphnode visited, minimum size=4mm] at (0.5,-0.5) {};
+  \node[annot, anchor=west] at (1.0,-0.5) {visited ($D$)};
+
+  \node[graphnode active, minimum size=4mm] at (3.5,-0.5) {};
+  \node[annot, anchor=west] at (4.0,-0.5) {exploring ($Q$)};
+
+  \node[graphnode result, minimum size=4mm] at (7.0,-0.5) {};
+  \node[annot, anchor=west] at (7.5,-0.5) {result ($W$)};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: beam-search intuition ------
+\begin{frame}{\textsc{beam-search}: The $\ef$ Knob}
+
+\centering
+\begin{tikzpicture}[scale=0.85]
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (10,0)
+    node[right, font=\small] {$\ef$};
+  \draw[-{Stealth}, line width=1pt, BMAIgray] (0,0) -- (0,5)
+    node[above, font=\small] {};
+
+  % Recall curve
+  \draw[BMAIteal, line width=2.5pt] plot[smooth,domain=0.5:9,samples=50]
+    (\x, {4.5*(1 - exp(-0.8*\x))});
+  \node[BMAIteal, font=\small\bfseries, anchor=west] at (8,4.8) {recall};
+
+  % Latency curve
+  \draw[BMAIcoral, line width=2.5pt] plot[smooth,domain=0.5:9,samples=50]
+    (\x, {0.3*\x + 0.2});
+  \node[BMAIcoral, font=\small\bfseries, anchor=west] at (8,3.2) {latency};
+
+  % Sweet spot
+  \fill[BMAIgold, opacity=0.3] (2.5,-0.3) rectangle (4.5,5.0);
+  \node[font=\footnotesize\bfseries, text=BMAIgoldDark] at (3.5,-0.7) {sweet spot};
+
+  % ef = K line
+  \draw[BMAIpurple, dashed, line width=1pt] (0.8,0) -- (0.8,4.8);
+  \node[font=\scriptsize, text=BMAIpurple, rotate=90, anchor=south] at (0.5,2.5) {$\ef = K$};
+\end{tikzpicture}
+
+\bigskip
+\begin{columns}[t]
+\begin{column}{0.45\textwidth}
+\begin{lbox}
+  $\ef = K$: fastest, lowest recall
+\end{lbox}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{insightbox}
+  $\ef = 200$, $K = 10$: examines 200 candidates, returns top 10
+\end{insightbox}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% ------ Slide: sel-neighbors ------
+\begin{frame}{\textsc{sel-neighbors}: Directional Diversity}
+
+\begin{columns}[c]
+\begin{column}{0.35\textwidth}
+  \bfcoral{Na\"ive:} pick $M$ closest
+
+  $\Rightarrow$ all neighbors in one cluster!
+
+  \bigskip
+  \bfteal{Heuristic:} add $w^*$ only if
+  \[
+    d(w^*, t) < \min_{v \in N} d(w^*, v)
+  \]
+
+  \bigskip
+  $\Rightarrow$ angular spread $\approx$ Delaunay
+\end{column}
+
+\begin{column}{0.6\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Target node
+  \node[fill=BMAIpurple!60, draw=BMAIpurple, line width=1.5pt,
+        circle, minimum size=8mm, inner sep=0pt, font=\footnotesize\bfseries,
+        text=white]
+    (t) at (4,3) {$t$};
+
+  % Cluster A (left)
+  \node[graphnode, minimum size=4mm] (a1) at (1.5,4.0) {};
+  \node[graphnode, minimum size=4mm] (a2) at (1.0,3.2) {};
+  \node[graphnode, minimum size=4mm] (a3) at (1.8,2.3) {};
+  \node[graphnode, minimum size=4mm] (a4) at (2.3,3.8) {};
+
+  % Cluster B (right)
+  \node[graphnode, minimum size=4mm] (b1) at (6.5,4.2) {};
+  \node[graphnode, minimum size=4mm] (b2) at (7.0,3.0) {};
+  \node[graphnode, minimum size=4mm] (b3) at (6.2,2.0) {};
+  \node[graphnode, minimum size=4mm] (b4) at (7.2,2.2) {};
+
+  % Cluster labels
+  \node[font=\footnotesize\bfseries, text=BMAIpurple] at (1.5,4.8) {Cluster A};
+  \node[font=\footnotesize\bfseries, text=BMAIpurple] at (6.8,4.8) {Cluster B};
+
+  % Heuristic picks: one per direction
+  \draw[BMAIteal, line width=2pt, -{Stealth}] (t) -- (a4)
+    node[midway, above, font=\tiny\bfseries, text=BMAIteal] {\cmark};
+  \draw[BMAIteal, line width=2pt, -{Stealth}] (t) -- (b2)
+    node[midway, above, font=\tiny\bfseries, text=BMAIteal] {\cmark};
+  \draw[BMAIteal, line width=2pt, -{Stealth}] (t) -- (a3)
+    node[midway, below, font=\tiny\bfseries, text=BMAIteal] {\cmark};
+  \draw[BMAIteal, line width=2pt, -{Stealth}] (t) -- (b3)
+    node[midway, below, font=\tiny\bfseries, text=BMAIteal] {\cmark};
+
+  % Rejected
+  \draw[BMAIcoral, line width=1pt, dashed] (t) -- (a2);
+  \node[font=\tiny\bfseries, text=BMAIcoral] at (2.3,2.8) {\xmark};
+  \draw[BMAIcoral, line width=1pt, dashed] (t) -- (a1);
+  \node[font=\tiny\bfseries, text=BMAIcoral] at (2.5,4.2) {\xmark};
+
+  % Cluster boundary
+  \draw[BMAIgray, dashed, line width=0.5pt] (4,0.5) -- (4,5.5);
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  Rejects candidates ``overshadowed'' by already-chosen neighbors.
+  Ensures connectivity across cluster boundaries.
+\end{insightbox}
+
+\end{frame}
+
+% ------ Slide: insert ------
+\begin{frame}{\textsc{insert}: Building the Index}
+
+\centering
+\begin{tikzpicture}[
+  stepbox/.style={
+    draw=BMAIpurple, fill=BMAIpurplePale,
+    rounded corners=3pt, minimum width=3.5cm, minimum height=0.9cm,
+    font=\small, text=BMAIdark, align=center
+  },
+  arr/.style={-{Stealth[length=2.5mm]}, line width=1.2pt, BMAIpurple!60},
+  scale=0.85
+]
+
+  % Steps
+  \node[stepbox] (s1) at (0,4.5) {
+    \bfpurple{1.} Assign layer $\lw$\\[-2pt]
+    {\scriptsize coin flips}
+  };
+
+  \node[stepbox] (s2) at (5,4.5) {
+    \bfpurple{2.} \textsc{find-nn}\\[-2pt]
+    {\scriptsize descend to layer $\lw$}
+  };
+
+  \node[stepbox] (s3) at (10,4.5) {
+    \bfpurple{3.} \textsc{beam-search}\\[-2pt]
+    {\scriptsize find candidates}
+  };
+
+  \node[stepbox] (s4) at (2.5,2) {
+    \bfpurple{4.} \textsc{sel-neighbors}\\[-2pt]
+    {\scriptsize select $M$ diverse}
+  };
+
+  \node[stepbox] (s5) at (7.5,2) {
+    \bfpurple{5.} Wire edges\\[-2pt]
+    {\scriptsize bidirectional, trim overfull}
+  };
+
+  \draw[arr] (s1) -- (s2);
+  \draw[arr] (s2) -- (s3);
+  \draw[arr] (s3) -- (s4);
+  \draw[arr] (s4) -- (s5);
+
+  % Loop back annotation
+  \draw[BMAIgold, line width=1.5pt, -{Stealth[length=2.5mm]}, rounded corners=5pt]
+    (s5.south) -- ++(0,-1.2) -| (s2.south);
+  \node[font=\scriptsize\bfseries, text=BMAIgoldDark] at (5,0.1)
+    {repeat for each layer $\lw$ down to 0};
+\end{tikzpicture}
+
+\bigskip
+\begin{alertbox}[\bfseries Key detail]
+  Inserting $w$ may push existing node $v$ over its degree limit.\\
+  We trim $v$'s neighbors with \textsc{sel-neighbors} --- not simple truncation.
+\end{alertbox}
+
+\end{frame}
+
+% ------ Slide: search ------
+\begin{frame}{\textsc{search}: Answering $K$-NN Queries}
+
+\begin{columns}[c]
+\begin{column}{0.35\textwidth}
+  \begin{enumerate}
+    \item \bfcoral{Greedy descent}\\
+      {\small layers $L \to 1$\\
+      cheap, no beam}
+
+    \bigskip
+    \item \bfpurple{Beam search}\\
+      {\small layer 0 only\\
+      find $\ef$ candidates}
+
+    \bigskip
+    \item \bfgold{Return top $K$}
+  \end{enumerate}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.7]
+  % Layers
+  \fill[BMAIcoral!6, rounded corners=3pt] (0,6.5) rectangle (10,8);
+  \node[font=\footnotesize\bfseries, text=BMAIcoral, anchor=west] at (0.3,7.7) {Layers $L \to 1$};
+  \node[font=\scriptsize, text=BMAIcoral, anchor=west] at (0.3,7.1) {\textsc{find-nn} (greedy)};
+
+  \fill[BMAIpurplePale!50, rounded corners=3pt] (0,3.0) rectangle (10,6.0);
+  \node[font=\footnotesize\bfseries, text=BMAIpurple, anchor=west] at (0.3,5.7) {Layer 0};
+  \node[font=\scriptsize, text=BMAIpurple, anchor=west] at (0.3,5.1) {\textsc{beam-search}$(t, n^*, 0, \ef)$};
+
+  \fill[BMAIgoldPale, rounded corners=3pt] (0,0.5) rectangle (10,2.5);
+  \node[font=\footnotesize\bfseries, text=BMAIgoldDark, anchor=west] at (0.3,2.1) {Result};
+  \node[font=\scriptsize, text=BMAIgoldDark, anchor=west] at (0.3,1.4) {Return $K$ nearest from $W$};
+
+  % Arrows
+  \draw[BMAIcoral, line width=2pt, -{Stealth[length=3mm]}] (5,6.5) -- (5,6.0)
+    node[midway, right, font=\scriptsize\bfseries, text=BMAIcoral] {entry point $n^*$};
+  \draw[BMAIpurple, line width=2pt, -{Stealth[length=3mm]}] (5,3.0) -- (5,2.5)
+    node[midway, right, font=\scriptsize\bfseries, text=BMAIpurple] {$W$ ($\ef$ candidates)};
+
+  % Graph sketch in layer 0
+  \foreach \x/\y in {2/4, 3.5/4.5, 5/3.7, 6.5/4.8, 8/4.2, 4/5.2, 7/3.5, 8.5/5} {
+    \node[graphnode, minimum size=3mm] (n-\x-\y) at (\x,\y) {};
+  }
+
+  % Some results highlighted
+  \foreach \x/\y in {5/3.7, 6.5/4.8, 7/3.5} {
+    \node[graphnode result, minimum size=3.5mm] at (\x,\y) {};
+  }
+
+  % Gold stars for final K
+  \foreach \x/\y/\lab in {3/1.4/1, 5/1.4/2, 7/1.4/3} {
+    \node[graphnode highlight, minimum size=5mm, font=\scriptsize\bfseries] at (\x,\lab) {$\lab$};
+  }
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  Layer 0 contains \emph{all} $N$ elements --- the true nearest neighbor is always there.\\
+  Upper layers are just a fast way to find a good starting point.
+\end{insightbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 6: COMPLEXITY
+% ============================================================
+\section{Complexity}
+\sectionframe
+
+% ------ Slide: Complexity Summary ------
+\begin{frame}{Complexity at a Glance}
+
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Three columns
+  \node[
+    draw=BMAIpurple, fill=BMAIpurplePale,
+    rounded corners=5pt,
+    minimum width=3.2cm, minimum height=4cm,
+    align=center, font=\small
+  ] (search) at (0,0) {
+    {\Large\bfpurple{Search}}\\[8pt]
+    $\bigO(\log N)$\\[4pt]
+    {\scriptsize $\log_M N$ layers}\\[2pt]
+    {\scriptsize bounded work/layer}\\[2pt]
+    {\scriptsize + $\ef \cdot M$ on layer 0}
+  };
+
+  \node[
+    draw=BMAIgoldDark, fill=BMAIgoldPale,
+    rounded corners=5pt,
+    minimum width=3.2cm, minimum height=4cm,
+    align=center, font=\small
+  ] (build) at (5,0) {
+    {\Large\bfgold{Build}}\\[8pt]
+    $\bigO(N \log N)$\\[4pt]
+    {\scriptsize $N$ insertions}\\[2pt]
+    {\scriptsize each $\bigO(\log N)$}\\[2pt]
+    {\scriptsize + beam-search/layer}
+  };
+
+  \node[
+    draw=BMAIteal, fill=BMAIteal!10,
+    rounded corners=5pt,
+    minimum width=3.2cm, minimum height=4cm,
+    align=center, font=\small
+  ] (mem) at (10,0) {
+    {\Large\bfteal{Memory}}\\[8pt]
+    $\sim 8M$ bytes/elem\\[4pt]
+    {\scriptsize $2M$ neighbors (L0)}\\[2pt]
+    {\scriptsize $+\frac{M}{M-1}$ (upper)}\\[2pt]
+    {\scriptsize $\approx 2M$ total}
+  };
+\end{tikzpicture}
+
+\bigskip
+\begin{exbox}[\bfseries Example]
+  $N = 10^6$, $M = 16$: search touches $\sim\!5$ layers $\times$ bounded steps
+  $+$ $\ef \cdot 16$ comparisons on layer 0.\\
+  Memory: $\sim\!128$ bytes/element for neighbor indices (plus raw vectors).
+\end{exbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 7: WORKED EXAMPLE
+% ============================================================
+\section{Worked Example}
+\sectionframe[$M = 4$, inserting points one by one.]
+
+% ------ Slide: Step by Step ------
+\begin{frame}{Building an Index: $M = 4$}
+
+\centering
+\begin{tikzpicture}[scale=0.8]
+  % Step 1: x1 alone
+  \node[graphnode, minimum size=7mm, font=\footnotesize\bfseries] (x1) at (0,0) {$x_1$};
+  \node[annot, below=3pt] at (x1.south) {$\eps$, $L=0$};
+  \node[annotbold, above=5pt] at (x1.north) {Insert 1};
+
+  % Step 2: x2 connects
+  \node[graphnode, minimum size=7mm, font=\footnotesize\bfseries] (x1b) at (3.5,0) {$x_1$};
+  \node[graphnode highlight, minimum size=7mm, font=\footnotesize\bfseries] (x2) at (5.5,0) {$x_2$};
+  \draw[graphedge, line width=1.2pt] (x1b) -- (x2);
+  \node[annotbold, above=5pt] at (4.5,0.5) {Insert 2};
+  \node[annot, below=3pt] at (x2.south) {$\lw = 0$};
+
+  % Step 5: x5 promoted
+  \begin{scope}[shift={(9,0)}]
+    % Layer 0
+    \node[graphnode, minimum size=5mm, font=\scriptsize\bfseries] (s5x1) at (0,0) {$x_1$};
+    \node[graphnode, minimum size=5mm, font=\scriptsize\bfseries] (s5x2) at (1.5,0) {$x_2$};
+    \node[graphnode, minimum size=5mm, font=\scriptsize\bfseries] (s5x3) at (0.5,-1) {$x_3$};
+    \node[graphnode, minimum size=5mm, font=\scriptsize\bfseries] (s5x4) at (2,0.8) {$x_4$};
+    \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=5mm,
+          font=\scriptsize\bfseries] (s5x5) at (1,1.5) {$x_5$};
+
+    \draw[graphedge] (s5x1) -- (s5x2);
+    \draw[graphedge] (s5x1) -- (s5x3);
+    \draw[graphedge] (s5x2) -- (s5x4);
+    \draw[graphedge] (s5x5) -- (s5x1);
+    \draw[graphedge] (s5x5) -- (s5x4);
+
+    % Layer 1 (x5 promoted)
+    \node[graphnode, fill=BMAIcoral!25, draw=BMAIcoral, minimum size=5mm,
+          font=\scriptsize\bfseries] (s5x5L1) at (1,3.5) {$x_5$};
+    \draw[BMAIgray, dashed, line width=0.5pt] (s5x5L1) -- (s5x5);
+
+    \node[annot, right=3pt] at (s5x5L1.east) {Layer 1};
+    \node[annot, right=3pt] at (2.3,0.4) {Layer 0};
+
+    \node[annotbold, above=5pt] at (1,4.0) {Insert 5: promoted!};
+    \node[annot, below=3pt] at (s5x5L1.south west) {new $\eps$, $L=1$};
+  \end{scope}
+\end{tikzpicture}
+
+\bigskip
+\begin{exbox}
+  \textbf{Query:} \textsc{search}$(t, \ef{=}10, K{=}3)$:
+  start at $x_5$ on Layer 1, descend, beam-search on Layer 0, return 3 nearest.
+\end{exbox}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 8: PARAMETER TUNING
+% ============================================================
+\section{Practical Tuning}
+\sectionframe
+
+\begin{frame}{Parameter Guidelines}
+
+\begin{columns}[t]
+\begin{column}{0.3\textwidth}
+\begin{lbox}[\bfseries $M$]
+  \begin{itemize}
+    \item Default: \bfpurple{16}
+    \item Low-dim: 5--12
+    \item High-dim: 32--64
+    \item More $M$ = more memory
+  \end{itemize}
+\end{lbox}
+\end{column}
+
+\begin{column}{0.3\textwidth}
+\begin{insightbox}[\bfseries $\ef_{\mathrm{Constr}}$]
+  \begin{itemize}
+    \item Default: \bfgold{200}
+    \item $2\times$ = better graph
+    \item $2\times$ = slower build
+    \item Baked in at build
+  \end{itemize}
+\end{insightbox}
+\end{column}
+
+\begin{column}{0.3\textwidth}
+\begin{exbox}[\bfseries $\ef$ (query)]
+  \begin{itemize}
+    \item Start at $\ef = K$
+    \item Increase until recall $\geq$ target
+    \item Free to change per query
+    \item No rebuild needed
+  \end{itemize}
+\end{exbox}
+\end{column}
+\end{columns}
+
+\bigskip
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Priority arrow
+  \draw[BMAIpurple!40, line width=2pt, -{Stealth[length=4mm]}] (0,0) -- (14,0);
+  \node[font=\scriptsize, text=BMAIgray, below] at (0,-0.2) {\itshape recall too low?};
+
+  \node[
+    draw=BMAIteal, fill=BMAIteal!10, rounded corners=3pt,
+    font=\footnotesize, minimum height=0.7cm
+  ] (n1) at (2.5,0.7) {Increase $\ef$};
+
+  \node[font=\scriptsize, text=BMAIgray] at (5.5,0.7) {\itshape still not enough?};
+
+  \node[
+    draw=BMAIgoldDark, fill=BMAIgoldPale, rounded corners=3pt,
+    font=\footnotesize, minimum height=0.7cm
+  ] (n2) at (9,0.7) {Rebuild with larger $\ef_{\mathrm{C}}$};
+
+  \node[font=\scriptsize, text=BMAIgray] at (12,0.7) {\itshape last resort};
+
+  \node[
+    draw=BMAIpurple, fill=BMAIpurplePale, rounded corners=3pt,
+    font=\footnotesize, minimum height=0.7cm
+  ] (n3) at (14,0.7) {Increase $M$};
+\end{tikzpicture}
+
+\end{frame}
+
+
+% ============================================================
+% SECTION 9: SUMMARY
+% ============================================================
+\section{Summary}
+\sectionframe
+
+\begin{frame}{HNSW in One Slide}
+
+\begin{columns}[c]
+\begin{column}{0.45\textwidth}
+\centering
+{\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\bfpurple{Property} & \bfpurple{Value} \\
+\midrule
+Analogy & Skip list \\
+Core idea & Layered links \\
+Search & $\bigO(\log N)$ \\
+Build & $\bigO(N \log N)$ \\
+Memory & $\sim 8M$ B/elem \\
+Key insight & \textsc{sel-neighbors} \\
+Knob & $\ef$ (query) \\
+\bottomrule
+\end{tabular}
+}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+  Three reinforcing design choices:
+
+  \bigskip
+  \begin{enumerate}
+    \item \bfcoral{Layered hierarchy}\\
+      {\small coarse $\to$ fine navigation}
+
+    \medskip
+    \item \bfteal{Heuristic selection}\\
+      {\small connectivity across clusters}
+
+    \medskip
+    \item \bfgold{Bounded degree}\\
+      {\small no hub bottlenecks}
+  \end{enumerate}
+\end{column}
+\end{columns}
+
+\bigskip
+\begin{insightbox}
+  \centering
+  HNSW = skip-list structure $+$ diverse neighbor selection $+$ bounded degree at every layer.
+\end{insightbox}
+
+\end{frame}
+
+
+% ============================================================
+% THANKS
+% ============================================================
+\thanksframe{Thank You}
+
+\end{document}
