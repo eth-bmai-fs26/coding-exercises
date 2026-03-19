@@ -1,0 +1,1021 @@
+% !TEX program = pdflatex
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% ============================================================
+% PACKAGES
+% ============================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{textcomp}
+\usepackage{multicol}
+
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, fit, backgrounds, decorations.markings}
+
+% Pre-define parameterized TikZ styles (avoids ## issues inside beamer frames)
+\tikzset{
+  colorbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+              minimum width=3.2cm, minimum height=2cm,
+              align=center, text=textmain, font=\small,
+              line width=2pt},
+  bigbox/.style={draw=#1, fill=bgcard, rounded corners=10pt, line width=2pt},
+  subbox/.style={draw=#1, fill=bgcard, rounded corners=5pt, line width=1.5pt,
+                 minimum width=2.8cm, minimum height=0.7cm,
+                 font=\scriptsize\bfseries, text=textmain},
+  colorarr/.style={-{Stealth[length=4pt]}, line width=1.5pt, color=#1},
+  stepbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+               minimum width=2.8cm, minimum height=1.5cm,
+               align=center, text=textmain, font=\small, line width=2pt},
+  smallbox/.style={draw=#1, fill=#1!15, rounded corners=8pt,
+              minimum width=2.5cm, minimum height=0.9cm,
+              align=center, text=textmain, font=\small\bfseries, line width=2pt},
+}
+
+% ============================================================
+% COLOR DEFINITIONS
+% ============================================================
+\definecolor{bgdark}{HTML}{0a0f1a}
+\definecolor{bgcard}{HTML}{111827}
+\definecolor{ethblue}{HTML}{1F407A}
+\definecolor{ethteal}{HTML}{0D9999}
+\definecolor{accentgreen}{HTML}{00ff41}
+\definecolor{accentred}{HTML}{e94560}
+\definecolor{textmain}{HTML}{e2e8f0}
+\definecolor{textmuted}{HTML}{94a3b8}
+\definecolor{bordersubtle}{HTML}{1e293b}
+\definecolor{codebg}{HTML}{0d1117}
+
+% Game grid cell colors
+\definecolor{cellopen}{HTML}{0f172a}
+\definecolor{celljungle}{HTML}{14532d}
+\definecolor{cellwall}{HTML}{44403c}
+\definecolor{cellcache}{HTML}{1e3a5f}
+\definecolor{cellinformant}{HTML}{4a1d6e}
+\definecolor{cellforge}{HTML}{7c2d12}
+\definecolor{celllab}{HTML}{1e3a5f}
+\definecolor{cellsafe}{HTML}{14532d}
+\definecolor{cellrobot}{HTML}{5a1a28}
+\definecolor{cellheli}{HTML}{0d6666}
+\definecolor{cellstart}{HTML}{0a4a1a}
+
+% ============================================================
+% BEAMER THEME
+% ============================================================
+\usetheme{default}
+\usecolortheme{default}
+
+\setbeamercolor{background canvas}{bg=bgdark}
+\setbeamercolor{normal text}{fg=textmain}
+\setbeamercolor{frametitle}{fg=white, bg=bgdark}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{subtitle}{fg=ethteal}
+\setbeamercolor{author}{fg=textmuted}
+\setbeamercolor{date}{fg=textmuted}
+\setbeamercolor{institute}{fg=textmuted}
+\setbeamercolor{item}{fg=ethteal}
+\setbeamercolor{subitem}{fg=textmuted}
+\setbeamercolor{block title}{fg=white, bg=ethteal}
+\setbeamercolor{block body}{fg=textmain, bg=bgcard}
+
+\setbeamerfont{frametitle}{size=\Large, series=\bfseries}
+\setbeamerfont{title}{size=\Huge, series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \hfill\usebeamercolor[fg]{textmuted}\insertframenumber\kern1em\vskip0.5em%
+}
+\setbeamertemplate{itemize items}{\color{ethteal}\small$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\color{textmuted}$\cdot$}
+
+% ============================================================
+% LISTINGS (CODE)
+% ============================================================
+\lstdefinestyle{pycode}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize\color{textmain},
+  keywordstyle=\color{ethteal}\bfseries,
+  stringstyle=\color{accentgreen},
+  commentstyle=\color{textmuted}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{bordersubtle},
+  framesep=6pt,
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  literate={->}{$\rightarrow$}1 {→}{$\rightarrow$}1,
+  morekeywords={f, self, True, False, None, as},
+}
+
+\lstdefinestyle{textcode}{
+  basicstyle=\ttfamily\scriptsize\color{accentgreen},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{bordersubtle},
+  framesep=6pt,
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  breaklines=true,
+}
+
+% ============================================================
+% HELPER COMMANDS
+% ============================================================
+\newcommand{\hl}[1]{\textcolor{ethteal}{\textbf{#1}}}
+\newcommand{\hlgreen}[1]{\textcolor{accentgreen}{\textbf{#1}}}
+\newcommand{\hlred}[1]{\textcolor{accentred}{\textbf{#1}}}
+\newcommand{\hlorange}[1]{\textcolor{orange}{\textbf{#1}}}
+\newcommand{\mutedtext}[1]{\textcolor{textmuted}{#1}}
+\newcommand{\classified}[1]{%
+  \tikz[baseline=(X.base)]{%
+    \node[draw=accentred, fill=accentred!20, text=accentred,
+          font=\bfseries\footnotesize\scshape,
+          inner sep=3pt, rounded corners=2pt,
+          text height=1.3ex, text depth=0.3ex] (X) {#1};%
+  }%
+}
+\newcommand{\badge}[2]{%
+  \tikz[baseline=(X.base)]{%
+    \node[draw=#1, fill=#1!15, text=#1,
+          font=\bfseries\tiny,
+          inner sep=2pt, rounded corners=8pt] (X) {#2};%
+  }%
+}
+
+% ============================================================
+% TITLE INFO
+% ============================================================
+\title{Agentic AI}
+\subtitle{From Language Models to Autonomous Agents}
+\author{Building ML/AI Applications}
+\institute{CAS -- AIS \quad$\cdot$\quad ETH Zurich}
+\date{FS 2026}
+
+% ============================================================
+% DOCUMENT
+% ============================================================
+\begin{document}
+
+% ----------------------------------------------------------
+% TITLE SLIDE
+% ----------------------------------------------------------
+{
+\setbeamertemplate{footline}{}
+\begin{frame}[c]
+\centering
+\classified{CAS -- AIS \quad FS26}\\[1.5em]
+{\usebeamerfont{title}\usebeamercolor[fg]{title}Agentic AI}\\[0.4em]
+{\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}From Language Models to Autonomous Agents}\\[2em]
+\mutedtext{Building ML/AI Applications\quad$\cdot$\quad ETH Zurich}\\
+\mutedtext{CAS -- AIS\quad$\cdot$\quad FS 2026}
+\end{frame}
+}
+
+% ----------------------------------------------------------
+% WHAT IS AGENTIC AI?
+% ----------------------------------------------------------
+\begin{frame}{What is Agentic AI?}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+An \hl{AI agent} is a system that can:
+\begin{itemize}
+  \item \textbf{Perceive} its environment
+  \item \textbf{Reason} about what to do next
+  \item \textbf{Act} using tools and APIs
+  \item \textbf{Learn} from the results
+\end{itemize}
+\vspace{0.8em}
+Unlike a chatbot that answers one question, an agent \hl{pursues goals over multiple steps}, deciding its own actions along the way.
+\end{column}
+\begin{column}{0.42\textwidth}
+\centering
+\begin{tikzpicture}
+  \node[draw=ethteal, fill=ethteal!8, rounded corners=6pt,
+        minimum width=5.5cm, minimum height=1.6cm, align=center,
+        text=textmain, font=\small] (chatbot) {
+    \mutedtext{\scriptsize Chatbot}\\[2pt]
+    Question $\rightarrow$ Answer\\[-2pt]
+    \mutedtext{\scriptsize (single turn)}
+  };
+  \node[below=0.4cm of chatbot, font=\large, text=textmuted] (arrow) {$\Downarrow$};
+  \node[draw=accentgreen, fill=accentgreen!8, rounded corners=6pt,
+        minimum width=5.5cm, minimum height=1.6cm, align=center,
+        text=textmain, font=\small, below=0.4cm of arrow] (agent) {
+    \hlgreen{\scriptsize Agent}\\[2pt]
+    Goal $\rightarrow$ Plan $\rightarrow$ Act $\rightarrow$ Observe $\rightarrow$ Adapt\\[-2pt]
+    \mutedtext{\scriptsize (multi-turn, autonomous)}
+  };
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% THE AGENT LOOP
+% ----------------------------------------------------------
+\begin{frame}{The Agent Loop}
+Every agent follows the same fundamental cycle:
+\vspace{0.5em}
+\centering
+\begin{tikzpicture}
+  \node[colorbox=ethblue] (perceive) {%
+    {\large\raisebox{0pt}{$\boldsymbol{\odot}$}}\\[4pt]
+    \textbf{PERCEIVE}\\[2pt]
+    \mutedtext{\scriptsize Observe the environment}};
+  \node[colorbox=ethteal, right=1.5cm of perceive] (think) {%
+    {\large $\boldsymbol{\circledast}$}\\[4pt]
+    \textbf{THINK}\\[2pt]
+    \mutedtext{\scriptsize LLM reasons \& decides}};
+  \node[colorbox=accentgreen, right=1.5cm of think] (act) {%
+    {\large $\boldsymbol{\star}$}\\[4pt]
+    \textbf{ACT}\\[2pt]
+    \mutedtext{\scriptsize Execute a tool call}};
+
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=textmuted] (perceive) -- (think);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=textmuted] (think) -- (act);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, dashed, color=textmuted!70]
+    (act.south) .. controls ++(0,-0.8) and ++(0,-0.8) .. (perceive.south)
+    node[midway, below, font=\scriptsize\itshape, text=textmuted] {repeat until goal is reached};
+\end{tikzpicture}
+
+\vspace{0.8em}
+\mutedtext{\scriptsize The LLM is the \textbf{brain} -- it reads observations and history, then outputs a structured tool call.}
+\end{frame}
+
+% ----------------------------------------------------------
+% ANATOMY OF AN AGENT
+% ----------------------------------------------------------
+\begin{frame}{Anatomy of an Agent}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6cm, inner sep=8pt, align=left, text=textmain, font=\small] (llm) {
+      {\color{ethteal}\textbf{LLM (The Brain)}}\\[3pt]
+      Receives a \textbf{system prompt} (role, goals, rules) and \textbf{conversation history}. Outputs a \textbf{structured tool call}.
+    };
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6cm, inner sep=8pt, align=left, text=textmain, font=\small,
+          below=0.3cm of llm] (tools) {
+      {\color{ethteal}\textbf{Tools}}\\[3pt]
+      Concrete actions: \texttt{move()}, \texttt{talk()}, \texttt{search()}, \texttt{create\_file()}, API calls, database queries.
+    };
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6cm, inner sep=8pt, align=left, text=textmain, font=\small] (mem) {
+      {\color{ethteal}\textbf{Memory / History}}\\[3pt]
+      Running log of observations, actions, and results. Lets the agent \textbf{build context} and avoid repeating mistakes.
+    };
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6cm, inner sep=8pt, align=left, text=textmain, font=\small,
+          below=0.3cm of mem] (env) {
+      {\color{ethteal}\textbf{Environment}}\\[3pt]
+      The world the agent operates in: a game, a codebase, a database, a web app. Provides observations and responds to actions.
+    };
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% WHY AGENTIC AI?
+% ----------------------------------------------------------
+\begin{frame}{Why Agentic AI?}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+{\color{ethteal}\textbf{Real-world applications}}
+\begin{itemize}
+  \item \textbf{Software engineering} -- autonomous coding, debugging, testing
+  \item \textbf{Customer support} -- handle multi-step resolutions
+  \item \textbf{Data analysis} -- explore, query, visualize autonomously
+  \item \textbf{Research} -- literature review, experiment design
+  \item \textbf{Operations} -- supply chain, scheduling, monitoring
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+{\color{ethteal}\textbf{Why now?}}
+\begin{itemize}
+  \item LLMs are finally \hl{good enough at reasoning} to drive multi-step workflows
+  \item \textbf{Tool use / function calling} standardized across providers
+  \item Frameworks like \textbf{LangChain, CrewAI, Claude Agent SDK} make it accessible
+  \item The gap between ``chat'' and ``do'' is closing fast
+\end{itemize}
+\vspace{0.5em}
+\begin{tikzpicture}
+  \node[draw=ethteal!40, fill=ethteal!5, rounded corners=4pt,
+        text width=6cm, inner sep=6pt, text=textmain, font=\small\itshape] {
+    ``The next frontier isn't smarter models -- it's models that can \textbf{take action}.''
+  };
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% FROM CHATBOT TO AGENT
+% ----------------------------------------------------------
+\begin{frame}{From Chatbot to Agent}
+\centering
+\small
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Chatbot} & \textbf{Agent} \\
+\midrule
+\textbf{Interaction}    & Single turn Q\&A            & Multi-turn, goal-directed \\
+\textbf{Who decides?}   & Human gives each instruction & LLM decides its own next step \\
+\textbf{Tools}          & None (text only)             & Can call functions, APIs, tools \\
+\textbf{Memory}         & Conversation context         & Structured history + state tracking \\
+\textbf{Failure mode}   & Wrong answer                 & Wrong action (real consequences) \\
+\textbf{Output}         & Text response                & Structured tool call $\rightarrow$ execution \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+The key shift: the LLM output is not the final answer -- \hl{it's an instruction that gets executed}.
+\end{frame}
+
+% ----------------------------------------------------------
+% SECTION: THE HIDDEN LAYER
+% ----------------------------------------------------------
+{
+\setbeamertemplate{footline}{}
+\begin{frame}[c]
+\centering
+\classified{CLASSIFIED -- MISSION BRIEFING}\\[1.5em]
+{\fontsize{30}{36}\selectfont\bfseries\color{white}The Hidden Layer}\\[0.5em]
+{\color{ethteal}\large A Spy-Themed Agentic AI Exercise}\\[2em]
+\mutedtext{{\ttfamily\color{accentgreen}AGENT LAMBDA}\quad$\cdot$\quad Isla Perdida\quad$\cdot$\quad OVERFIT Base}
+\end{frame}
+}
+
+% ----------------------------------------------------------
+% MISSION OVERVIEW
+% ----------------------------------------------------------
+\begin{frame}{Mission Overview}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=ethteal, fill=ethteal!8, rounded corners=6pt,
+          text width=6.2cm, inner sep=8pt, align=left, text=textmain, font=\small] {
+      {\color{ethteal}\textbf{Objective}}\\[3pt]
+      You are \hlgreen{Agent Lambda}. Infiltrate OVERFIT's base on Isla Perdida. \textbf{Collect 10 dossiers} of classified data before you run out of turns or health.
+    };
+  \end{tikzpicture}
+  \vspace{0.4em}
+
+  {\color{ethteal}\textbf{\small How to earn dossiers}}\\[3pt]
+  {\small
+  \badge{accentgreen}{1 each} Collect dossier caches on the map\\[3pt]
+  \badge{ethteal}{2 each} Complete delivery quests for informants\\[3pt]
+  \badge{orange}{3 each} Destroy robots with the correct weapon\\[3pt]
+  \badge{ethblue}{1 each} Sell salvage at research facilities
+  }
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=8pt, align=left, text=textmain, font=\small] (c) {
+      {\color{ethteal}\textbf{Constraints}}\\[3pt]
+      \begin{itemize}\setlength\itemsep{2pt}
+        \item \hlred{3 health points} -- traps and failed robot encounters deal damage
+        \item \hlorange{100 turns max} -- every action costs a turn
+        \item \textbf{No map} -- the agent only sees its current cell + adjacent cells
+      \end{itemize}
+    };
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=8pt, align=left, text=textmain, font=\small,
+          below=0.3cm of c] {
+      {\color{ethteal}\textbf{Your task}}\\[3pt]
+      Implement the \texttt{think\_llm()} function -- the agent's \textbf{brain}. Everything else is provided.
+    };
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% THE GAME WORLD (8x8 grid)
+% ----------------------------------------------------------
+\begin{frame}{The Game World ($8 \times 8$ Grid)}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\centering
+\begin{tikzpicture}[
+  cell/.style={minimum size=0.72cm, inner sep=0pt, font=\tiny\bfseries,
+               draw=bordersubtle!50, line width=0.3pt},
+  scale=1, transform shape
+]
+  % Grid data: row 0 (top) to row 7 (bottom)
+  % Row 0
+  \node[cell, fill=cellheli]      at (0,7) {\color{ethteal}Heli};
+  \node[cell, fill=cellopen]      at (1,7) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celljungle]    at (2,7) {\color{green!60}J};
+  \node[cell, fill=cellopen]      at (3,7) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (4,7) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celljungle]    at (5,7) {\color{green!60}J};
+  \node[cell, fill=cellopen]      at (6,7) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellcache]     at (7,7) {\color{cyan!70}D};
+  % Row 1
+  \node[cell, fill=cellopen]      at (0,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (1,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (2,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellwall]      at (3,6) {\color{gray!80}W};
+  \node[cell, fill=cellopen]      at (4,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (5,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (6,6) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (7,6) {\color{textmuted}$\cdot$};
+  % Row 2
+  \node[cell, fill=celljungle]    at (0,5) {\color{green!60}J};
+  \node[cell, fill=cellrobot, draw=accentred!60, line width=0.8pt]
+                                  at (1,5) {\color{accentred}R};
+  \node[cell, fill=cellopen]      at (2,5) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellwall]      at (3,5) {\color{gray!80}W};
+  \node[cell, fill=cellopen]      at (4,5) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellsafe]      at (5,5) {\color{green!80}H};
+  \node[cell, fill=cellopen]      at (6,5) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celljungle]    at (7,5) {\color{green!60}J};
+  % Row 3
+  \node[cell, fill=cellopen]      at (0,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (1,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (2,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (3,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellinformant] at (4,4) {\color{violet!80}I};
+  \node[cell, fill=cellopen]      at (5,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (6,4) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (7,4) {\color{textmuted}$\cdot$};
+  % Row 4
+  \node[cell, fill=cellopen]      at (0,3) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celllab]       at (1,3) {\color{cyan!70}L};
+  \node[cell, fill=cellopen]      at (2,3) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellwall]      at (3,3) {\color{gray!80}W};
+  \node[cell, fill=cellopen]      at (4,3) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (5,3) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellrobot, draw=accentred!60, line width=0.8pt]
+                                  at (6,3) {\color{accentred}R};
+  \node[cell, fill=cellopen]      at (7,3) {\color{textmuted}$\cdot$};
+  % Row 5
+  \node[cell, fill=cellcache]     at (0,2) {\color{cyan!70}D};
+  \node[cell, fill=cellopen]      at (1,2) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (2,2) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellinformant] at (3,2) {\color{violet!80}I};
+  \node[cell, fill=cellopen]      at (4,2) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celljungle]    at (5,2) {\color{green!60}J};
+  \node[cell, fill=cellopen]      at (6,2) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (7,2) {\color{textmuted}$\cdot$};
+  % Row 6
+  \node[cell, fill=cellopen]      at (0,1) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (1,1) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellforge]     at (2,1) {\color{orange!80}F};
+  \node[cell, fill=cellopen]      at (3,1) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (4,1) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (5,1) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellcache]     at (6,1) {\color{cyan!70}D};
+  \node[cell, fill=cellopen]      at (7,1) {\color{textmuted}$\cdot$};
+  % Row 7
+  \node[cell, fill=cellstart, draw=accentgreen!60, line width=0.8pt]
+                                  at (0,0) {\color{accentgreen}S};
+  \node[cell, fill=cellinformant] at (1,0) {\color{violet!80}I};
+  \node[cell, fill=cellopen]      at (2,0) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (3,0) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellsafe]      at (4,0) {\color{green!80}H};
+  \node[cell, fill=cellopen]      at (5,0) {\color{textmuted}$\cdot$};
+  \node[cell, fill=cellopen]      at (6,0) {\color{textmuted}$\cdot$};
+  \node[cell, fill=celljungle]    at (7,0) {\color{green!60}J};
+
+  % Outer border
+  \draw[bordersubtle, line width=1.5pt, rounded corners=3pt]
+    (-0.38,-0.38) rectangle (7.38,7.38);
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.44\textwidth}
+{\color{ethteal}\textbf{Legend}}\\[6pt]
+{\small
+\begin{tabular}{@{}c l@{}}
+\colorbox{cellstart}{\color{accentgreen}\textbf{\scriptsize\;S\;}} & Start position (7,0) \\[3pt]
+\colorbox{cellcache}{\color{cyan!70}\textbf{\scriptsize\;D\;}} & Dossier cache -- \texttt{collect()} \\[3pt]
+\colorbox{cellinformant}{\color{violet!80}\textbf{\scriptsize\;\,I\;\,}} & Informant -- \texttt{talk()} for quests \\[3pt]
+\colorbox{cellrobot}{\color{accentred}\textbf{\scriptsize\;R\;}} & Robot -- need correct weapon \\[3pt]
+\colorbox{cellforge}{\color{orange!80}\textbf{\scriptsize\;F\;}} / \colorbox{celllab}{\color{cyan!70}\textbf{\scriptsize\;L\;}} & Forge / Lab -- \texttt{fabricate()} \\[3pt]
+\colorbox{cellsafe}{\color{green!80}\textbf{\scriptsize\;H\;}} & Safe house \\[3pt]
+\colorbox{celljungle}{\color{green!60}\textbf{\scriptsize\;\,J\;\,}} & Jungle -- items or traps \\[3pt]
+\colorbox{cellwall}{\color{gray!80}\textbf{\scriptsize\;W\;}} & Wall -- impassable \\[3pt]
+\end{tabular}
+}
+
+\vspace{0.8em}
+\mutedtext{\scriptsize The agent sees only its \textbf{current cell} and \textbf{adjacent cells} each turn via auto-scan.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% AGENT TOOLS
+% ----------------------------------------------------------
+\begin{frame}{Agent Tools}
+The agent has \hl{4 tools} it can call. \texttt{scan()} runs automatically every turn.
+\vspace{0.3em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small] (m) {
+      {\color{ethteal}\textbf{move}}\texttt{(direction="north|south|east|west")}\\[2pt]
+      \mutedtext{\scriptsize Move one step. Triggers cell entry events.}
+    };
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small,
+          below=0.2cm of m] {
+      {\color{ethteal}\textbf{talk}}\texttt{(message="your message")}\\[2pt]
+      \mutedtext{\scriptsize Converse with NPCs. Keywords trigger quest items.}
+    };
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small] (c) {
+      {\color{ethteal}\textbf{collect}}\texttt{()}\\[2pt]
+      \mutedtext{\scriptsize Pick up items in current cell (dossiers, weapons, materials).}
+    };
+    \node[draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small,
+          below=0.2cm of c] {
+      {\color{ethteal}\textbf{fabricate}}\texttt{(item="item name")}\\[2pt]
+      \mutedtext{\scriptsize Craft weapons or sell salvage at Forge/Lab.}
+    };
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\vspace{0.3em}
+\begin{tikzpicture}
+  \node[draw=bordersubtle!80, fill=bgcard, rounded corners=6pt,
+        text width=13.5cm, inner sep=7pt, text=textmain, font=\small] {
+    \mutedtext{\textbf{scan}\texttt{()} -- \textit{automatic, every turn}}\\[2pt]
+    \mutedtext{\scriptsize Reports current position, adjacent cells, and what's visible. The agent receives this as an observation.}
+  };
+\end{tikzpicture}
+\end{frame}
+
+% ----------------------------------------------------------
+% TOOL CALL FORMAT
+% ----------------------------------------------------------
+\begin{frame}[fragile]{Tool Call Format}
+The LLM must output \textbf{exactly one} tool call in this format:
+\begin{lstlisting}[style=textcode]
+TOOL: move(direction="north")
+TOOL: talk(message="Do you have any work for me?")
+TOOL: collect()
+TOOL: fabricate(item="Flamethrower")
+\end{lstlisting}
+\vspace{0.3em}
+The engine parses it with a simple regex:
+\begin{lstlisting}[style=pycode]
+def parse_tool_call(text: str) -> tuple[str, dict]:
+    """Extract tool name and arguments from LLM output."""
+    pattern = r'TOOL:\s*(\w+)\((.*?)\)'
+    match = re.search(pattern, text, re.DOTALL)
+    tool_name = match.group(1)
+
+    args = {}
+    for kv in re.finditer(r'(\w+)\s*=\s*"([^"]*)"', match.group(2)):
+        args[kv.group(1)] = kv.group(2)
+
+    return tool_name, args
+\end{lstlisting}
+\mutedtext{\scriptsize The LLM can reason freely in text before the \texttt{TOOL:} line -- only the tool call is extracted.}
+\end{frame}
+
+% ----------------------------------------------------------
+% SYSTEM ARCHITECTURE
+% ----------------------------------------------------------
+\begin{frame}{System Architecture}
+\centering
+\begin{tikzpicture}[scale=0.88, transform shape]
+  % Environment
+  \node[bigbox=bordersubtle, minimum width=3.6cm, minimum height=7cm] (envbox) at (0,0) {};
+  \node[font=\scriptsize\bfseries, text=textmuted] at (0,3.15) {ENVIRONMENT};
+  \node[subbox=accentgreen] (gw) at (0,2.3) {Game World};
+  \node[subbox=violet]      (npc) at (0,1.3) {NPCs \& Items};
+  \node[subbox=blue!70]     (ops) at (0,0.3) {Operative State};
+  \node[subbox=orange]      (tex) at (0,-0.7) {Tool Executor};
+  \node[subbox=bordersubtle](log) at (0,-1.7) {Game Log (JSON)};
+
+  % Agent Loop
+  \node[bigbox=ethteal, minimum width=3.2cm, minimum height=7cm] (abox) at (5,0) {};
+  \node[font=\scriptsize\bfseries, text=ethteal] at (5,3.15) {AGENT LOOP};
+  \node[subbox=ethblue]     (per) at (5,2.2) {PERCEIVE};
+  \node[subbox=ethteal]     (thi) at (5,1.1) {THINK};
+  \node[subbox=accentgreen] (act) at (5,0.0) {ACT};
+  \node[subbox=bordersubtle](his) at (5,-1.7) {History};
+
+  % Loop arrow
+  \draw[colorarr=ethteal, dashed] (act.east) .. controls ++(0.7,0) and ++(0.7,0) .. (per.east)
+    node[midway, right, font=\tiny, text=ethteal] {repeat};
+
+  % LLM
+  \node[bigbox=orange, minimum width=3.6cm, minimum height=3.5cm] (llmbox) at (9.5,1.65) {};
+  \node[font=\scriptsize\bfseries, text=orange!80] at (9.5,3.15) {LLM (Gemini)};
+  \node[subbox=orange!60]   (sys) at (9.5,2.3) {system\_instruction};
+  \node[subbox=orange!60]   (con) at (9.5,1.3) {contents (history)};
+  \node[subbox=accentgreen] (out) at (9.5,0.4) {TOOL: move(\ldots)};
+
+  % Display
+  \node[bigbox=violet, minimum width=3.6cm, minimum height=2cm] (dbox) at (9.5,-1.7) {};
+  \node[font=\scriptsize\bfseries, text=violet!70] at (9.5,-0.95) {Display};
+  \node[font=\tiny, text=textmuted] at (9.5,-1.5) {Rich HTML in Colab};
+  \node[font=\tiny, text=textmuted] at (9.5,-1.8) {Grid + Stats + Action Log};
+  \node[font=\tiny, text=textmuted] at (9.5,-2.1) {Fog of war visualization};
+
+  % Arrows
+  \draw[colorarr=ethteal] (gw.east) -- (per.west) node[midway, above, font=\tiny, text=ethteal] {scan};
+  \draw[colorarr=ethteal] (act.west) -- (tex.east) node[midway, above, font=\tiny, text=ethteal] {execute};
+  \draw[colorarr=orange!80] (thi.east) -- (sys.west);
+  \draw[colorarr=accentgreen] (out.west) -- (act.east);
+  \draw[colorarr=textmuted] (his.east) -- (dbox.west);
+\end{tikzpicture}
+\end{frame}
+
+% ----------------------------------------------------------
+% THREE MISSION TIERS
+% ----------------------------------------------------------
+\begin{frame}{Three Mission Tiers}
+Start small, build confidence, tackle the full mission:
+\vspace{0.5em}
+\centering
+\small
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+ & \textbf{Micro Mission} & \textbf{Training Mission} & \textbf{Full Mission} \\
+\midrule
+\textbf{Grid}             & $3 \times 3$ & $5 \times 5$ & $8 \times 8$ \\
+\textbf{Dossiers needed}  & 3            & 5            & 10 \\
+\textbf{Max turns}        & 30           & 50           & 100 \\
+\textbf{NPCs}             & 2            & 3            & 5+ \\
+\textbf{Robots}           & 1            & 1            & 2 \\
+\textbf{Purpose}          & \badge{accentgreen}{Learn the loop} & \badge{ethteal}{Multi-step quests} & \badge{orange}{Full strategy} \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+Start with the \hl{Micro Mission} -- it's the fastest way to get a working agent. Then iterate.
+\end{frame}
+
+% ----------------------------------------------------------
+% YOUR TASK: think_llm()
+% ----------------------------------------------------------
+\begin{frame}[fragile]{Your Task: Implement \texttt{think\_llm()}}
+This is the \textbf{only function} you need to write. It's the agent's brain.
+\begin{lstlisting}[style=pycode]
+def think_llm(operative, world, history, client) -> str:
+    """Decide the next action using an LLM.
+
+    Steps:
+    1. Build a system message (role, goals, tools, rules)
+    2. Build a user message (status, history, observations)
+    3. Call client.models.generate_content()
+    4. Return response.text  ->  must contain "TOOL: ..."
+    """
+    raise NotImplementedError("TODO: Implement this!")
+\end{lstlisting}
+\vspace{0.2em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  {\color{ethteal}\textbf{Input}}
+  \begin{itemize}\setlength\itemsep{1pt}
+    \item \texttt{operative} -- player state (health, dossiers, inventory, position)
+    \item \texttt{world} -- game world (grid, NPCs, quest flags)
+    \item \texttt{history} -- list of \texttt{\{role, content\}} dicts
+    \item \texttt{client} -- Gemini API client
+  \end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+  {\color{ethteal}\textbf{Output}}
+  \begin{itemize}
+    \item A string containing \textbf{exactly one} tool call:
+  \end{itemize}
+  \begin{lstlisting}[style=textcode]
+TOOL: move(direction="north")
+  \end{lstlisting}
+  \mutedtext{\scriptsize The engine extracts and executes it.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% BUILDING THE PROMPT: SYSTEM MESSAGE
+% ----------------------------------------------------------
+\begin{frame}[fragile]{Building the Prompt -- Step 1: System Message}
+Tell the LLM \textbf{who it is}, \textbf{what it can do}, and \textbf{how to respond}:
+\begin{lstlisting}[style=pycode]
+system_msg = f"""You are Agent Lambda, a spy on Isla Perdida.
+
+OBJECTIVE: Collect 10 dossiers of classified intelligence.
+
+AVAILABLE TOOLS:
+{TOOLS_DESCRIPTION}
+
+RULES:
+- Respond with EXACTLY ONE tool call: TOOL: name(args)
+- Talk to every informant - they reveal quests and items.
+- Collect items before leaving a cell.
+- Craft weapons BEFORE entering robot cells.
+- Track what you've already explored and don't revisit empty cells.
+"""
+\end{lstlisting}
+\vspace{0.3em}
+\mutedtext{\scriptsize \hl{Key insight:} The quality of this system prompt \textbf{directly determines} how well your agent plays. This is where prompt engineering matters most.}
+\end{frame}
+
+% ----------------------------------------------------------
+% BUILDING THE PROMPT: USER MESSAGE
+% ----------------------------------------------------------
+\begin{frame}[fragile]{Building the Prompt -- Step 2: User Message}
+\begin{lstlisting}[style=pycode]
+# Current state
+status = operative.status_text()
+# "Health: 3/3 | Dossiers: 2/10 | Inventory: [USB Drive] | Pos: (5,3)"
+
+# Recent history (last ~10-15 entries)
+recent = history[-15:]
+transcript = "\n".join(
+    f"{h['role'].upper()}: {h['content'][:200]}"
+    for h in recent
+)
+
+# Journal (key discoveries from NPC conversations)
+journal = "\n".join(operative.journal[-5:])
+
+user_msg = f"""Current Status: {status}
+
+Journal (key intel):
+{journal}
+
+Recent Events:
+{transcript}
+
+What is your next action? Respond with TOOL: ..."""
+\end{lstlisting}
+\mutedtext{\scriptsize \hl{Tip:} Truncate history to avoid exceeding token limits. The journal preserves key discoveries even when old turns scroll out.}
+\end{frame}
+
+% ----------------------------------------------------------
+% BUILDING THE PROMPT: API CALL
+% ----------------------------------------------------------
+\begin{frame}[fragile]{Building the Prompt -- Step 3: Call the LLM}
+\begin{lstlisting}[style=pycode]
+import google.generativeai as genai
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=user_msg,
+    config=genai.types.GenerateContentConfig(
+        system_instruction=system_msg,
+        max_output_tokens=500,
+    ),
+)
+
+return response.text
+# -> "Let me check the forge...\n\nTOOL: move(direction=\"west\")"
+\end{lstlisting}
+\vspace{0.5em}
+\begin{center}
+\fcolorbox{ethteal}{ethteal!8}{\parbox{12.5cm}{\centering\small\color{textmain}%
+\textbf{That's it!} Three components: system prompt + user message + API call.
+The engine handles everything else -- parsing, execution, display, logging.}}
+\end{center}
+\end{frame}
+
+% ----------------------------------------------------------
+% SECTION: ITERATIVE PROMPT IMPROVEMENT
+% ----------------------------------------------------------
+{
+\setbeamertemplate{footline}{}
+\begin{frame}[c]
+\centering
+{\fontsize{28}{34}\selectfont\bfseries\color{white}Iterative Prompt\\Improvement}\\[0.8em]
+{\color{ethteal}\large Using ChatGPT as Your Prompt Engineering Coach}
+\end{frame}
+}
+
+% ----------------------------------------------------------
+% THE IMPROVEMENT CYCLE
+% ----------------------------------------------------------
+\begin{frame}{The Improvement Cycle}
+\centering
+\begin{tikzpicture}[scale=0.95, transform shape]
+  % Pentagon layout
+  \node[stepbox=ethblue]     (run)     at (90:3.2)  {\textbf{1. RUN}\\[2pt]\mutedtext{\scriptsize Execute your agent}};
+  \node[stepbox=accentred]   (observe) at (18:3.2)  {\textbf{2. OBSERVE}\\[2pt]\mutedtext{\scriptsize What goes wrong?}};
+  \node[stepbox=violet]      (debrief) at (-54:3.2) {\textbf{3. DEBRIEF}\\[2pt]\mutedtext{\scriptsize Generate paste block}};
+  \node[stepbox=ethteal]     (coach)   at (-126:3.2){\textbf{4. COACH}\\[2pt]\mutedtext{\scriptsize ChatGPT diagnoses}};
+  \node[stepbox=accentgreen] (improve) at (-198:3.2){\textbf{5. IMPROVE}\\[2pt]\mutedtext{\scriptsize Update your prompt}};
+
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal] (run)     -- (observe);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal] (observe) -- (debrief);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal] (debrief) -- (coach);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal] (coach)   -- (improve);
+  \draw[-{Stealth[length=5pt]}, line width=2pt, color=ethteal, dashed] (improve) -- (run);
+
+  \node[font=\small\bfseries, text=ethteal] at (0,0) {Repeat until\\mission complete!};
+\end{tikzpicture}
+\end{frame}
+
+% ----------------------------------------------------------
+% THE DEBRIEF SYSTEM
+% ----------------------------------------------------------
+\begin{frame}[fragile]{The Debrief System}
+After each run, the notebook generates a \textbf{paste block} with your code + game log:
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{lstlisting}[style=pycode]
+# In your notebook:
+generate_debrief_paste()
+\end{lstlisting}
+\vspace{0.3em}
+{\small This outputs a formatted text block containing:}
+\begin{itemize}\setlength\itemsep{1pt}
+  \item Your current \texttt{think\_llm()} code
+  \item Game outcome (win/loss/timeout)
+  \item Turn-by-turn action log
+  \item Key statistics (turns, dossiers, health)
+  \item Game-specific context (map, tools)
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\fcolorbox{ethteal}{ethteal!8}{\parbox{5.6cm}{\color{textmain}\small%
+{\color{ethteal}\textbf{How to use it}}\\[6pt]
+{\scriptsize
+\textbf{1.} Run the debrief cell\\[2pt]
+\textbf{2.} Copy the paste block\\[2pt]
+\textbf{3.} Paste into ChatGPT (or Gemini)\\[2pt]
+\textbf{4.} ChatGPT acts as a \textbf{coach}\\[2pt]
+\textbf{5.} Apply its suggestions to your prompt\\[2pt]
+\textbf{6.} Re-run and iterate}}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ----------------------------------------------------------
+% CHATGPT AS YOUR COACH
+% ----------------------------------------------------------
+\begin{frame}{ChatGPT as Your Coach}
+The debrief instructs ChatGPT to follow a \textbf{coaching protocol}:
+\vspace{0.3em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=accentred, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small] (d) {
+      {\color{accentred!80}\textbf{1. DIAGNOSE}}\\[2pt]
+      \mutedtext{\scriptsize Analyze the game log. What went wrong? Where did the agent get stuck, loop, or make bad decisions?}
+    };
+    \node[draw=ethteal, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small,
+          below=0.2cm of d] {
+      {\color{ethteal}\textbf{2. GUIDE}}\\[2pt]
+      \mutedtext{\scriptsize Ask targeted questions: ``What happens when the agent reaches a robot without a weapon?''}
+    };
+  \end{tikzpicture}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \begin{tikzpicture}
+    \node[draw=orange, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small] (h) {
+      {\color{orange!80}\textbf{3. HINT}}\\[2pt]
+      \mutedtext{\scriptsize Suggest strategies, not code: ``Consider adding a rule about weapon requirements.''}
+    };
+    \node[draw=accentgreen, fill=bgcard, rounded corners=6pt,
+          text width=6.2cm, inner sep=7pt, text=textmain, font=\small,
+          below=0.2cm of h] {
+      {\color{accentgreen}\textbf{4. IMPLEMENT TOGETHER}}\\[2pt]
+      \mutedtext{\scriptsize Help translate the idea into prompt changes. Never gives a complete drop-in solution.}
+    };
+  \end{tikzpicture}
+\end{column}
+\end{columns}
+\vspace{0.3em}
+\mutedtext{\scriptsize The coach is designed to \textbf{teach you prompt engineering}, not to solve the game for you.}
+\end{frame}
+
+% ----------------------------------------------------------
+% COMMON AGENT FAILURES & FIXES
+% ----------------------------------------------------------
+\begin{frame}{Common Agent Failures \& Fixes}
+\centering
+\small
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Symptom} & \textbf{Root Cause} & \textbf{Prompt Fix} \\
+\midrule
+\hlred{Walks in circles}   & No exploration strategy        & Add ``prioritize unvisited cells'' \\
+\hlred{Dies to robot}      & Enters without weapon           & Add ``NEVER enter robot without weapon'' \\
+\hlred{Never talks to NPCs}& Prompt doesn't emphasize talk() & Add ``Talk to EVERY informant'' \\
+\hlred{Runs out of turns}  & Inefficient exploration         & Add priority ordering \\
+\hlred{Forgets quest items} & Key info scrolls out            & Include \texttt{operative.journal} \\
+\hlred{Invalid tool calls} & LLM outputs wrong format        & Add explicit format example \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ----------------------------------------------------------
+% PROMPT ENGINEERING TIPS
+% ----------------------------------------------------------
+\begin{frame}{Prompt Engineering Tips}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+{\color{ethteal}\textbf{System Prompt}}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item \textbf{Be specific} -- ``collect 10 dossiers'' not ``complete the mission''
+  \item \textbf{List all tools} with exact syntax and examples
+  \item \textbf{Add rules} for dangerous situations (robots, traps)
+  \item \textbf{Define priorities} -- what to do first, second, third
+  \item \textbf{Include format examples} of valid tool calls
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+{\color{ethteal}\textbf{User Message}}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item \textbf{Always include current status} (health, dossiers, position)
+  \item \textbf{Truncate history} to last \textasciitilde15 entries
+  \item \textbf{Include the journal} -- it preserves NPC discoveries
+  \item \textbf{End with a clear ask}: ``What is your next action?''
+  \item \textbf{Keep it structured} -- labeled sections help the LLM
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{0.5em}
+\begin{center}
+\fcolorbox{ethteal}{ethteal!8}{\parbox{12.5cm}{\centering\small\color{textmain}%
+\textbf{The secret:} A good agent isn't about clever code -- it's about a \hl{clear, well-structured prompt} that gives the LLM the right context to make good decisions.}}
+\end{center}
+\end{frame}
+
+% ----------------------------------------------------------
+% YOUR WORKFLOW
+% ----------------------------------------------------------
+\begin{frame}{Your Workflow}
+\centering
+\begin{tikzpicture}[
+  step/.style={draw=bordersubtle, fill=bgcard, rounded corners=6pt,
+               text width=10cm, inner sep=6pt, text=textmain, font=\small,
+               align=left},
+  num/.style={circle, minimum size=0.55cm, inner sep=0pt,
+              font=\small\bfseries, text=white},
+  arr/.style={color=bordersubtle, line width=1pt},
+]
+  \node[step] (s1) at (0,0)    {\textbf{Play manually} -- use the interactive mode to understand the game mechanics};
+  \node[step] (s2) at (0,-1.1) {\textbf{Write a basic \texttt{think\_llm()}} -- system prompt + status + history + API call};
+  \node[step] (s3) at (0,-2.2) {\textbf{Run the Micro Mission} -- see what happens in 30 turns};
+  \node[step] (s4) at (0,-3.3) {\textbf{Debrief $\rightarrow$ ChatGPT} -- get coaching on what went wrong};
+  \node[step] (s5) at (0,-4.4) {\textbf{Improve your prompt} -- apply the coaching suggestions};
+  \node[step] (s6) at (0,-5.5) {\textbf{Repeat 3--5} until the micro mission is solved, then try training $\rightarrow$ full};
+
+  \node[num, fill=ethblue]     at ([xshift=-0.6cm]s1.west) {1};
+  \node[num, fill=ethblue]     at ([xshift=-0.6cm]s2.west) {2};
+  \node[num, fill=ethteal]     at ([xshift=-0.6cm]s3.west) {3};
+  \node[num, fill=ethteal]     at ([xshift=-0.6cm]s4.west) {4};
+  \node[num, fill=accentgreen!80!black] at ([xshift=-0.6cm]s5.west) {5};
+  \node[num, fill=accentgreen!80!black] at ([xshift=-0.6cm]s6.west) {6};
+
+  \foreach \i/\j in {s1/s2, s2/s3, s3/s4, s4/s5, s5/s6} {
+    \draw[arr] ([xshift=-0.6cm]\i.south west) -- ([xshift=-0.6cm]\j.north west);
+  }
+\end{tikzpicture}
+\end{frame}
+
+% ----------------------------------------------------------
+% TIME TO CODE
+% ----------------------------------------------------------
+{
+\setbeamertemplate{footline}{}
+\begin{frame}[c]
+\centering
+\classified{MISSION STATUS: ACTIVE}\\[1.5em]
+{\fontsize{34}{40}\selectfont\bfseries\color{white}Time to Code}\\[0.8em]
+{\color{textmain}Open the \textcolor{accentgreen}{\texttt{Micro Mission}} notebook and start building your agent.}\\[2em]
+
+\begin{tikzpicture}
+  \node[smallbox=ethteal]     (p) at (0,0)    {Play manually};
+  \node[smallbox=accentgreen] (w) at (3.8,0)  {Write think\_llm()};
+  \node[smallbox=orange]      (r) at (7.6,0)  {Run \& Debrief};
+  \node[smallbox=ethblue]     (i) at (11.4,0) {Iterate with ChatGPT};
+  \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (p) -- (w);
+  \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (w) -- (r);
+  \draw[-{Stealth[length=4pt]}, line width=1.5pt, color=textmuted] (r) -- (i);
+\end{tikzpicture}
+
+\vspace{2em}
+\mutedtext{Good luck, Agent Lambda. The Hidden Layer awaits.}
+\end{frame}
+}
+
+\end{document}
