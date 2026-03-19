@@ -18,5 +18,17 @@ __pycache__/
 # Build output
 dist/
 
+# LaTeX build artifacts
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+
+# OS
+.DS_Store
+
 # Exercise factory — generated artifacts (logs, reports, prompts)
 exercise-factory/artifacts/
