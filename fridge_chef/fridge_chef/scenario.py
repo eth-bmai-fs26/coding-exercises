@@ -23,107 +23,16 @@ FRIDGE_CONTENTS = [
 
 # ---------------------------------------------------------------------------
 # Recipe database — ingredient → list of recipes that use it
+# Built automatically from INGREDIENTS_DB so every ingredient is searchable.
 # ---------------------------------------------------------------------------
 
-RECIPE_DB = {
-    "eggs": [
-        "omelette",
-        "fried rice",
-        "french toast",
-        "egg salad sandwich",
-        "shakshuka",
-        "carbonara",
-    ],
-    "milk": [
-        "pancakes",
-        "french toast",
-        "mac and cheese",
-        "bechamel sauce",
-        "milkshake",
-    ],
-    "butter": [
-        "grilled cheese",
-        "garlic bread",
-        "pancakes",
-        "pasta alfredo",
-        "scrambled eggs",
-    ],
-    "cheddar cheese": [
-        "omelette",
-        "grilled cheese",
-        "mac and cheese",
-        "quesadilla",
-        "cheese sauce",
-    ],
-    "bread": [
-        "grilled cheese",
-        "french toast",
-        "garlic bread",
-        "egg salad sandwich",
-        "bruschetta",
-    ],
-    "tomatoes": [
-        "bruschetta",
-        "shakshuka",
-        "tomato soup",
-        "caprese salad",
-        "salsa",
-    ],
-    "onions": [
-        "french onion soup",
-        "fried rice",
-        "shakshuka",
-        "stir fry",
-        "omelette",
-    ],
-    "garlic": [
-        "garlic bread",
-        "stir fry",
-        "shakshuka",
-        "pasta alfredo",
-        "fried rice",
-    ],
-    "bell pepper": [
-        "stir fry",
-        "omelette",
-        "fajitas",
-        "shakshuka",
-        "stuffed peppers",
-    ],
-    "chicken breast": [
-        "chicken stir fry",
-        "chicken fried rice",
-        "chicken quesadilla",
-        "grilled chicken salad",
-        "chicken curry",
-    ],
-    "rice": [
-        "fried rice",
-        "chicken fried rice",
-        "rice bowl",
-        "stuffed peppers",
-        "chicken curry",
-    ],
-    "soy sauce": [
-        "fried rice",
-        "stir fry",
-        "chicken stir fry",
-        "chicken fried rice",
-        "teriyaki chicken",
-    ],
-    "pasta": [
-        "carbonara",
-        "pasta alfredo",
-        "mac and cheese",
-        "spaghetti bolognese",
-    ],
-    "flour": [
-        "pancakes",
-        "bechamel sauce",
-        "pizza dough",
-        "fried chicken",
-    ],
-}
+def _build_recipe_db(ingredients_db: dict[str, list[str]]) -> dict[str, list[str]]:
+    """Invert INGREDIENTS_DB: for each ingredient, list every recipe that uses it."""
+    db: dict[str, list[str]] = {}
+    for recipe, ingredients in ingredients_db.items():
+        for ingredient in ingredients:
+            db.setdefault(ingredient, []).append(recipe)
+    return db
 
 
 # ---------------------------------------------------------------------------
@@ -160,3 +69,5 @@ INGREDIENTS_DB = {
     "teriyaki chicken": ["chicken breast", "soy sauce", "sugar", "garlic", "ginger", "cornstarch"],
     "spaghetti bolognese": ["pasta", "ground beef", "tomatoes", "onions", "garlic", "olive oil", "basil"],
 }
+
+RECIPE_DB = _build_recipe_db(INGREDIENTS_DB)

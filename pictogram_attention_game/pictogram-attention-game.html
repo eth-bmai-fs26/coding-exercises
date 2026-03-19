@@ -72,6 +72,11 @@
 
   /* ─── SHARED COMPONENTS ─── */
   .card {
+    width: 652px; /* Set this to whatever standard width looks best */
+    flex-shrink: 0; /* This is the magic rule! It tells Flexbox NEVER to squish this element */
+  }
+
+  .card {
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 14px;
@@ -113,6 +118,7 @@
     font-size: 1.1rem; letter-spacing: .08em;
     min-height: 80px;
   }
+ 
 
   /* ─── INTRO ─── */
   #screen-intro {
@@ -212,7 +218,7 @@
   /* ─── QUIZ ─── */
   #screen-quiz { max-width: 980px; margin: 0 auto; }
   .quiz-layout { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
-  .quiz-main { flex: 1; min-width: 320px; }
+  .quiz-main { flex: 1; min-width: 652px; }
   .quiz-title { font-family: 'Syne', sans-serif; font-weight: 500; font-size: 1.4rem; color: var(--text); margin-bottom: 16px; }
 
   .options-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
@@ -323,6 +329,12 @@
     .mystery-transmission .noun,
     .mystery-transmission .adj { font-size: 1.3rem; }
   }
+
+  #main-content {
+    display: flex; 
+    flex-direction: column; /* Stacks children vertically */
+    align-items: center;    /* Centers them horizontally */
+  }
 </style>
 </head>
 <body>
@@ -415,7 +427,7 @@
                 <p class="ref-noun">⏀ = circle </p>
             </div>
             <div class="ref-section">
-                <p class="ref-section-label">Adjectives</p>
+                <p class="ref-section-label">Square Adjectives</p>
                 <div class="ref-adj-grid">
                 <span class="ref-adj">≋ = big</span>
                 <span class="ref-adj">⬽ = small</span>
@@ -424,6 +436,7 @@
                 </div>
             </div>
             <div class="ref-section">
+              <p class="ref-section-label">Circle Adjectives</p>
                 <div class="ref-adj-grid">
                 <span class="ref-adj">⎓ = flat</span>
                 <span class="ref-adj">⌇ = tall</span>
@@ -461,7 +474,7 @@
                 <p class="ref-noun">⏀ = circle <span style="color:var(--muted);font-size:.75rem;font-weight:400">— round</span></p>
             </div>
             <div class="ref-section">
-              <p class="ref-section-label">Adjectives</p>
+              <p class="ref-section-label">Square Adjectives</p>
               <div class="ref-adj-grid">
                 <span class="ref-adj">≋ = big</span>
                 <span class="ref-adj">⬽ = small</span>
@@ -470,7 +483,7 @@
               </div>
             </div>
             <div class="ref-section">
-              <!-- <p class="ref-section-label">Circle adjectives</p> -->
+              <p class="ref-section-label">Circle Adjectives</p>
               <div class="ref-adj-grid">
                 <span class="ref-adj">⎓ = flat</span>
                 <span class="ref-adj">⌇ = tall</span>

@@ -21,6 +21,7 @@ import textwrap
 from typing import TYPE_CHECKING, Any, Dict, List
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 if TYPE_CHECKING:
@@ -68,6 +69,7 @@ def plot_document_length_distribution(documents: List[str]) -> None:
 
     fig, ax = plt.subplots()
     ax.hist(lengths, bins=40, color=_COLORS[0], edgecolor="white", linewidth=0.6)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Document length (characters)")
     ax.set_ylabel("Count")
     ax.set_title("Document Length Distribution")
@@ -106,6 +108,7 @@ def plot_chunk_length_distribution(chunks: List[Any]) -> None:
 
     fig, ax = plt.subplots()
     ax.hist(lengths, bins=40, color=_COLORS[1], edgecolor="white", linewidth=0.6)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_xlabel("Chunk length (characters)")
     ax.set_ylabel("Count")
     ax.set_title("Chunk Length Distribution")
