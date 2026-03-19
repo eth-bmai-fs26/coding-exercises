@@ -1,0 +1,62 @@
+[
+  {
+    "id": "doc_01",
+    "title": "Regional Manager",
+    "content": "Michael Scott is the Regional Manager of the Dunder Mifflin Scranton branch. Michael has been the regional manager for over ten years and is the highest-ranking employee in the Scranton office. As regional manager, Michael reports directly to the corporate office in New York. He is known for his unconventional management style, which includes frequent office parties and motivational speeches."
+  },
+  {
+    "id": "doc_02",
+    "title": "Assistant to the Regional Manager",
+    "content": "Dwight K. Schrute holds the official title of Assistant to the Regional Manager at Dunder Mifflin Scranton. Despite Dwight's frequent claims, Dwight is NOT the Assistant Regional Manager. Dwight's actual title is Assistant TO the Regional Manager, which is a very different and less important position. Dwight takes his role extremely seriously and Dwight often tries to enforce rules that do not exist."
+  },
+  {
+    "id": "doc_03",
+    "title": "Vacation Policy",
+    "content": "Dunder Mifflin Scranton employees receive 15 days of paid vacation per year. Unused vacation days cannot be carried over to the next year. All vacation requests must be submitted at least two weeks in advance through the HR department. Toby Flenderson is the HR representative responsible for approving all time-off requests for the Scranton branch."
+  },
+  {
+    "id": "doc_04",
+    "title": "Break Room Rules",
+    "content": "The Scranton branch break room is available to all employees from 8:00 AM to 6:00 PM. Food left in the refrigerator for more than three days will be thrown away every Friday. The microwave must be cleaned after each use. Kevin Malone has been formally warned twice about leaving his famous chili unattended in the kitchen area."
+  },
+  {
+    "id": "doc_05",
+    "title": "Friday Snack Rotation",
+    "content": "Every Friday, a different employee is responsible for bringing snacks to the office. The rotation schedule is posted on the break room bulletin board. Angela Martin has strict requirements for the snack rotation: no artificial colors and all baked goods must be homemade. Stanley Hudson has submitted three formal requests to make pretzel day a weekly event instead of an annual one."
+  },
+  {
+    "id": "doc_06",
+    "title": "Client Profile - Blue Cross of Pennsylvania",
+    "content": "Blue Cross of Pennsylvania is one of Dunder Mifflin Scranton's top five clients. They place a standing order of approximately 50 boxes of premium white paper per month. The account is managed by Jim Halpert. The primary contact at Blue Cross is Sarah Chen from their procurement department. Payment terms are net-30."
+  },
+  {
+    "id": "doc_07",
+    "title": "Reception and Front Desk",
+    "content": "Pam Beesly is the receptionist at the Dunder Mifflin Scranton branch. She is the first point of contact for all visitors and phone calls. Pam manages the front desk, incoming mail, and office supply orders. Outside of work, Pam is a talented watercolor artist who has displayed her paintings at a local gallery in Scranton."
+  },
+  {
+    "id": "doc_08",
+    "title": "Sales Department Overview",
+    "content": "The Dunder Mifflin Scranton sales team includes Jim Halpert, Dwight Schrute, Stanley Hudson, Phyllis Vance, and Andy Bernard. Jim Halpert has been the top salesperson for three of the last five years. The team participates in annual sales competitions and the winner receives a bonus of 1000 dollars plus a reserved parking spot for one month."
+  },
+  {
+    "id": "doc_09",
+    "title": "Accounting Department",
+    "content": "The accounting department at Dunder Mifflin Scranton is composed of Angela Martin, Oscar Martinez, and Kevin Malone. Angela serves as the head of accounting and is known for her strict attention to detail and her many cats. Kevin is known for his love of food and for being the drummer in his band Scrantonicity."
+  },
+  {
+    "id": "doc_10",
+    "title": "Party Planning Committee",
+    "content": "The Party Planning Committee organizes all office celebrations at the Scranton branch. The committee is chaired by Angela Martin. Current members include Angela Martin, Phyllis Vance, and Pam Beesly. The committee manages an annual budget of 1000 dollars for birthday parties, holiday events, and special celebrations. All events must be approved by Michael Scott."
+  },
+  {
+    "id": "doc_11",
+    "title": "Office Safety Memo",
+    "content": "Dwight Schrute has volunteered as the office safety officer for the Scranton branch. He conducts surprise fire drills on a quarterly basis. The most notable incident involved Dwight starting a small fire in the office kitchen to test emergency preparedness. During that drill, Stanley Hudson experienced a stress-related medical episode. Since then, all fire drills must be announced 24 hours in advance."
+  },
+  {
+    "id": "doc_12",
+    "title": "Parking Lot Policy",
+    "content": "Employee parking is available in the lot behind the Dunder Mifflin Scranton building. Parking spaces are assigned on a first-come first-served basis each morning. Michael Scott has a permanently reserved spot near the main entrance marked with a sign that reads World's Best Boss. Employees must not use the parking spaces belonging to Vance Refrigeration located next door."
+  }
+]
