@@ -307,7 +307,7 @@ class InteractiveGame:
     <div style="color:#00cc33;font-size:13px;margin-top:2px;">{icon} {self.last_action or '(none yet)'}</div>
     <div style="margin-top:6px;padding:8px 10px;background:#0a1a0a;border-radius:6px;
       border-left:3px solid {result_border};font-size:12px;color:{result_color};
-      max-height:180px;overflow-y:auto;">
+      max-height:180px;overflow:hidden;word-wrap:break-word;overflow-wrap:break-word;">
       {self.last_result}
     </div>
     {game_over_banner}
