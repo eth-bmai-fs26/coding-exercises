@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git ls-tree:*)",
+      "Bash(python3:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(pdflatex -interaction=nonstopmode teacher_guide.tex)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
