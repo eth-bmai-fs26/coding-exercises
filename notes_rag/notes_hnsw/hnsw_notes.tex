@@ -1,0 +1,464 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{mdframed}
+
+% ---- notation macros ----
+\newcommand{\eps}{\mathit{ep}}
+\newcommand{\ef}{\mathit{ef}}
+\newcommand{\lw}{\mathit{lw}}
+\newcommand{\nn}{\mathit{nn}}
+\newcommand{\neigh}{\mathrm{neigh}}
+
+% ---- theorem-like envs ----
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{insight}{Key Insight}
+
+% ---- shaded intuition box ----
+\newmdenv[
+  backgroundcolor=blue!5,
+  linecolor=blue!30,
+  roundcorner=4pt,
+  skipabove=6pt,
+  skipbelow=6pt
+]{intubox}
+
+\title{\textbf{Lecture Notes: Hierarchical Navigable Small World Graphs}\\
+\large Approximate Nearest-Neighbor Search in Metric Spaces}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%% ==========================================================
+\section{Motivation and Big Picture}
+
+Nearest-neighbor search is a core primitive: retrieval-augmented generation, recommendation systems, image similarity, vector databases---all reduce to ``given a query $t$, find the $K$ database points closest to $t$ under some distance $d$.'' Exact search scans all $N$ points per query. We want a data structure that answers $K$-NN queries much faster, with high probability of returning the true nearest neighbors.
+
+HNSW (Malkov \& Yashunin, 2016) achieves this by building a multi-layer proximity graph whose structure mirrors a skip list. These notes develop the algorithm from that analogy.
+
+%% ==========================================================
+\section{The Skip-List Analogy}
+\label{sec:skiplist}
+
+A \textbf{skip list} organizes $N$ sorted elements into multiple linked lists layered on top of each other. Every element lives on layer~0 (the base linked list). Each element is independently promoted to layer~1 with probability $1/2$, to layer~2 with probability $1/4$, and so on. To search for value $x$:
+\begin{enumerate}
+  \item Start at the leftmost element of the top layer.
+  \item Move right as long as the next element is $\leq x$.
+  \item Drop down one layer and repeat.
+\end{enumerate}
+The upper layers are \emph{express lanes}---sparse, long-range connections that skip over most of the base list, delivering logarithmic search cost.
+
+\begin{insight}
+  HNSW is the generalization of the skip list to an arbitrary metric space. Sorted linked lists become \emph{proximity graphs}; ``move to the next larger element'' becomes ``move to the nearest neighbor.''
+\end{insight}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Skip list & HNSW \\
+\midrule
+Sorted linked list at layer $\ell$ & Proximity graph at layer $\ell$ \\
+Left/right neighbors & $M$ approximate nearest neighbors \\
+Promotion probability $1/2$ & Promotion probability $1/M$ \\
+``Move right'' & ``Move to closer neighbor'' (greedy) \\
+Drop to next layer & Drop to next layer \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+In one dimension with $M=2$, HNSW recovers the exact skip list: the heuristic neighbor selection (Section~\ref{sec:sel-neighbors}) picks the left and right neighbors as the sole connections on layer~0.
+
+%% ==========================================================
+\section{Why Layers?}
+\label{sec:why-layers}
+
+Consider a flat proximity graph where every element connects to its $M$ nearest neighbors. A greedy hill-climbing search on such a graph works, but the cost grows poorly with $N$ because a few ``hub'' nodes accumulate many connections (other elements nominate them as nearest neighbors), and every search path is forced through these hubs.
+
+HNSW's fix: \textbf{separate long-range links from short-range links into different layers, each with degree bounded by $M$.} Long-range links live on upper layers (sparse, few elements). Short-range links live on lower layers (dense, all elements). Bounded degree at every layer ensures search work does not blow up through hub nodes.
+
+\begin{intubox}
+Think of it like a road network. Layer~0 is city streets (all intersections, short blocks). Layer~1 is arterial roads. Layer~2 is highways. A good route planner takes the highway to the right city, the arterial to the right neighborhood, then local streets to the address. Starting on city streets from a random city would be absurdly slow.
+\end{intubox}
+
+%% ==========================================================
+\section{Data Structure}
+
+An HNSW index stores:
+\begin{itemize}
+  \item A set of elements $\{x_1, \ldots, x_N\}$ in a metric space with distance $d$.
+  \item For each element $x$ and each layer $\ell$ it participates in: a neighbor list $\neigh[x, \ell]$ of size $\leq M$ (or $\leq 2M$ on layer~0).
+  \item A global \textbf{entry point} $\eps$: the element residing on the highest layer.
+  \item The current maximum layer $L$.
+\end{itemize}
+
+\subsection{Layer Assignment}
+\label{sec:layers}
+
+Each inserted element $w$ is assigned a maximum layer $\lw$ by independent Bernoulli coin flips with success probability $1/M$:
+\begin{quote}
+  Set $\lw \gets 0$. Flip a biased coin (heads with probability $1/M$). While it comes up heads, increment $\lw$ and flip again.
+\end{quote}
+This gives $\lw \sim \mathrm{Geom}(1 - 1/M) - 1$, so:
+\[
+  \Pr[\lw \geq k] = (1/M)^k.
+\]
+Element $w$ then lives on layers $0, 1, \ldots, \lw$.
+
+\begin{example}
+  With $M = 16$: the probability of reaching layer~1 is $1/16 \approx 6\%$, layer~2 is $1/256 \approx 0.4\%$, layer~3 is $0.002\%$. With $N = 10^6$ elements, the expected number on layer~2 is about 4000, on layer~3 about 250. The hierarchy is very shallow---typically 4--6 layers for a million-element index.
+\end{example}
+
+\paragraph{Why this formulation?} The coin-flip description directly mirrors skip-list promotion and makes it immediately clear that layers are geometrically thinned. The paper uses the equivalent formula $\lw = \lfloor -\ln(\mathrm{Unif}(0,1)) \cdot m_L \rfloor$ with $m_L = 1/\ln M$, which produces the same geometric distribution.
+
+\subsection{Key Parameters}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Parameter & Typical range & Role \\
+\midrule
+$M$ & 5--48 & Max neighbors per layer; controls memory and graph quality \\
+$M_{\max 0} = 2M$ & 10--96 & Max neighbors on layer~0 (denser base layer) \\
+$\ef_{\mathrm{Construction}}$ & 100--500 & Beam width during index build; controls recall of built graph \\
+$\ef$ & $\geq K$ & Beam width at query time; the runtime recall/speed knob \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Memory per element: roughly $(M_{\max 0} + m_L \cdot M) \times 4$ bytes for neighbor indices, typically 60--450 bytes.
+
+%% ==========================================================
+\section{The Five Algorithms}
+\label{sec:algorithms}
+
+%% ----------------------------------------------------------
+\subsection{\textsc{find-nn}: Greedy Descent Across Layers}
+\label{sec:find-nn}
+
+\paragraph{Purpose.} Given a query $t$ and a target layer $\ell$, find the node on layer $\ell$ that is (approximately) closest to $t$. This is the \emph{cheap} search used on upper layers, committing to a single current node at each step with no candidate queue.
+
+\paragraph{Algorithm.} Start at the global entry point $\eps$ on the top layer $L$. At the current layer, scan the current node's neighbors; if any neighbor is closer to $t$ than the current node, move there and repeat. When no improvement is possible (local minimum on this layer), descend to the next layer. Repeat until layer $\ell$ is reached.
+
+\begin{algorithm}
+\caption{\textsc{find-nn} --- greedy descent across all layers}
+\begin{algorithmic}[1]
+\Function{find-nn}{$t, \ell$}
+  \State $\nn \gets \eps$
+  \State $\ell' \gets L$
+  \While{$\ell' \geq \ell$}
+    \Repeat
+      \State $\mathit{done} \gets \bot$
+      \For{$v \in N(\nn, \ell')$}
+        \If{$d(v, t) < d(\nn, t)$}
+          \State $\nn \gets v$
+          \State $\mathit{done} \gets \top$
+        \EndIf
+      \EndFor
+    \Until{$\mathit{done}$}
+    \State $\ell' \gets \ell' - 1$
+  \EndWhile
+  \State \Return $\nn$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Invariant.} The local minimum found on layer $\ell+1$ serves as the starting point for layer $\ell$. Because upper layers are sparser, their local minima are geometrically closer to $t$ than a random start would be---each descent narrows the search region.
+
+\begin{intubox}
+This is exactly skip-list descent: on an upper layer you take big leaps (long-range edges), narrowing the search region. On lower layers the edges are shorter, so you land closer to the target. There is no candidate queue---you commit to one current node at a time. This is fast but can get trapped in local minima on dense layers, which is why layer~0 uses \textsc{beam-search} instead.
+\end{intubox}
+
+%% ----------------------------------------------------------
+\subsection{\textsc{beam-search}: Single-Layer Beam Search}
+\label{sec:beam-search}
+
+\paragraph{Purpose.} Search a \emph{single} layer for the $\ef$ closest elements to query $t$, starting from entry point $\eps$. This is the high-recall operation used on layer~0 during queries and on every layer during index construction.
+
+\paragraph{Data structures.} Three collections are maintained simultaneously:
+\begin{description}[leftmargin=2em]
+  \item[$Q$ (candidates)] A min-heap ordered by $d(\cdot, t)$: the search frontier of nodes whose neighborhoods have not yet been explored.
+  \item[$W$ (result set)] A max-heap ordered by $d(\cdot, t)$, capped at size $\ef$: the running set of the $\ef$ closest nodes seen so far. The max-heap gives fast access to the \emph{worst} current result.
+  \item[$D$ (visited)] A hash set. Every node added to $Q$ is immediately added to $D$ and will never be added again.
+\end{description}
+
+\paragraph{Loop.} While the nearest candidate in $Q$ is closer to $t$ than the worst element in $W$:
+\begin{enumerate}
+  \item Pop the nearest candidate $q^*$ from $Q$.
+  \item Add $q^*$ to $W$; if $|W| > \ef$, evict the farthest element from $W$.
+  \item For each neighbor $v$ of $q^*$ on this layer: if $v \notin D$ and $v$ is no farther than the current worst in $W$ (or $W$ is not yet full), add $v$ to both $Q$ and $D$.
+\end{enumerate}
+
+\begin{algorithm}
+\caption{\textsc{beam-search} --- single-layer beam search}
+\begin{algorithmic}[1]
+\Function{beam-search}{$t, \eps, \ell, \ef$}
+  \State $D \gets \{\eps\}$ \Comment{visited}
+  \State $Q \gets \{\eps\}$ \Comment{candidates}
+  \State $W \gets \{\eps\}$ \Comment{result set}
+  \While{$\min_{q \in Q} d(q, t) < \max_{w \in W} d(w, t)$}
+    \State $q^* \gets \arg\min_{q \in Q}\, d(q, t)$
+    \State $Q \gets Q \setminus \{q^*\}$
+    \State $W \gets W \cup \{q^*\}$
+    \If{$|W| > \ef$}
+      \State remove $\arg\max_{w \in W} d(w, t)$ from $W$
+    \EndIf
+    \For{$v \in N(q^*, \ell)$}
+      \If{$v \notin D$ \textbf{and} $d(v,t) \leq \max_{w \in W} d(w,t)$}
+        \State $Q \gets Q \cup \{v\}$
+        \State $D \gets D \cup \{v\}$
+      \EndIf
+    \EndFor
+  \EndWhile
+  \State \Return $W$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Termination condition:} if the nearest candidate is already farther from $t$ than our worst known result, nothing in $Q$ (nor anything reachable from it) can improve $W$, so we stop.
+
+\begin{intubox}
+Think of $W$ as your shortlist and $Q$ as your to-do list. You keep exploring the most promising lead (minimum of $Q$), updating the shortlist when you find something better than its current worst entry. You stop when even the most promising lead can't beat your worst shortlist entry.
+\end{intubox}
+
+\paragraph{Why the visited set $D$?} In a graph, the same node $v$ can appear as a neighbor of multiple different candidates in $Q$. Without $D$, you would recompute $d(v, t)$ and re-examine $v$'s neighbors redundantly through every such path. $D$ ensures each node is processed at most once.
+
+\paragraph{The $\ef$ parameter.} $\ef$ is the recall/speed knob. Small $\ef$ (e.g., $\ef = K$): fast, lower recall. Large $\ef$ (e.g., $\ef = 500$): slower, near-perfect recall. During index construction $\ef_{\mathrm{Construction}}$ plays this role; at query time the user sets $\ef$ freely.
+
+%% ----------------------------------------------------------
+\subsection{\textsc{sel-neighbors}: Heuristic Neighbor Selection}
+\label{sec:sel-neighbors}
+
+\paragraph{Purpose.} Given a set of candidate neighbors $W$ for element $t$, select the best $n \leq M$ of them. The naive approach---pick the $n$ closest---has a fatal flaw.
+
+\paragraph{The cluster-boundary problem.} Suppose $t$ sits at the boundary between two dense clusters $A$ and $B$. The $M$ closest points to $t$ might all be in cluster $A$, leaving $t$ with no connections to cluster $B$. Any search that reaches $t$ from the $B$ side gets stuck.
+
+\paragraph{The heuristic.} Process candidates nearest-first. Add candidate $w^*$ to the result set $N$ if and only if $w^*$ is \emph{closer to $t$ than to any element already in $N$}:
+\[
+  d(w^*, t) < \min_{v \in N} d(w^*, v).
+\]
+Otherwise, send $w^*$ to the discard pile $D$. After exhausting $W$, if $|N| < n$, fill remaining slots from $D$ nearest-first.
+
+\begin{algorithm}
+\caption{\textsc{sel-neighbors} --- heuristic neighbor selection}
+\begin{algorithmic}[1]
+\Function{sel-neighbors}{$t, W, \ell, n$}
+  \State $N \gets \emptyset$
+  \State $D \gets \emptyset$ \Comment{discarded}
+  \While{$W \neq \emptyset$}
+    \State $w^* \gets \arg\min_{w \in W}\, d(w, t)$
+    \State $W \gets W \setminus \{w^*\}$
+    \If{$d(w^*, t) < \min_{v \in N} d(w^*, v)$}
+      \State $N \gets N \cup \{w^*\}$
+    \Else
+      \State $D \gets D \cup \{w^*\}$
+    \EndIf
+    \If{$|N| \geq n$}
+      \State \Return $N$
+    \EndIf
+  \EndWhile
+  \While{$|N| < n$ \textbf{and} $D \neq \emptyset$}
+    \State $w^* \gets \arg\min_{w \in D}\, d(w, t)$
+    \State $D \gets D \setminus \{w^*\}$
+    \State $N \gets N \cup \{w^*\}$
+  \EndWhile
+  \State \Return $N$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Geometric intuition.} The condition asks: ``Is $w^*$ closer to $t$ than to any of my already-chosen neighbors?'' This rejects candidates that are ``overshadowed'' by an existing neighbor in the relative neighborhood graph sense. The result is angularly spread connections---roughly one per direction---approximating the Delaunay graph.
+
+\begin{example}
+  In $\mathbb{R}^2$ with $M = 4$: if the four nearest candidates to $t$ are all in direction $(1, 0)$, only the closest one is added. The next candidate in direction $(-1, 0)$ passes the test (it is closer to $t$ than to the first chosen neighbor) and is added. The result has diverse angular coverage.
+\end{example}
+
+\begin{example}[1D reduction]
+  In one dimension with $M = 2$: the heuristic selects exactly the left neighbor and the right neighbor of $t$, recovering the linked-list structure of a skip list. HNSW on the real line \emph{is} a skip list.
+\end{example}
+
+\paragraph{Fallback.} If strict diversity leaves $N$ underfull (e.g., $t$ is near a boundary of the dataset), discarded candidates fill the remaining slots. This keeps the graph well-connected even in sparse regions.
+
+%% ----------------------------------------------------------
+\subsection{\textsc{insert}: Building the Index}
+\label{sec:insert}
+
+\paragraph{Overview.} Inserting element $w$ involves: (1) assign a layer $\lw$ by coin flips, (2) for each layer from $\lw$ down to 0, find good candidates and wire bidirectional edges.
+
+\begin{algorithm}
+\caption{\textsc{insert} --- insert element into HNSW}
+\begin{algorithmic}[1]
+\Function{insert}{$w, M, \ef$}
+  \State $\lw \gets 0$
+  \State $P \overset{\$}{\gets} \mathrm{Bern}(1/M)$
+  \While{$P = 1$}
+    \State $\lw \gets \lw + 1$
+    \State $P \overset{\$}{\gets} \mathrm{Bern}(1/M)$
+  \EndWhile
+  \While{$\lw \geq 0$}
+    \State $n^* \gets \Call{find-nn}{w, \lw}$
+    \State $W \gets \Call{beam-search}{w, n^*, \lw, \ef}$
+    \State $N \gets \Call{sel-neighbors}{w, W, \lw, M}$
+    \For{$v \in N$}
+      \State $\neigh[w, \lw] \gets \neigh[w, \lw] \cup \{v\}$
+      \State $\neigh[v, \lw] \gets \neigh[v, \lw] \cup \{w\}$
+    \EndFor
+    \For{$v \in N \cup \{w\}$}
+      \If{$|\neigh[v, \lw]| > M$}
+        \State $\neigh[v, \lw] \gets \Call{sel-neighbors}{w, \neigh[v, \lw], \lw, M}$
+      \EndIf
+    \EndFor
+    \State $\lw \gets \lw - 1$
+  \EndWhile
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Step 1: Layer assignment.}
+Flip $\mathrm{Bern}(1/M)$ coins and count heads before the first tail---that count is $\lw$. This is exactly skip-list promotion. With $M = 16$ and $N = 10^6$ elements, the expected max layer is $\log_{16}(10^6) \approx 5$.
+
+\paragraph{Step 2: Greedy descent to layer $\lw$.} Call \textsc{find-nn} to descend from the top layer $L$ to layer $\lw$, obtaining an approximate entry point $n^*$. If $\lw \geq L$, skip this step---$w$ becomes the new entry point.
+
+\paragraph{Step 3: Layer-by-layer connection.} For $\ell = \lw$ down to $0$:
+\begin{enumerate}
+  \item \textsc{beam-search}$(w, n^*, \ell, \ef_{\mathrm{Construction}})$: find the $\ef_{\mathrm{Construction}}$ nearest nodes to $w$ on layer $\ell$.
+  \item \textsc{sel-neighbors}$(w, W, \ell, M)$: select the best $M$ diverse neighbors $N$.
+  \item Add bidirectional edges: $\neigh[w, \ell] \gets N$, and for each $v \in N$: $\neigh[v, \ell] \gets \neigh[v, \ell] \cup \{w\}$.
+  \item \textbf{Shrink overfull neighbors:} for each $v \in N$, if $|\neigh[v, \ell]| > M$ (or $> 2M$ on layer~0), run \textsc{sel-neighbors} to trim $v$'s list back to the limit.
+  \item Update $n^*$ to the best candidate from $W$ as the entry point for the next lower layer.
+\end{enumerate}
+
+\paragraph{Step 4: Update global state.} If $\lw > L$, set $L \gets \lw$ and $\eps \gets w$.
+
+\begin{intubox}
+Each insertion is essentially a search followed by bounded heuristic work. The key asymmetry: inserting $w$ may push an existing element $v$ over its degree limit. We trim $v$'s neighbors with \textsc{sel-neighbors} rather than simple truncation, preserving graph quality. This makes HNSW a \emph{dynamic} index---insertions maintain structural quality incrementally.
+\end{intubox}
+
+\paragraph{Edge case: first element.} If the index is empty, $w$ simply becomes $\eps$ with $L = 0$ and no connections.
+
+%% ----------------------------------------------------------
+\subsection{\textsc{search}: Answering $K$-NN Queries}
+\label{sec:search}
+
+\paragraph{Overview.} Given query $t$ and parameters $\ef \geq K$:
+\begin{enumerate}
+  \item \textbf{Greedy descent} (layers $L$ down to $1$): call \textsc{find-nn} to cheaply navigate to the right region, using pure greedy hill-climbing with no beam.
+  \item \textbf{Beam search on layer~0}: call \textsc{beam-search}$(t, n^*, 0, \ef)$ to find the $\ef$ nearest candidates among all $N$ elements.
+  \item \textbf{Select top $K$}: return the $K$ nearest from $W$.
+\end{enumerate}
+
+\begin{algorithm}
+\caption{\textsc{search} --- $K$-nearest neighbor query}
+\begin{algorithmic}[1]
+\Function{search}{$t, \ef, K$}
+  \State $\ell \gets L$ \Comment{start at the top layer}
+  \State $n^* \gets \Call{find-nn}{t, 0}$ \Comment{greedy descent to layer 0}
+  \State $W \gets \Call{beam-search}{t, n^*, 0, \ef}$
+  \State \Return $K$ nearest elements of $W$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Why only beam search on layer~0?} Layer~0 is the only layer containing \emph{all} $N$ elements. Upper layers are sparse subsets; the true nearest neighbor may not appear on any upper layer. The greedy descent on upper layers is a cheap way to find a good starting point, after which beam search does the precise work.
+
+\paragraph{The $\ef$ knob.} Setting $\ef = K$ is the fastest (minimum exploration) but may miss some true nearest neighbors. Setting $\ef = 200$ with $K = 10$ examines 200 candidates to confidently return the top 10. The user trades query latency for recall.
+
+\begin{example}
+  With $N = 10^6$ vectors, $M = 16$, $K = 10$, and $\ef = 100$: empirically (Figure~11 of the paper), the $\ef$ needed for 95\% recall is roughly constant as $N$ grows from $10^4$ to $10^6$, validating the logarithmic search cost.
+\end{example}
+
+%% ==========================================================
+\section{Complexity Analysis}
+\label{sec:complexity}
+
+\subsection{Search}
+
+Under the idealized assumption that each layer is an exact Delaunay graph with bounded average degree (which \textsc{sel-neighbors} approximates):
+\begin{itemize}
+  \item There are $\log_M N$ layers on average (from the geometric layer distribution).
+  \item On each layer, the greedy path terminates after a bounded expected number of steps, because bounded degree and geometric convergence of distances prevent long chains of improvements.
+  \item The number of elements per layer forms a geometric series: $N, N/M, N/M^2, \ldots$, so the total work across layers grows as $\sum_{k=0}^{\infty} (1/M)^k = M/(M-1)$---a constant independent of $N$.
+\end{itemize}
+Total expected distance computations for \textsc{find-nn}: logarithmic in $N$. Beam search on layer~0 adds $\ef \cdot M$ additional comparisons, which is a user-controlled constant independent of $N$.
+
+\subsection{Construction}
+
+Each of the $N$ insertions performs one logarithmic-cost search (via \textsc{find-nn} per layer) plus one \textsc{beam-search} and one \textsc{sel-neighbors} per layer, each bounded by $\ef_{\mathrm{Construction}} \cdot M$ work. This gives logarithmic cost per insertion, hence $N \log N$ total.
+
+\subsection{Memory}
+
+Each element on layer $\ell > 0$ stores up to $M$ neighbor indices; layer~0 stores up to $2M$. Expected total neighbors per element:
+\[
+  2M + \sum_{k=1}^{\infty} M \cdot (1/M)^k \approx 2M + \frac{M}{M-1} \approx 2M.
+\]
+So roughly $2M \times 4 = 8M$ bytes per element for neighbor storage (assuming 4-byte integer IDs), plus the raw vectors.
+
+%% ==========================================================
+\section{Putting It All Together: A Worked Example}
+
+Suppose we build an index with $M = 4$ and $\ef_{\mathrm{Construction}} = 20$, inserting points one by one.
+
+\paragraph{Insertion 1:} Element $x_1$ is inserted into an empty index. $x_1$ becomes the entry point $\eps$ with $L = 0$. Coin flip: tails, so $\lw = 0$.
+
+\paragraph{Insertion 2:} Element $x_2$. Coin flip: tails, so $\lw = 0$. \textsc{beam-search} on layer~0 from $\eps = x_1$ finds $W = \{x_1\}$. \textsc{sel-neighbors} returns $N = \{x_1\}$. Add bidirectional edge $x_2 \leftrightarrow x_1$.
+
+\paragraph{Insertion 5 (promoted to layer~1):} Element $x_5$. First flip: heads ($\lw \gets 1$). Second flip: tails. So $\lw = 1$. Since $1 > L = 0$: set $L = 1$, $\eps = x_5$. On layer~1, $x_5$ has no other elements---no edges added. On layer~0, normal insertion with bidirectional edges to the nearest found neighbors.
+
+\paragraph{Later query:} \textsc{search}$(t, \ef=10, K=3)$. \textsc{find-nn} starts at $x_5$ on layer~1, descends to layer~0. \textsc{beam-search} with $\ef=10$ returns 10 candidates. Return the 3 nearest.
+
+%% ==========================================================
+\section{Parameter Tuning in Practice}
+
+\begin{description}[leftmargin=2em]
+  \item[$M$] Default 16 for most cases. Use smaller values (5--12) for low-dimensional data or when memory is tight. Use larger values (32--64) for high-dimensional data or when maximizing recall.
+  \item[$\ef_{\mathrm{Construction}}$] Default 200. Doubling this roughly halves graph-quality errors but doubles build time. Set this once at build time and cannot be changed afterward without rebuilding.
+  \item[$\ef$ (query time)] Start at $\ef = K$, increase until the recall target is met. The recall--latency curve is typically steep at first then flattens; there is usually a sweet spot.
+\end{description}
+
+\begin{remark}
+  $\ef_{\mathrm{Construction}}$ is baked into the graph structure at build time. $\ef$ can be changed freely per query without rebuilding the index. If recall is insufficient, increase $\ef$ first before deciding to rebuild.
+\end{remark}
+
+%% ==========================================================
+\section{Summary}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Property & Value \\
+\midrule
+Analogy & Skip list over a metric space \\
+Core idea & Separate long- and short-range links by layer \\
+Search cost & Logarithmic in $N$ \\
+Build cost & $N \log N$ \\
+Memory & $\sim 8M$ bytes/element for neighbor indices \\
+Key algorithmic insight & \textsc{sel-neighbors} gives directional diversity \\
+Runtime knob & $\ef$ (query-time beam width) \\
+Build knob & $\ef_{\mathrm{Construction}}$, $M$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+HNSW achieves its efficiency through three reinforcing design choices:
+\begin{enumerate}
+  \item \textbf{Layered hierarchy} (skip-list structure) enables cheap coarse navigation before the expensive fine search.
+  \item \textbf{Heuristic neighbor selection} (\textsc{sel-neighbors}) ensures graph connectivity across cluster boundaries, preventing search from getting trapped.
+  \item \textbf{Bounded degree} at every layer prevents search cost from growing through high-degree hub nodes.
+\end{enumerate}
+
+\bigskip
+\noindent\textit{Reference: Yu.~A.~Malkov, D.~A.~Yashunin, ``Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs,'' arXiv:1603.09320v4 (2018).}
+
+\end{document}

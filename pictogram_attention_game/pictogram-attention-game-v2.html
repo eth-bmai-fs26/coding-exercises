@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pictogram Attention Mechanism Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #F2F4F0;
+    --surface: #FFFFFF;
+    --surface2: #ECEEF0;
+    --border: #D4D8D0;
+    --text: #141A14;
+    --muted: #6B7268;
+    --accent: #2D6A2D;       /* alien green */
+    --accent2: #1A4A6E;      /* deep signal blue */
+    --gold: #B8860B;
+    --noun-col: #B8860B;
+    --adj-col: #1A4A6E;
+    --correct: #1B5E20;
+    --correct-bg: #E8F5E9;
+    --correct-border: #81C784;
+    --wrong: #B71C1C;
+    --wrong-bg: #FFEBEE;
+    --wrong-border: #EF9A9A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── TYPOGRAPHY ─── */
+  .display { font-family: 'Syne', sans-serif; }
+  .mono    { font-family: 'Space Mono', monospace; }
+
+  .noun { color: var(--noun-col); font-weight: 700; font-size: 2rem; padding: 0 4px; display: inline-block; letter-spacing: .05em; }
+  .adj  { color: var(--adj-col);  font-weight: 700; font-size: 2rem; padding: 0 4px; display: inline-block; letter-spacing: .05em; }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-title { font-family: 'Syne', sans-serif; font-weight: 500; font-size: .95rem; color: var(--text); letter-spacing: .04em; text-transform: uppercase; }
+  .header-signal {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,106,45,.2);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(45,106,45,.2)} 50%{box-shadow:0 0 0 6px rgba(45,106,45,.08)} }
+  .header-legend { display: flex; gap: 16px; align-items: center; font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--muted); }
+
+  /* ─── LAYOUT ─── */
+  #app { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ─── SHARED COMPONENTS ─── */
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 11px 24px; border-radius: 8px; font-family: 'Syne', sans-serif;
+    font-size: .88rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    cursor: pointer; border: none; transition: all .15s;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+  .btn-primary   { background: var(--text); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-accent    { background: var(--accent); color: #fff; }
+  .btn-gold      { background: var(--gold); color: #fff; }
+
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-family: 'Space Mono', monospace; font-size: .68rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .badge-gray   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .badge-amber  { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+  .badge-green  { background: #DCFCE7; color: #14532D; border: 1px solid #86EFAC; }
+  .badge-blue   { background: #DBEAFE; color: #1E3A8A; border: 1px solid #93C5FD; }
+  .badge-red    { background: #FEE2E2; color: #7F1D1D; border: 1px solid #FCA5A5; }
+
+  .progress-bar { display: flex; gap: 8px; margin-bottom: 28px; }
+  .progress-seg { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background .3s; }
+  .progress-seg.on { background: var(--accent); }
+
+  .sentence-box {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center;
+    padding: 24px 32px; background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 12px; margin: 14px 0;
+    font-size: 1.1rem; letter-spacing: .08em;
+    min-height: 80px;
+  }
+
+  /* ─── INTRO ─── */
+  #screen-intro {
+    min-height: calc(100vh - 60px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-intro.active { display: flex; }
+
+  /* Alien grid background */
+  .intro-grid {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(45,106,45,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,106,45,.07) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+  }
+  .intro-glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 600px; height: 300px; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse, rgba(45,106,45,.10) 0%, transparent 70%);
+  }
+  .intro-content { position: relative; z-index: 1; max-width: 680px; }
+
+  .transmission-bar {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1.5px solid var(--accent);
+    border-radius: 6px; padding: 7px 16px; margin-bottom: 32px;
+    font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--accent);
+    letter-spacing: .1em; text-transform: uppercase;
+    animation: fadeDown .6s ease both;
+  }
+  .transmission-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.2s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
+
+  .intro-h1 {
+    font-family: 'Syne', sans-serif; font-weight: 600;
+    font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1.1;
+    color: var(--text); letter-spacing: -.02em; margin-bottom: 20px;
+    animation: fadeUp .7s .1s ease both;
+  }
+  .intro-h1 .alien { color: var(--accent); }
+  .intro-h1 .attn  { color: var(--accent2); }
+
+  .intro-mystery {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 24px 28px; margin: 28px 0 32px;
+    text-align: left; animation: fadeUp .7s .2s ease both;
+  }
+  .mystery-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .mystery-header span {
+    font-family: 'Space Mono', monospace; font-size: .72rem;
+    font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mystery-transmission {
+    font-family: 'Space Mono', monospace; font-size: 1.4rem;
+    letter-spacing: .15em; color: var(--text); text-align: center;
+    padding: 16px; background: var(--surface2); border-radius: 8px;
+    border: 1px solid var(--border); margin-bottom: 16px;
+    line-height: 2;
+  }
+  .mystery-transmission .noun { font-size: 1.6rem; }
+  .mystery-transmission .adj  { font-size: 1.6rem; }
+  .mystery-question {
+    font-size: .92rem; color: var(--muted); font-style: italic; line-height: 1.7;
+    text-align: center;
+  }
+
+  .intro-cta { animation: fadeUp .7s .35s ease both; }
+  .intro-cta p { color: var(--muted); font-size: .88rem; margin-top: 12px; font-family: 'Space Mono', monospace; letter-spacing: .04em; }
+
+  /* ─── TRAINING ─── */
+  #screen-training { max-width: 980px; margin: 0 auto; }
+  .phase-title { font-family: 'Syne', sans-serif; font-weight: 500; font-size: 1.65rem; color: var(--text); margin-bottom: 20px; letter-spacing: -.01em; }
+  .examples-list { display: flex; flex-direction: column; gap: 14px; }
+  .example-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .example-main { flex: 1; }
+  .hint-text { color: var(--muted); font-size: .85rem; font-style: italic; margin-top: 8px; }
+  .reveal-box { background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: 8px; padding: 10px 16px; margin-top: 10px; margin-bottom: 6px; }
+  .reveal-translation { color: #92400E; font-weight: 500; font-size: 1rem; }
+  .breakdown-text { color: var(--muted); font-size: .82rem; font-family: 'Space Mono', monospace; margin-top: 4px; }
+  .nav-row { display: flex; justify-content: space-between; margin-top: 28px; }
+  .reveal-all-row { text-align: center; margin: 16px 0; }
+
+  /* ─── QUIZ ─── */
+  #screen-quiz { max-width: 980px; margin: 0 auto; }
+  .quiz-layout { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+  .quiz-main { flex: 1; min-width: 320px; }
+  .quiz-title { font-family: 'Syne', sans-serif; font-weight: 500; font-size: 1.4rem; color: var(--text); margin-bottom: 16px; }
+
+  .options-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .option-btn {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; text-align: left; font-family: 'Source Serif 4', serif;
+    font-size: .95rem; color: var(--text); font-weight: 500;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    transition: all .15s; width: 100%;
+  }
+  .option-btn:hover:not(.locked) { border-color: var(--accent); background: #F0F7F0; }
+  .option-btn.correct { background: var(--correct-bg); border-color: var(--correct-border); color: var(--correct); }
+  .option-btn.wrong   { background: var(--wrong-bg);   border-color: var(--wrong-border);   color: var(--wrong); }
+  .opt-letter {
+    min-width: 26px; height: 26px; border-radius: 50%; background: var(--surface2);
+    color: var(--muted); display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: .72rem; font-weight: 500; flex-shrink: 0;
+  }
+  .option-btn.correct .opt-letter { background: #22C55E; color: #fff; }
+  .option-btn.wrong   .opt-letter { background: #EF4444; color: #fff; }
+
+  .result-box { margin-top: 14px; padding: 14px 18px; border-radius: 10px; font-size: .92rem; line-height: 1.65; }
+  .result-box.ok  { background: var(--correct-bg); border: 1.5px solid var(--correct-border); color: var(--correct); font-weight: 300; }
+  .result-box.bad { background: var(--wrong-bg);   border: 1.5px solid var(--wrong-border);   color: var(--wrong);   font-weight: 300; }
+  .quiz-next-row { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+  /* trick-label */
+  .trick-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Space Mono', monospace; font-size: .68rem; letter-spacing: .08em;
+    text-transform: uppercase; color: #92400E; background: #FEF3C7;
+    border: 1px solid #FDE68A; border-radius: 4px; padding: 3px 8px; margin-bottom: 10px;
+  }
+
+  /* ─── REF CARD ─── */
+  .ref-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px 20px; font-size: .82rem; }
+  .ref-label { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-size: .7rem; margin-bottom: 12px; }
+  .ref-section { margin-bottom: 10px; }
+  .ref-section-label { color: var(--muted); font-family: 'Space Mono', monospace; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .ref-noun { color: var(--noun-col); font-weight: 700; font-size: .9rem; margin: 3px 0; }
+  .ref-adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+  .ref-adj { color: var(--adj-col); font-weight: 600; font-size: .88rem; }
+
+  /* ─── SCORE ─── */
+  #screen-score { max-width: 520px; margin: 0 auto; }
+  .score-wrap { text-align: center; }
+  .score-ring {
+    width: 110px; height: 110px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 28px; border: 3px solid;
+  }
+  .score-ring.good { background: #FFFBEB; border-color: var(--gold); color: var(--gold); }
+  .score-ring.bad  { background: #FEF2F2; border-color: #EF4444; color: #EF4444; }
+  .score-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 500; }
+  .score-h2  { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+  .score-sub { color: var(--muted); margin-bottom: 32px; line-height: 1.7; }
+
+  /* ─── REVEAL ─── */
+  #screen-reveal { max-width: 780px; margin: 0 auto; }
+  .reveal-title { font-family: 'Syne', sans-serif; font-size: clamp(1.7rem, 3.5vw, 2.4rem); font-weight: 500; color: var(--text); margin-bottom: 28px; line-height: 1.2; }
+  .reveal-title .accent { color: var(--accent); }
+
+  .tab-bar { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 28px; flex-wrap: wrap; }
+  .tab-btn {
+    background: none; border: none; border-bottom: 3px solid transparent; padding: 8px 18px;
+    font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600; letter-spacing: .03em;
+    color: var(--muted); cursor: pointer; transition: all .15s; margin-bottom: -2px;
+    text-transform: uppercase;
+  }
+  .tab-btn.active { font-weight: 500; color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  blockquote {
+    border-left: 3px solid var(--accent); padding-left: 24px; margin: 0 0 24px;
+    font-style: italic; font-size: 1.05rem; color: #3C4A3C; line-height: 1.85;
+  }
+  .kp { margin-bottom: 14px; font-size: .93rem; line-height: 1.65; }
+  .kp strong { color: var(--text); }
+  .kp span   { color: var(--muted); }
+  .info-box { background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: .88rem; color: #1E40AF; line-height: 1.6; font-family: 'Space Mono', monospace; }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  table.data-table th { padding: 10px 14px; text-align: left; color: var(--muted); font-family: 'Space Mono', monospace; font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+  table.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--surface2); font-family: 'Space Mono', monospace; font-size: .82rem; }
+  table.data-table tbody tr:nth-child(odd) { background: var(--surface2); }
+
+  table.att-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  table.att-table th { padding: 8px 12px; text-align: left; color: var(--muted); font-family: 'Space Mono', monospace; font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1.5px solid var(--border); }
+  table.att-table td { padding: 8px 12px; border-bottom: 1px solid var(--surface2); font-family: 'Space Mono', monospace; font-size: .82rem; }
+  table.att-table tr.hl { background: #FFFBEB; }
+
+  .code-box { background: var(--surface2); border-radius: 8px; padding: 14px 18px; margin-top: 14px; font-family: 'Space Mono', monospace; font-size: .82rem; color: var(--text); line-height: 1.8; border: 1px solid var(--border); }
+  .ext-list { display: flex; flex-direction: column; gap: 14px; }
+  .ext-item { display: flex; gap: 14px; align-items: flex-start; }
+  .ext-item h4 { color: var(--text); margin: 0 0 6px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; }
+  .ext-item p  { color: var(--muted); font-size: .9rem; line-height: 1.65; margin: 0; }
+  .reveal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; padding-top: 24px; border-top: 1.5px solid var(--border); }
+  .reveal-footer span { color: var(--muted); font-family: 'Space Mono', monospace; font-size: .78rem; letter-spacing: .05em; }
+
+  @media(max-width:680px) {
+    .quiz-layout { flex-direction: column; }
+    #quiz-sidebar { display: none; }
+    .intro-h1 { font-size: 2rem; }
+    header { padding: 12px 16px; }
+    .intro-mystery { padding: 18px; }
+    .mystery-transmission { font-size: 1.1rem; }
+    .mystery-transmission .noun,
+    .mystery-transmission .adj { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">
+    <div class="header-signal"></div>
+    <span class="header-title display">Pictogram Attention</span>
+  </div>
+  
+</header>
+<!-- <div class="header-legend">
+    <span><span class="noun" style="font-size:.9rem">⬡</span> noun</span>
+    <span><span class="adj"  style="font-size:.9rem">⬢</span> adjective</span>
+  </div> -->
+<div id="app">
+  <main id="main-content">
+
+    <!-- ══════════════════════════════ INTRO ══════════════════════════════ -->
+    <section id="screen-intro" class="screen active">
+      <div class="intro-grid"></div>
+      <div class="intro-glow"></div>
+      <div class="intro-content">
+
+        <div class="transmission-bar">
+          <div class="transmission-dot"></div>
+          INCOMING TRANSMISSION · BMAI Week 4 · DECRYPTING…
+        </div>
+
+        <h1 class="intro-h1 display">
+          We've intercepted<br>
+          an <span class="alien">alien</span> signal!<br>
+          <span class="attn">Can you decode it?</span>
+        </h1>
+
+        <div class="intro-mystery">
+          <div class="mystery-header">
+            <div class="transmission-dot"></div>
+            <span class="mono">FRAGMENT · SIGNAL-0041 · PARTIAL DECODE</span>
+          </div>
+          <div class="mystery-transmission">
+            <span class="adj">≋</span>
+            <span class="noun">◈</span>
+            <span class="adj">⌇</span>
+            <span class="adj">✺</span>
+            <span class="noun">⏀</span>
+            <span class="adj">⧉</span>
+          </div>
+          <p class="mystery-question">
+            Six symbols. Two kinds. But which symbols belong together?<br>
+            Does their <em>position</em> even matter?
+          </p>
+        </div>
+
+        <div class="intro-cta">
+          <button class="btn btn-accent" onclick="startTraining()">Begin Decoding →</button>
+          <p class="mono">Training Phase · Quiz · The Reveal</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════ TRAINING ══════════════════════════════ -->
+    <section id="screen-training" class="screen">
+        <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+        
+        <!-- MAIN CONTENT -->
+        <div style="flex:1;min-width:0;max-width:680px;">
+            <div class="progress-bar" id="training-progress"></div>
+            <div style="margin-bottom:10px" id="training-badge"></div>
+            <h2 class="phase-title" id="training-phase-title"></h2>
+            <div id="training-preamble"></div>
+            <div class="reveal-all-row">
+            <button class="btn btn-secondary" onclick="revealAll()" style="font-size:.82rem;padding:8px 18px;">👀 Reveal All</button>
+            </div>
+            <div class="examples-list" id="training-examples"></div>
+            <div class="nav-row">
+            <button class="btn btn-secondary" id="training-back-btn" onclick="trainingBack()">← Back</button>
+            <button class="btn btn-accent"    id="training-next-btn" onclick="trainingNext()" disabled>Next Phase →</button>
+            </div>
+        </div>
+    
+        <!-- SIDEBAR -->
+        <aside id="training-sidebar" style="width:240px;flex-shrink:0;position:sticky;top:80px;display:none;">
+            <div class="ref-card">
+            <p class="ref-label">What you have seen so far</p>
+            <div class="ref-section">
+                <p class="ref-section-label">Nouns</p>
+                <p class="ref-noun">◈ = square </p>
+                <p class="ref-noun">⏀ = circle </p>
+            </div>
+            <div class="ref-section">
+                <p class="ref-section-label">Adjectives</p>
+                <div class="ref-adj-grid">
+                <span class="ref-adj">≋ = big</span>
+                <span class="ref-adj">⬽ = small</span>
+                <span class="ref-adj">⌬ = blue</span>
+                <span class="ref-adj">⧉ = red</span>
+                </div>
+            </div>
+            <div class="ref-section">
+                <div class="ref-adj-grid">
+                <span class="ref-adj">⎓ = flat</span>
+                <span class="ref-adj">⌇ = tall</span>
+                <span class="ref-adj">✧ = yellow</span>
+                <span class="ref-adj">✺ = orange</span>
+                </div>
+            </div>
+            </div>
+        </aside>
+    
+        </div>
+    </section>
+    <!-- ══════════════════════════════ QUIZ ══════════════════════════════ -->
+    <section id="screen-quiz" class="screen">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="progress-bar" id="quiz-progress"></div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap" id="quiz-badges"></div>
+          <h2 class="quiz-title display">What does this transmission say?</h2>
+          <div id="quiz-trick-label"></div>
+          <div class="sentence-box" id="quiz-sentence"></div>
+          <div class="options-list" id="quiz-options"></div>
+          <div id="quiz-result"></div>
+          <div class="quiz-next-row" id="quiz-next-row" style="display:none">
+            <button class="btn btn-accent" id="quiz-next-btn" onclick="quizNext()">Next →</button>
+          </div>
+        </div>
+
+        <aside id="quiz-sidebar" style="width:260px;flex-shrink:0;position:sticky;top:80px;">
+          <div class="ref-card">
+            <p class="ref-label">Quick Reference</p>
+            <div class="ref-section">
+                <p class="ref-section-label">Nouns</p>
+                <p class="ref-noun">◈ = square <span style="color:var(--muted);font-size:.75rem;font-weight:400">— 4 angles</span></p>
+                <p class="ref-noun">⏀ = circle <span style="color:var(--muted);font-size:.75rem;font-weight:400">— round</span></p>
+            </div>
+            <div class="ref-section">
+              <p class="ref-section-label">Adjectives</p>
+              <div class="ref-adj-grid">
+                <span class="ref-adj">≋ = big</span>
+                <span class="ref-adj">⬽ = small</span>
+                <span class="ref-adj">⌬ = blue</span>
+                <span class="ref-adj">⧉ = red</span>
+              </div>
+            </div>
+            <div class="ref-section">
+              <!-- <p class="ref-section-label">Circle adjectives</p> -->
+              <div class="ref-adj-grid">
+                <span class="ref-adj">⎓ = flat</span>
+                <span class="ref-adj">⌇ = tall</span>
+                <span class="ref-adj">✧ = yellow</span>
+                <span class="ref-adj">✺ = orange</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════ SCORE ══════════════════════════════ -->
+    <section id="screen-score" class="screen">
+      <div class="score-wrap">
+        <div class="score-ring" id="score-ring">
+          <span class="score-num" id="score-num"></span>
+        </div>
+        <h2 class="score-h2 display" id="score-heading"></h2>
+        <p class="score-sub" id="score-sub"></p>
+        <button class="btn btn-accent" onclick="showReveal()">The Attention Reveal →</button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════ REVEAL ══════════════════════════════ -->
+    <!-- ══════════════════════════════ REVEAL ══════════════════════════════ -->
+<section id="screen-reveal" class="screen">
+    <div style="margin-bottom:10px"><span class="badge badge-green">Attention Reveal</span></div>
+    <h2 class="reveal-title display">You were running<br><span class="accent">attention all along.</span></h2>
+  
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-speech"     onclick="switchTab('speech')">The Reveal</button>
+      <button class="tab-btn"        id="tab-btn-mechanism"  onclick="switchTab('mechanism')">The Mechanism</button>
+      <button class="tab-btn"        id="tab-btn-vectors"    onclick="switchTab('vectors')">Q / K / V</button>
+      <button class="tab-btn"        id="tab-btn-worked"     onclick="switchTab('worked')">Worked Example</button>
+      <!-- <button class="tab-btn"        id="tab-btn-extensions" onclick="switchTab('extensions')">Extensions</button> -->
+    </div>
+  
+    <!-- ── Tab 1: The Reveal ── -->
+    <div class="tab-content active" id="tab-speech">
+      <blockquote>"You just ran an attention mechanism. Not a metaphor of one · the actual computation. Every time you read a scrambled sentence and correctly assigned a companion to its noun, you solved the same problem a transformer solves thousands of times per token: given this piece of information, who in the context is it relevant to?"</blockquote>
+  
+      <div class="card" style="margin-bottom:20px">
+        <h3 class="display" style="font-size:1.05rem;color:var(--text);margin-bottom:16px;font-weight:700">What you were actually doing</h3>
+        <div class="kp"><strong>Routing by compatibility, not by position.</strong> <span>You never used the location of a symbol to decide what it modified. You used its identity · which family it belonged to. That is exactly what attention does: it computes a compatibility score between every pair of tokens and routes information based on that score, ignoring sequence order.</span></div>
+        <div class="kp"><strong>Separating "who" from "what".</strong> <span>Each companion symbol carries two distinct things: an address (which noun should receive this?) and a payload (what property does it describe?). You kept these separate intuitively. In a transformer, the address is encoded in the Key vector and the payload is encoded in the Value vector.</span></div>
+        <div class="kp"><strong>The averaging trap.</strong> <span>In the bonus question, the circle collected two conflicting color signals and the result was undefined. This is not a bug in the game · it is a real limitation of the mechanism. When multiple tokens attend to the same target with conflicting values, the output averages them. This is why multi-head attention exists.</span></div>
+      </div>
+    </div>
+  
+    <!-- ── Tab 2: The Mechanism ── -->
+    <div class="tab-content" id="tab-mechanism">
+      <p style="color:var(--muted);font-size:.95rem;line-height:1.75;margin-bottom:24px">Attention is a function that takes a set of tokens and produces, for each token, a weighted summary of the other tokens it finds relevant. It has three steps.</p>
+  
+      <div class="card" style="margin-bottom:16px">
+        <h4 class="display" style="font-weight:700;margin-bottom:12px;font-size:1rem">Step 1 · Score</h4>
+        <p style="color:var(--muted);font-size:.92rem;line-height:1.75;margin-bottom:12px">Every token is projected into three spaces: a Query, a Key, and a Value. To compute how much token <em>i</em> should attend to token <em>j</em>, we take the dot product of <em>i</em>'s Query with <em>j</em>'s Key.</p>
+        <div class="code-box">score(i, j) = Qᵢ · Kⱼ</div>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.7;margin-top:12px">In the game, ◈ (square) has Query Q=(1,0). The companion ≋ (big) has Key K=(1,0). Their dot product is 1 · a perfect match. ⌇ (tall) has Key K=(0,1). Its dot product with ◈ is 0 · no match. The score encodes compatibility.</p>
+      </div>
+  
+      <div class="card" style="margin-bottom:16px">
+        <h4 class="display" style="font-weight:700;margin-bottom:12px;font-size:1rem">Step 2 · Normalize</h4>
+        <p style="color:var(--muted);font-size:.92rem;line-height:1.75;margin-bottom:12px">Raw scores are passed through a softmax, which converts them into a probability distribution summing to 1. Tokens with higher scores receive higher weights.</p>
+        <div class="code-box">weights = softmax(scores / √d)</div>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.7;margin-top:12px">The √d scaling (where d is the dimension of the Key vectors) prevents the dot products from becoming too large and pushing the softmax into a near-zero gradient region. In the game, our scores are already 0 or 1, so this step is trivial · but in real models with d=64 or d=512, it matters.</p>
+      </div>
+  
+      <div class="card" style="margin-bottom:16px">
+        <h4 class="display" style="font-weight:700;margin-bottom:12px;font-size:1rem">Step 3 · Aggregate</h4>
+        <p style="color:var(--muted);font-size:.92rem;line-height:1.75;margin-bottom:12px">The output for token <em>i</em> is a weighted sum of the Value vectors of all other tokens, using the normalized weights from Step 2.</p>
+        <div class="code-box">output(i) = Σⱼ weight(i,j) × Vⱼ</div>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.7;margin-top:12px">In the game, the square ◈ attended to ≋ and ⧉ with equal weight 0.5. Its output was 0.5 × V(big) + 0.5 × V(red). The Value vector is the payload · the actual information being transferred.</p>
+      </div>
+  
+      <div class="card">
+        <h4 class="display" style="font-weight:700;margin-bottom:12px;font-size:1rem">Why this matters</h4>
+        <p style="color:var(--muted);font-size:.92rem;line-height:1.75">Attention is permutation-equivariant: if you shuffle the input tokens, the outputs shuffle in the same way but their content does not change. This is precisely what you experienced in Phase 4 · scrambling the symbols did not change the meaning because attention does not care about order. Positional encodings are added separately to inject order when it is needed.</p>
+      </div>
+    </div>
+  
+    <!-- ── Tab 3: Q/K/V ── -->
+    <div class="tab-content" id="tab-vectors">
+      <p style="color:var(--muted);font-size:.92rem;line-height:1.75;margin-bottom:20px">Each token is projected into three vectors by three learned weight matrices: W_Q, W_K, and W_V. In the game, these projections are hardcoded · but in a real transformer they are learned from data.</p>
+  
+      <div class="info-box">Query: what am I looking for? · Key: what do I offer? · Value: what information do I carry?</div>
+  
+      <div style="overflow-x:auto;margin-bottom:20px">
+        <table class="data-table">
+          <thead><tr><th>Token</th><th>Query Q</th><th>Key K</th><th>Value V · (sq_size, sq_color, circ_shape, circ_color)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>SQUARE ◈</strong></td><td style="color:var(--adj-col)">(1, 0)</td><td style="color:var(--muted)">(0, 0)</td><td>(0, 0, 0, 0)</td></tr>
+            <tr><td><strong>CIRCLE ⏀</strong></td><td style="color:var(--adj-col)">(0, 1)</td><td style="color:var(--muted)">(0, 0)</td><td>(0, 0, 0, 0)</td></tr>
+            <tr><td><strong>BIG ≋</strong></td>   <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(1, 0)</td><td>(+1, 0, 0, 0)</td></tr>
+            <tr><td><strong>SMALL ⬽</strong></td> <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(1, 0)</td><td>(-1, 0, 0, 0)</td></tr>
+            <tr><td><strong>BLUE ⌬</strong></td>  <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(1, 0)</td><td>(0, +1, 0, 0)</td></tr>
+            <tr><td><strong>RED ⧉</strong></td>   <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(1, 0)</td><td>(0, -1, 0, 0)</td></tr>
+            <tr><td><strong>TALL ⌇</strong></td>  <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(0, 1)</td><td>(0, 0, +1, 0)</td></tr>
+            <tr><td><strong>FLAT ⎓</strong></td>  <td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(0, 1)</td><td>(0, 0, -1, 0)</td></tr>
+            <tr><td><strong>ORANGE ✺</strong></td><td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(0, 1)</td><td>(0, 0, 0, +1)</td></tr>
+            <tr><td><strong>YELLOW ✧</strong></td><td style="color:var(--muted)">(0, 0)</td><td style="color:var(--noun-col)">(0, 1)</td><td>(0, 0, 0, -1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <div class="card">
+        <h4 class="display" style="font-weight:700;margin-bottom:12px;font-size:1rem">Reading the table</h4>
+        <div class="kp"><strong>Nouns have non-zero Queries, zero Keys.</strong> <span>They ask questions but do not answer them. The square asks "is this a square companion?" with Q=(1,0). The circle asks "is this a circle companion?" with Q=(0,1).</span></div>
+        <div class="kp"><strong>Companions have non-zero Keys, zero Queries.</strong> <span>They carry an address but do not seek information themselves. A square companion has K=(1,0): it answers "yes" only when a square (Q=(1,0)) asks. A circle companion has K=(0,1): it answers "yes" only when a circle asks.</span></div>
+        <div class="kp"><strong>Values encode the payload.</strong> <span>The Value vector holds the actual information. BIG encodes (+1, 0, 0, 0): it increases the square's size dimension by 1. RED encodes (0, -1, 0, 0): it sets the square's color dimension to -1. These are arbitrary choices for this game · in real models, Value vectors are dense and learned.</span></div>
+      </div>
+    </div>
+  
+    <!-- ── Tab 4: Worked Example ── -->
+    <div class="tab-content" id="tab-worked">
+      <p style="color:var(--muted);margin-bottom:20px;font-size:.95rem;line-height:1.7">
+        Sentence: <span class="adj">⧉</span> <span class="adj">≋</span> <span class="noun">◈</span> <span class="adj">⌇</span> <span class="adj">✺</span> <span class="noun">⏀</span>
+        <span style="margin-left:8px;font-style:italic">· a red big square and a tall orange circle</span>
+      </p>
+  
+      <div class="card" style="margin-bottom:16px">
+        <h4 class="display" style="color:var(--text);margin-bottom:14px;font-weight:700;font-size:1rem">Step 1 · SQUARE asks (Q = (1,0))</h4>
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">The square computes a dot product with every other token's Key. High score = strong match.</p>
+        <div style="overflow-x:auto">
+          <table class="att-table">
+            <thead><tr><th>Token</th><th>Glyph</th><th>Key K</th><th>Score Q·K</th><th>Weight</th></tr></thead>
+            <tbody>
+              <tr class="hl"><td><strong>RED</strong></td>   <td><span class="adj" style="font-size:1.1rem">⧉</span></td><td>(1, 0)</td><td><strong style="color:var(--gold)">1</strong></td><td>0.5</td></tr>
+              <tr class="hl"><td><strong>BIG</strong></td>   <td><span class="adj" style="font-size:1.1rem">≋</span></td><td>(1, 0)</td><td><strong style="color:var(--gold)">1</strong></td><td>0.5</td></tr>
+              <tr><td style="color:var(--muted)">SQUARE</td> <td><span class="noun" style="font-size:1.1rem">◈</span></td><td style="color:var(--muted)">(0, 0)</td><td style="color:var(--muted)">0</td><td style="color:var(--muted)">0</td></tr>
+              <tr><td style="color:var(--muted)">TALL</td>   <td style="color:var(--muted)">⌇</td><td style="color:var(--muted)">(0, 1)</td><td style="color:var(--muted)">0</td><td style="color:var(--muted)">0</td></tr>
+              <tr><td style="color:var(--muted)">ORANGE</td> <td style="color:var(--muted)">✺</td><td style="color:var(--muted)">(0, 1)</td><td style="color:var(--muted)">0</td><td style="color:var(--muted)">0</td></tr>
+              <tr><td style="color:var(--muted)">CIRCLE</td> <td><span class="noun" style="font-size:1.1rem;color:var(--muted)">⏀</span></td><td style="color:var(--muted)">(0, 0)</td><td style="color:var(--muted)">0</td><td style="color:var(--muted)">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code-box">output(◈) = 0.5 × V(RED) + 0.5 × V(BIG)<br>
+  = 0.5 × (0, -1, 0, 0) + 0.5 × (+1, 0, 0, 0)<br>
+  = <strong>(+0.5, -0.5, 0, 0)</strong><br><br>
+  Reading: sq_size = +0.5 (biggish) · sq_color = -0.5 (reddish) · no circle info</div>
+      </div>
+  
+      <div class="card" style="margin-bottom:16px">
+        <h4 class="display" style="color:var(--text);margin-bottom:14px;font-weight:700;font-size:1rem">Step 2 · CIRCLE asks (Q = (0,1))</h4>
+        <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">The circle runs the same computation. It finds TALL and ORANGE, ignores everything else.</p>
+        <div class="code-box">output(⏀) = 0.5 × V(TALL) + 0.5 × V(ORANGE)<br>
+  = 0.5 × (0, 0, +1, 0) + 0.5 × (0, 0, 0, +1)<br>
+  = <strong>(0, 0, +0.5, +0.5)</strong><br><br>
+  Reading: no square info · circ_shape = +0.5 (tallish) · circ_color = +0.5 (orangeish)</div>
+      </div>
+  
+      <div class="card">
+        <h4 class="display" style="color:var(--text);margin-bottom:12px;font-weight:700;font-size:1rem">Why the values are ±0.5 and not ±1</h4>
+        <p style="color:var(--muted);font-size:.92rem;line-height:1.75">Each noun attended to two companions with equal weight 0.5. The output is an average, not a sum. With only one companion, the output would be ±1. With three companions of equal weight, each contributes ±0.33. This averaging is a core property of attention · and it is why multi-head attention was invented. Different heads can specialize on different property dimensions, preventing the dilution.</p>
+      </div>
+    </div>
+  
+    <!-- ── Tab 5: Extensions ── -->
+    <!-- <div class="tab-content" id="tab-extensions">
+      <div class="ext-list">
+        <div class="card"><div class="ext-item"><span class="badge badge-blue" style="flex-shrink:0">Round 3</span><div>
+          <h4 class="display">Break It</h4>
+          <p>Ask participants to construct a sentence the mechanism cannot decode correctly. They will find it hard · the design is robust. The only way to break it is to introduce a companion that could belong to either noun (e.g., "shiny"). This motivates the question: how do you handle shared properties? Answer: richer, higher-dimensional Q/K spaces where the dot product can encode finer distinctions.</p>
+        </div></div></div>
+        <div class="card"><div class="ext-item"><span class="badge badge-blue" style="flex-shrink:0">Round 4</span><div>
+          <h4 class="display">Extend It</h4>
+          <p>Add a TRIANGLE with its own dedicated companions. Participants must design Q, K, and V vectors from scratch. Q and K grow from 2D to 3D. V grows from 4D to 6D. They see directly how the mechanism scales: one new noun type requires one new dimension in Q and K, and one new set of Value dimensions. The cost is linear, not exponential.</p>
+        </div></div></div>
+        <div class="card"><div class="ext-item"><span class="badge badge-blue" style="flex-shrink:0">Round 5</span><div>
+          <h4 class="display">The Averaging Problem</h4>
+          <p>Give a noun ten companions of equal weight. Each Value contributes only 0.1 to the output. Ask: how do you preserve the strength of each signal? This is the averaging problem in practice. Solutions: multi-head attention (each head attends to a subset), learned output projections (rescale the aggregated vector), or sparse attention (only the top-k scores receive non-zero weight).</p>
+        </div></div></div>
+      </div>
+    </div> -->
+  
+    <div class="reveal-footer">
+      <span class="mono">End of session</span>
+      <button class="btn btn-secondary" onclick="restartGame()">↺ Restart</button>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════════════════
+
+const TRAINING = [
+  {
+    title: "Phase 1:  The Nouns",
+    examples: [
+      { tokens:[{c:"noun",t:"◈"}], translation:"a square", 
+        hint:"This is a noun. It names an object. Think of it as the anchor of the sentence.", 
+        breakdown:"◈ = square · nouns are the receivers of information" },
+      { tokens:[{c:"noun",t:"⏀"}], translation:"a circle", 
+        hint:"Another noun. In this language, nouns are what adjectives attach to.", 
+        breakdown:"⏀ = circle · every adjective in this language belongs to exactly one noun type" }
+    ]
+  },
+  {
+    title: "Phase 2:  Adding Adjectives",
+    examples: [
+      { tokens:[{c:"adj",t:"≋"},{c:"noun",t:"◈"}], translation:"a big square",
+        hint:"A new symbol appeared before the square. What could it be saying about it?", 
+        breakdown:"≋ = big" },
+      { tokens:[{c:"adj",t:"⬽"},{c:"noun",t:"◈"}], translation:"a small square",
+        hint:"Different symbol, same noun. Is there a pattern forming between these modifiers and the square?",
+        breakdown:"⬽ = small" },
+      { tokens:[{c:"adj",t:"⌬"},{c:"noun",t:"◈"}], translation:"a blue square",
+        hint:"Another one appears before the square. Three symbols so far, all gravitating toward the same shape...",
+        breakdown:"⌬ = blue" },
+      { tokens:[{c:"adj",t:"⧉"},{c:"noun",t:"◈"}], translation:"a red square",
+        hint:"A fourth symbol, again with the square. You have now met the whole square crew: ≋ ⬽ ⌬ ⧉",
+        breakdown:"⧉ = red" },
+
+      { tokens:[{c:"adj",t:"⌇"},{c:"noun",t:"⏀"}], translation:"a tall circle",
+        hint:"Now the circle gets a companion. Does it look anything like the square symbols?",
+        breakdown:"⌇ = tall",
+        dividerBefore: "Now the circle ⏀ · its own companions start appearing" },
+      { tokens:[{c:"adj",t:"⎓"},{c:"noun",t:"⏀"}], translation:"a flat circle",
+        hint:"A second symbol gravitates toward the circle. Something feels different about this family...",
+        breakdown:"⎓ = flat" },
+      { tokens:[{c:"adj",t:"✺"},{c:"noun",t:"⏀"}], translation:"an orange circle",
+        hint:"A third one joins the circle. Notice anything about who these symbols never appear with?",
+        breakdown:"✺ = orange" },
+      { tokens:[{c:"adj",t:"✧"},{c:"noun",t:"⏀"}], translation:"a yellow circle",
+        hint:"The circle crew is complete: ⌇ ⎓ ✺ ✧. Two groups, two shapes. Coincidence?",
+        breakdown:"✧ = yellow" },
+
+      { tokens:[{c:"adj",t:"≋"},{c:"adj",t:"⧉"},{c:"noun",t:"◈"}], translation:"a big red square",
+        hint:"Two square companions, one square. Both show up. Can a noun collect more than one modifier?",
+        breakdown:"≋ = big, ⧉ = red" },
+      { tokens:[{c:"adj",t:"⬽"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"}], translation:"a small blue square",
+        hint:"The square collects its companions again. Notice they are tidy here. Will they always be?",
+        breakdown:"⬽ = small, ⌬ = blue" },
+      { tokens:[{c:"adj",t:"⌇"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"}], translation:"a tall orange circle",
+        hint:"Now the circle collects two of its own companions. The pattern holds. Both groups stay loyal.",
+        breakdown:"⌇ = tall, ✺ = orange" },
+      { tokens:[{c:"adj",t:"⎓"},{c:"adj",t:"✧"},{c:"noun",t:"⏀"}], translation:"a flat yellow circle",
+        hint:"The noun is asking a question. The modifier is carrying an answer. They connect when the answer fits the question.",
+        breakdown:"⎓ = flat, ✧ = yellow" }
+    ]
+  },
+  {
+    title: "Phase 3:  Forming Sentences",
+    examples: [
+      { tokens:[{c:"adj",t:"≋"},{c:"adj",t:"⧉"},{c:"noun",t:"◈"},{c:"adj",t:"⌇"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"}],
+        translation:"a big red square and a tall orange circle",
+        hint:null,
+        breakdown:"Clean order: each companion sits right before its noun. Easy to read · but is this order necessary?" },
+      { tokens:[{c:"adj",t:"⬽"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"},{c:"adj",t:"⎓"},{c:"adj",t:"✧"},{c:"noun",t:"⏀"}],
+        translation:"a small blue square and a flat yellow circle",
+        hint:null,
+        breakdown:"Again, tidy grouping. Enjoy it · Phase 4 will scramble everything." },
+      { tokens:[{c:"adj",t:"⌇"},{c:"adj",t:"✧"},{c:"noun",t:"⏀"},{c:"adj",t:"≋"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"}],
+        translation:"a tall yellow circle and a big blue square",
+        hint:null,
+        breakdown:"Circle described first this time. The sentence order changed · but each companion still precedes its own noun." },
+      { tokens:[{c:"adj",t:"⎓"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"},{c:"adj",t:"⬽"},{c:"adj",t:"⧉"},{c:"noun",t:"◈"}],
+        translation:"a flat orange circle and a small red square",
+        hint:null,
+        breakdown:"Still tidy. Remember these four sentences · Phase 4 will use the same meanings but destroy the order." }
+    ]
+  },
+  {
+    title: "Phase 4:  Scrambled! Does Order Matter?",
+    preamble: "Try to guess each sentence before revealing. The meanings are the same as Phase 3 · only the symbol order has changed. Reveal all examples before moving on.",
+    examples: [
+      { tokens:[{c:"adj",t:"≋"},{c:"adj",t:"⌇"},{c:"noun",t:"⏀"},{c:"adj",t:"⧉"},{c:"adj",t:"✺"},{c:"noun",t:"◈"}],
+        translation:"a big red square and a tall orange circle",
+        hint:"≋ is standing right next to ⏀. But ≋ has always been a square companion. Does proximity change anything?",
+        breakdown:"Same meaning as Phase 3 Example 1: [ ≋ ⧉ ◈ · ⌇ ✺ ⏀ ] · now scrambled to [ ≋ ⌇ ⏀ · ⧉ ✺ ◈ ]. ≋ ignores ⏀ completely and finds ◈ across the sequence. Something about ≋ knows where it belongs · and it is not about where it is sitting." },
+  
+      { tokens:[{c:"adj",t:"⎓"},{c:"adj",t:"⬽"},{c:"adj",t:"✧"},{c:"noun",t:"⏀"},{c:"noun",t:"◈"},{c:"adj",t:"⌬"}],
+        translation:"a small blue square and a flat yellow circle",
+        hint:"⌬ is sitting after both nouns. Can a companion still find its noun even when it comes after it in the sequence?",
+        breakdown:"Same meaning as Phase 3 Example 2: [ ⬽ ⌬ ◈ · ⎓ ✧ ⏀ ] · now scrambled to [ ⎓ ⬽ ✧ ⏀ ◈ ⌬ ]. ⌬ lands after everything · yet it still finds ◈." },
+  
+      { tokens:[{c:"adj",t:"⌬"},{c:"adj",t:"⎓"},{c:"noun",t:"◈"},{c:"adj",t:"≋"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"}],
+        translation:"a big blue square and a flat orange circle",
+        hint:"⎓ is standing right before ◈ · a circle companion next to a square. Does it get pulled in?",
+        breakdown:"Same meaning as Phase 3 Example 4: [ ⎓ ✺ ⏀ · ⬽ ⧉ ◈ ] · now scrambled to [ ⌬ ⎓ ◈ · ≋ ✺ ⏀ ]. ⎓ is right next to ◈ but walks straight past it and finds ⏀. Proximity is just noise. Each companion carries something that only resonates with the right noun · whatever that something is." }
+    ]
+  }
+];
+
+const QUIZ = [
+
+  { tier:1, label:"★☆☆",
+    tokens:[{c:"adj",t:"≋"},{c:"adj",t:"⧉"},{c:"noun",t:"◈"}],
+    options:[
+      "a big red square",
+      "a big red circle",
+      "a small blue square",
+      "a big blue square"
+    ],
+    correct:0,
+    feedback:"Correct! ≋ (big) and ⧉ (red) are both square companions, so they both attach to ◈.",
+    wrongFeedback:{
+      1:"◈ is the square symbol. ⏀ would give you a circle.",
+      2:"⬽ = small and ⌬ = blue. The symbols here are ≋ (big) and ⧉ (red).",
+      3:"⧉ = red, not blue. ⌬ would be blue."
+    }
+  },
+
+  { tier:1, label:"★☆☆",
+    tokens:[{c:"adj",t:"⌇"},{c:"adj",t:"✧"},{c:"noun",t:"⏀"}],
+    options:[
+      "a flat orange circle",
+      "a tall orange circle",
+      "a tall yellow circle",
+      "a flat yellow circle"
+    ],
+    correct:2,
+    feedback:"⌇ = tall and ✧ = yellow · both belong to the circle family, both attach to ⏀.",
+    wrongFeedback:{
+      0:"⎓ = flat and ✺ = orange. The symbols here are ⌇ (tall) and ✧ (yellow) · different glyphs.",
+      1:"✺ = orange, not ✧. Check the reference card · ✧ is yellow.",
+      3:"⌇ = tall, not flat. ⎓ would be flat."
+    }
+  },
+
+  { tier:2, label:"★★☆",
+    tokens:[{c:"adj",t:"⬽"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"},{c:"adj",t:"⎓"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"}],
+    options:[
+      "a small blue square and a flat orange circle",
+      "a small blue square and a tall yellow circle",
+      "a big blue square and a flat orange circle",
+      "a flat blue circle and a small orange square"
+    ],
+    correct:0,
+    feedback:"Spot on! ⬽ and ⌬ are square companions · they attach to ◈. ⎓ and ✺ are circle companions · they attach to ⏀.",
+    wrongFeedback:{
+      1:"The circle companions here are ⎓ (flat) and ✺ (orange), not ⌇ (tall) and ✧ (yellow).",
+      2:"⬽ = small, not big. ≋ would be big.",
+      3:"The families are swapped. ⬽ and ⌬ belong to the square family, not the circle family."
+    }
+  },
+
+  { tier:2, label:"★★☆",
+    tokens:[{c:"adj",t:"≋"},{c:"noun",t:"◈"},{c:"adj",t:"⌇"},{c:"noun",t:"⏀"}],
+    options:[
+      "a big square and a tall circle",
+      "a big tall square and a circle",
+      "a tall square and a big circle",
+      "a big circle and a tall square"
+    ],
+    correct:0,
+    feedback:"Correct! ≋ is a square companion and ⌇ is a circle companion. Each attaches to its own noun · never the other.",
+    wrongFeedback:{
+      1:"≋ only ever attaches to ◈ and ⌇ only ever attaches to ⏀. They cannot both modify the same noun.",
+      2:"≋ belongs to the square family · it finds ◈, not ⏀.",
+      3:"◈ is the square and ⏀ is the circle. ≋ attaches to the square, ⌇ to the circle · not the reverse."
+    }
+  },
+
+  { tier:2, label:"★★☆",
+    tokens:[{c:"adj",t:"⌇"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"},{c:"adj",t:"≋"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"}],
+    options:[
+      "a tall orange circle and a big blue square",
+      "a big blue square and a tall orange circle",
+      "a small blue square and a flat orange circle",
+      "a big orange square and a tall blue circle"
+    ],
+    correct:0,
+    feedback:"⏀ appears before ◈ in the sequence, so the circle is described first. The order of shapes in your answer should follow the order they appear.",
+    wrongFeedback:{
+      1:"The meaning is right but the shape order is wrong. ⏀ comes before ◈ in the sequence · circle first.",
+      2:"⌇ = tall, ✺ = orange, ≋ = big, ⌬ = blue. Check each glyph against the reference card.",
+      3:"⌇ and ✺ belong to the circle family · they attach to ⏀, not ◈."
+    }
+  },
+
+  { tier:3, label:"★★★ Scrambled",
+  isTrick: false,
+  tokens:[{c:"adj",t:"⌬"},{c:"adj",t:"⌇"},{c:"noun",t:"⏀"},{c:"adj",t:"≋"},{c:"noun",t:"◈"},{c:"adj",t:"✺"}],
+  options:[
+    "a tall orange circle and a big blue square",   // correct · ⏀ appears before ◈
+    "a big blue square and a tall orange circle",   // same meaning, shape order swapped · trap
+    "a big orange square and a tall blue circle",
+    "a blue tall circle and a big orange square"
+  ],
+  correct:0,
+  feedback:"⌇ and ✺ are circle companions · they find ⏀, which appears first in the sequence. ⌬ and ≋ are square companions · they find ◈. Circle comes first, so the circle is described first.",
+  wrongFeedback:{
+    1:"The companion assignments are correct but the shape order is wrong. ⏀ appears before ◈ in the token sequence · circle should come first in your answer.",
+    2:"The families are fully swapped. ⌬ and ≋ belong to the square family, ⌇ and ✺ belong to the circle family.",
+    3:"⌬ is a square companion · it belongs with ◈, not ⏀."
+  }
+},
+
+  { tier:3, label:"★★★ Scrambled",
+    isTrick: false,
+    tokens:[{c:"adj",t:"⎓"},{c:"noun",t:"◈"},{c:"adj",t:"✧"},{c:"adj",t:"⬽"},{c:"noun",t:"⏀"},{c:"adj",t:"⧉"}],
+    options:[
+      "a flat yellow square and a small red circle",
+      "a small red square and a flat yellow circle",
+      "a flat red circle and a small yellow square",
+      "a small yellow square and a flat red circle"
+    ],
+    correct:1,
+    feedback:"⎓ sits before ◈ but it is a circle companion · it skips over the square and finds ⏀. ⧉ sits after ⏀ but it is a square companion · it reaches back and finds ◈. Family membership beats proximity every time.",
+    wrongFeedback:{
+      0:"⎓ = flat is a circle companion · you have seen it with ⏀ since Phase 2. It cannot attach to ◈.",
+      2:"⧉ = red is a square companion · it attaches to ◈, not ⏀. The families are swapped here.",
+      3:"Both assignments are wrong. ⎓ belongs to the circle family and ⧉ belongs to the square family."
+    }
+  },
+
+  { tier:3, label:"★★★ Scrambled",
+    isTrick: false,
+    tokens:[{c:"adj",t:"✺"},{c:"adj",t:"⌇"},{c:"noun",t:"⏀"},{c:"adj",t:"⬽"},{c:"adj",t:"⌬"},{c:"noun",t:"◈"}],
+    options:[
+      "a tall orange circle and a small blue square",
+      "a small blue square and a tall orange circle",
+      "a tall blue square and a small orange circle",
+      "a small orange circle and a tall blue square"
+    ],
+    correct:0,
+    feedback:"✺ and ⌇ are circle companions · they find ⏀, which appears first. ⬽ and ⌬ are square companions · they find ◈.",
+    wrongFeedback:{
+      1:"The companions are assigned correctly but the shape order is wrong. ⏀ comes before ◈ in the tokens.",
+      2:"⌬ belongs to the square family and ✺ belongs to the circle family · you have them swapped.",
+      3:"Both the companion assignments and the shape order are wrong. ✺ and ⌇ go with ⏀ (circle first), ⬽ and ⌬ go with ◈."
+    }
+  },
+
+  { tier:3, label:"⚠ Trick Question",
+    isTrick: true,
+    tokens:[
+      {c:"adj",t:"⌇"},
+      {c:"noun",t:"◈"},
+      {c:"adj",t:"≋"},
+      {c:"noun",t:"⏀"}
+    ],
+    options:[
+      "a tall square and a big circle",
+      "a big square and a tall circle",
+      "a big tall square and a circle",
+      "a square and a big tall circle"
+    ],
+    correct:1,
+    feedback:"⌇ is a circle companion sitting before ◈ · but family membership is everything. It ignores the square and finds ⏀. ≋ is a square companion · it finds ◈. Proximity is just noise.",
+    wrongFeedback:{
+      0:"Positional trap! ⌇ appears right before ◈, but ⌇ has always been a circle companion. You saw it with ⏀ every single time in Phase 2.",
+      2:"⌇ and ≋ cannot both modify ◈. ⌇ is a circle companion · it has never attached to a square.",
+      3:"≋ is a square companion · it attaches to ◈, not ⏀. Only ⌇ attaches to ⏀."
+    }
+  },
+
+  { tier:3, label:"★★★ Bonus",
+    isTrick: false,
+    tokens:[{c:"adj",t:"⧉"},{c:"noun",t:"◈"},{c:"adj",t:"⌇"},{c:"adj",t:"✧"},{c:"adj",t:"✺"},{c:"noun",t:"⏀"}],
+    options:[
+      "a red square and a tall yellow orange circle",
+      "a red square and a tall circle with mixed colors",
+      "This sentence is broken · the circle got two conflicting color companions",
+      "a red tall square and a yellow orange circle"
+    ],
+    correct:2,
+    feedback:"Both ✧ (yellow) and ✺ (orange) attach to ⏀ · but they carry opposite color signals. The circle collects both and averages them. The result is neither yellow nor orange · it is undefined. The sentence is grammatically valid but semantically broken.",
+    wrongFeedback:{
+      0:"It is not just hard to read · the circle ends up with an undefined color because the two signals cancel each other out.",
+      1:"Closer · but averaging is not the same as mixing. The result is not an ambiguous blend, it is a zero · no color at all.",
+      3:"⧉ is a square companion · it attaches to ◈, not ⏀. And ⌇ is a circle companion · it attaches to ⏀, not ◈."
+    }
+  }
+];
+
+// ══════════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════════
+let trainingPhase  = 0;
+let trainingRevealed = [];
+let quizCurrent    = 0;
+let quizAnswers    = {};
+
+// ══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════════
+function tokens2html(tokens) {
+  return tokens.map(t => `<span class="${t.c}">${t.t}</span>`).join(' ');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  INTRO
+// ══════════════════════════════════════════════════════════════════
+function startTraining() {
+  trainingPhase = 0;
+  renderTraining();
+  showScreen('training');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  TRAINING
+// ══════════════════════════════════════════════════════════════════
+function renderTraining() {
+    const phase = TRAINING[trainingPhase];
+    trainingRevealed = new Array(phase.examples.length).fill(false);
+  
+    // Show "What We've Learned" sidebar only from Phase 3 onwards
+    const trainingSidebar = document.getElementById('training-sidebar');
+    if (trainingSidebar) trainingSidebar.style.display = trainingPhase >= 2 ? 'block' : 'none';
+  
+    document.getElementById('training-progress').innerHTML =
+      TRAINING.map((_, i) => `<div class="progress-seg ${i <= trainingPhase ? 'on' : ''}"></div>`).join('');
+  
+    document.getElementById('training-badge').innerHTML =
+      `<span class="badge badge-amber">Phase ${trainingPhase + 1} of ${TRAINING.length}</span>`;
+    document.getElementById('training-phase-title').textContent = phase.title;
+  
+    // Phase preamble (e.g. Phase 4 instruction text)
+    const preambleEl = document.getElementById('training-preamble');
+    if (preambleEl) {
+      preambleEl.innerHTML = phase.preamble
+        ? `<p style="color:var(--muted);font-size:.92rem;line-height:1.7;margin-bottom:20px;padding:12px 16px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">${phase.preamble}</p>`
+        : '';
+    }
+  
+    document.getElementById('training-examples').innerHTML = phase.examples.map((ex, i) => `
+      ${ex.dividerBefore
+        ? `<div style="margin:18px 0 6px;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--border);padding-top:14px;">— ${ex.dividerBefore}</div>`
+        : ''}
+      <div class="card">
+        <div class="example-row">
+          <div class="example-main">
+            <div class="sentence-box">${tokens2html(ex.tokens)}</div>
+            ${ex.hint ? `<p class="hint-text" id="hint-${i}">Hint: ${ex.hint}</p>` : ''}
+            <div id="reveal-area-${i}" style="display:none">
+              <div class="reveal-box"><span class="reveal-translation">${ex.translation}</span></div>
+              <p class="breakdown-text">${ex.breakdown}</p>
+            </div>
+          </div>
+          <div>
+            <button id="toggle-btn-${i}" class="btn btn-secondary" style="font-size:.82rem;padding:9px 16px;" onclick="toggleExample(${i})">Reveal</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  
+    document.getElementById('training-back-btn').disabled = trainingPhase === 0;
+    document.getElementById('training-next-btn').disabled = true;
+    document.getElementById('training-next-btn').textContent =
+      trainingPhase < TRAINING.length - 1 ? 'Next Phase →' : 'Start Quiz →';
+  }
+
+function toggleExample(i) {
+  trainingRevealed[i] = true;
+  const area    = document.getElementById('reveal-area-' + i);
+  const hint    = document.getElementById('hint-' + i);
+  const btn     = document.getElementById('toggle-btn-' + i);
+  const hidden  = area.style.display === 'none';
+  area.style.display = hidden ? 'block' : 'none';
+  if (hint) hint.style.display = hidden ? 'none' : 'block';
+  btn.textContent = hidden ? 'Hide' : 'Reveal';
+  if (trainingRevealed.every(Boolean))
+    document.getElementById('training-next-btn').disabled = false;
+}
+
+function revealAll() {
+  trainingRevealed.forEach((_, i) => {
+    trainingRevealed[i] = true;
+    const area = document.getElementById('reveal-area-' + i);
+    const btn  = document.getElementById('toggle-btn-' + i);
+    const hint = document.getElementById('hint-' + i);
+    if (area) { area.style.display = 'block'; }
+    if (btn)  { btn.textContent = 'Hide'; }
+    if (hint) { hint.style.display = 'none'; }
+  });
+  document.getElementById('training-next-btn').disabled = false;
+}
+
+function trainingNext() {
+  if (trainingPhase < TRAINING.length - 1) {
+    trainingPhase++;
+    renderTraining();
+  } else {
+    quizCurrent = 0;
+    quizAnswers = {};
+    renderQuiz();
+    showScreen('quiz');
+  }
+}
+
+function trainingBack() {
+  if (trainingPhase > 0) { trainingPhase--; renderTraining(); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════════════════
+function renderQuiz() {
+  const q = QUIZ[quizCurrent];
+
+  document.getElementById('quiz-progress').innerHTML =
+    QUIZ.map((_, i) => `<div class="progress-seg ${i <= quizCurrent ? 'on' : ''}"></div>`).join('');
+
+  const tierBadge = q.tier === 1 ? 'badge-green' : q.tier === 2 ? 'badge-amber' : 'badge-red';
+  document.getElementById('quiz-badges').innerHTML =
+    `<span class="badge ${tierBadge}">${q.label}</span><span class="badge badge-gray">Question ${quizCurrent + 1} of ${QUIZ.length}</span>`;
+
+  // Trick label
+  const trickEl = document.getElementById('quiz-trick-label');
+  trickEl.innerHTML = q.isTrick
+    ? `<div class="trick-label">⚠ Watch out ！ something looks wrong in this transmission</div>`
+    : '';
+
+  document.getElementById('quiz-sentence').innerHTML = tokens2html(q.tokens);
+
+  const letters = ['A','B','C','D'];
+  document.getElementById('quiz-options').innerHTML = q.options.map((opt, i) => `
+    <button class="option-btn" id="opt-${i}" onclick="selectQuizOption(${i})">
+      <span class="opt-letter">${letters[i]}</span>
+      ${opt}
+    </button>
+  `).join('');
+
+  document.getElementById('quiz-result').innerHTML = '';
+  document.getElementById('quiz-next-row').style.display = 'none';
+}
+
+function selectQuizOption(i) {
+    const q = QUIZ[quizCurrent];
+    quizAnswers[quizCurrent] = i;
+  
+    q.options.forEach((_, idx) => {
+      const btn = document.getElementById('opt-' + idx);
+      btn.classList.add('locked');
+      btn.onclick = null;
+      if (idx === q.correct) btn.classList.add('correct');
+      else if (idx === i && i !== q.correct) btn.classList.add('wrong');
+    });
+  
+    const isRight = i === q.correct;
+    document.getElementById('quiz-result').innerHTML = `
+      <div class="result-box ${isRight ? 'ok' : 'bad'}">
+        ${isRight ? '✅' : '❌'} ${isRight ? q.feedback : q.wrongFeedback[i] || 'Not quite. ' + q.feedback}
+      </div>`;
+  
+    const nextBtn = document.getElementById('quiz-next-btn');
+    nextBtn.textContent = quizCurrent < QUIZ.length - 1 ? 'Next Question →' : 'Finish Quiz →';
+    document.getElementById('quiz-next-row').style.display = 'flex';
+  }
+
+function quizNext() {
+  if (quizCurrent < QUIZ.length - 1) {
+    quizCurrent++;
+    renderQuiz();
+  } else {
+    const score = Object.entries(quizAnswers).filter(([i, a]) => QUIZ[+i].correct === a).length;
+    showScore(score);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SCORE
+// ══════════════════════════════════════════════════════════════════
+function showScore(score) {
+  const total = QUIZ.length;
+  const pct   = Math.round(score / total * 100);
+  const good  = pct >= 70;
+  document.getElementById('score-ring').className = 'score-ring ' + (good ? 'good' : 'bad');
+  document.getElementById('score-num').textContent = `${score}/${total}`;
+  document.getElementById('score-heading').textContent =
+    pct >= 85 ? 'Excellent work!' : pct >= 60 ? 'Good effort!' : 'Keep practicing!';
+  document.getElementById('score-sub').textContent =
+    `You scored ${score} out of ${total} (${pct}%). What you just did has a name!`;
+  showScreen('score');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  REVEAL
+// ══════════════════════════════════════════════════════════════════
+function showReveal() { showScreen('reveal'); }
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('tab-btn-' + id).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════════════════════════
+function restartGame() {
+  trainingPhase = 0; quizCurrent = 0; quizAnswers = {};
+  showScreen('intro');
+}
+</script>
+</body>
+</html>
