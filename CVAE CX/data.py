@@ -61,13 +61,16 @@ CELEBA_ATTR_NAMES = [
 ]
 
 
-def load_celeba(root="./data", max_samples=30000):
+def load_celeba(max_samples=30000):
     """
-    Downloads CelebA and returns numpy arrays normalised to [0, 1].
+    Downloads CelebA via HuggingFace datasets and returns numpy arrays in [0, 1].
+
+    Uses HuggingFace (tpremoli/CelebA-attrs) instead of torchvision to avoid
+    Google Drive quota limits. This dataset includes images + 40 binary
+    attributes with proper train/test splits.
 
     Parameters
     ----------
-    root        : download directory
     max_samples : cap on training images to fit in Colab RAM (~1.5 GB at 30 k)
 
     Returns
@@ -76,40 +79,57 @@ def load_celeba(root="./data", max_samples=30000):
         Images  : (N, 3, 64, 64) float32 in [0, 1]
         Attrs   : (N, 40)        float32 with values 0.0 / 1.0
     """
+    try:
+        from datasets import load_dataset
+    except ImportError:
+        import subprocess, sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "datasets"])
+        from datasets import load_dataset
+
+    from PIL import Image
+
     transform = transforms.Compose([
         transforms.CenterCrop(178),
         transforms.Resize(64),
         transforms.ToTensor(),
     ])
 
-    train_set = datasets.CelebA(root=root, split="train",
-                                target_type="attr", download=True,
-                                transform=transform)
-    test_set = datasets.CelebA(root=root, split="test",
-                               target_type="attr", download=True,
-                               transform=transform)
+    print("Downloading CelebA from HuggingFace (this may take a few minutes)...")
+    ds_train = load_dataset("tpremoli/CelebA-attrs", split="train")
+    ds_test = load_dataset("tpremoli/CelebA-attrs", split="test")
 
     def _extract(dataset, n):
         n = min(n, len(dataset))
-        imgs, attrs = [], []
-        loader = torch.utils.data.DataLoader(dataset, batch_size=256,
-                                             shuffle=False, num_workers=2)
-        count = 0
-        for x_batch, a_batch in loader:
-            take = min(x_batch.size(0), n - count)
-            imgs.append(x_batch[:take].numpy())
-            attrs.append(a_batch[:take].numpy())
-            count += take
-            if count >= n:
-                break
-        imgs = np.concatenate(imgs, axis=0).astype("float32")
-        attrs = np.concatenate(attrs, axis=0).astype("float32")
-        # torchvision CelebA attrs are 0/1 already (older versions used -1/1)
-        attrs = np.clip(attrs, 0, 1)
+        imgs, attrs_list = [], []
+        for i in range(n):
+            row = dataset[i]
+            img = row["image"]
+            if not isinstance(img, Image.Image):
+                continue
+            img_t = transform(img.convert("RGB"))
+            imgs.append(img_t.numpy())
+
+            # Extract the 40 attributes in order; convert -1/1 to 0/1
+            attr_vec = []
+            for attr_name in CELEBA_ATTR_NAMES:
+                val = row.get(attr_name, -1)
+                attr_vec.append(1.0 if val == 1 else 0.0)
+            attrs_list.append(attr_vec)
+
+            if (i + 1) % 5000 == 0:
+                print(f"  processed {i + 1:,}/{n:,} images...")
+
+        imgs = np.array(imgs, dtype="float32")
+        attrs = np.array(attrs_list, dtype="float32")
         return imgs, attrs
 
-    X_train, attrs_train = _extract(train_set, max_samples)
-    X_test, attrs_test = _extract(test_set, min(max_samples // 3, len(test_set)))
+    n_train = min(max_samples, len(ds_train))
+    n_test = min(max_samples // 3, len(ds_test))
+
+    print(f"Processing {n_train:,} training images...")
+    X_train, attrs_train = _extract(ds_train, n_train)
+    print(f"Processing {n_test:,} test images...")
+    X_test, attrs_test = _extract(ds_test, n_test)
 
     print(f"Training images : {X_train.shape}  -> {len(X_train):,} images of 64x64x3")
     print(f"Test images     : {X_test.shape}   -> {len(X_test):,} images of 64x64x3")
