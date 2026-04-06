@@ -555,7 +555,7 @@ def plot_per_attribute_mse(recon, X_test, attrs_test, attr_names, top_k=10):
     return attr_mse
 
 
-def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=128):
+def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=128, seed=42):
     """
     Generate n CelebA faces with specific attributes.
 
@@ -566,6 +566,7 @@ def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=1
     attr_names  : list of 40 attribute name strings
     n           : number of images
     latent_dim  : latent space dimensionality
+    seed        : random seed for z sampling — change to explore different faces
 
     Returns
     -------
@@ -573,6 +574,7 @@ def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=1
     """
     model.eval()
     with torch.no_grad():
+        torch.manual_seed(seed)
         z = torch.randn(n, latent_dim).to(DEVICE) * 0.75
         attrs = torch.zeros(n, len(attr_names)).to(DEVICE)
         for name, val in attrs_dict.items():
@@ -590,7 +592,6 @@ def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=1
         axes[i].axis('off')
     plt.tight_layout()
     plt.show()
-    return images
 
 
 def generate_attribute_grid(model, attr_names, combos, latent_dim=128,
@@ -842,3 +843,95 @@ def evaluate_generated_celeba(model, predictor, attr_names, latent_dim=128,
     plt.show()
 
     return per_attr_acc
+
+
+def beta_sweep_grid_generate(beta_models, beta_configs, attr_names, latent_dim=128,
+                             target_attrs=None, n_samples=6, seed=0):
+    """
+    Generation grid: compare beta values using shared random z vectors (no encoder).
+
+    Parameters
+    ----------
+    beta_models   : dict mapping beta (float) -> trained CelebAConvCVAE
+    beta_configs  : list of (beta, name) tuples, defines row order
+    attr_names    : list of 40 attribute name strings
+    latent_dim    : latent space dimensionality
+    target_attrs  : dict like {"Smiling": 1, "Young": 1}; defaults to {"Smiling": 1, "Young": 1}
+    n_samples     : number of columns (faces per beta)
+    seed          : random seed for z sampling — change to explore different faces
+    """
+    if target_attrs is None:
+        target_attrs = {"Smiling": 1, "Young": 1}
+
+    torch.manual_seed(seed)
+    z_shared = torch.randn(n_samples, latent_dim).to(DEVICE) * 0.75
+    attrs_shared = torch.zeros(n_samples, len(attr_names)).to(DEVICE)
+    for name, val in target_attrs.items():
+        attrs_shared[:, attr_names.index(name)] = float(val)
+
+    fig, axes = plt.subplots(len(beta_configs), n_samples,
+                             figsize=(2.5 * n_samples, 3 * len(beta_configs)))
+    fig.suptitle(f'Beta sweep (generation) — attributes: {target_attrs}',
+                 fontsize=14, fontweight='bold')
+
+    for row, (beta, _name) in enumerate(beta_configs):
+        model = beta_models[beta]
+        model.eval()
+        with torch.no_grad():
+            imgs = model.decode(z_shared, attrs_shared).cpu().numpy()
+        for col in range(n_samples):
+            axes[row, col].imshow(np.clip(imgs[col].transpose(1, 2, 0), 0, 1))
+            axes[row, col].axis('off')
+        axes[row, 0].set_ylabel(f'β={beta}', fontsize=11, fontweight='bold',
+                                rotation=0, labelpad=50)
+
+    plt.tight_layout()
+    plt.show()
+
+
+def beta_sweep_grid_reconstruct(beta_models, beta_configs, X_test_np, attrs_test_np,
+                                attr_names, n_samples=6, seed=0):
+    """
+    Reconstruction grid: encode the same real images through each beta model and decode.
+
+    Parameters
+    ----------
+    beta_models   : dict mapping beta (float) -> trained CelebAConvCVAE
+    beta_configs  : list of (beta, name) tuples, defines row order
+    X_test_np     : test images (N, 3, 64, 64) float32
+    attrs_test_np : test attributes (N, 40) float32
+    attr_names    : list of 40 attribute name strings
+    n_samples     : number of columns (images to reconstruct)
+    seed          : random seed to select which test images to use
+    """
+    rng = np.random.default_rng(seed)
+    indices = rng.choice(len(X_test_np), size=n_samples, replace=False)
+
+    x = torch.tensor(X_test_np[indices]).to(DEVICE)
+    a = torch.tensor(attrs_test_np[indices]).to(DEVICE)
+
+    fig, axes = plt.subplots(len(beta_configs) + 1, n_samples,
+                             figsize=(2.5 * n_samples, 3 * (len(beta_configs) + 1)))
+    fig.suptitle('Beta sweep (reconstruction)', fontsize=14, fontweight='bold')
+
+    # First row: originals
+    for col in range(n_samples):
+        axes[0, col].imshow(np.clip(X_test_np[indices[col]].transpose(1, 2, 0), 0, 1))
+        axes[0, col].axis('off')
+    axes[0, 0].set_ylabel('Original', fontsize=11, fontweight='bold',
+                           rotation=0, labelpad=50)
+
+    for row, (beta, _name) in enumerate(beta_configs):
+        model = beta_models[beta]
+        model.eval()
+        with torch.no_grad():
+            mu, _ = model.encode(x, a)
+            imgs = model.decode(mu, a).cpu().numpy()
+        for col in range(n_samples):
+            axes[row + 1, col].imshow(np.clip(imgs[col].transpose(1, 2, 0), 0, 1))
+            axes[row + 1, col].axis('off')
+        axes[row + 1, 0].set_ylabel(f'β={beta}', fontsize=11, fontweight='bold',
+                                    rotation=0, labelpad=50)
+
+    plt.tight_layout()
+    plt.show()
