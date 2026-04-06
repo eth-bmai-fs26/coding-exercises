@@ -230,7 +230,7 @@ def generate_conditional(model, digit, n=8, latent_dim=32):
     """
     model.eval()
     with torch.no_grad():
-        z = torch.randn(n, latent_dim).to(DEVICE)
+        z = torch.randn(n, latent_dim).to(DEVICE) * 0.75
         label = torch.zeros(n, 10).to(DEVICE)
         label[:, digit] = 1.0
         images = model.decode(z, label).cpu().numpy()[:, 0, :, :]
@@ -255,7 +255,7 @@ def generate_digit_grid(model, latent_dim=32, n_per_digit=10):
 
     with torch.no_grad():
         for digit in range(10):
-            z = torch.randn(n_per_digit, latent_dim).to(DEVICE)
+            z = torch.randn(n_per_digit, latent_dim).to(DEVICE) * 0.75
             label = torch.zeros(n_per_digit, 10).to(DEVICE)
             label[:, digit] = 1.0
             images = model.decode(z, label).cpu().numpy()[:, 0, :, :]
@@ -413,7 +413,7 @@ def evaluate_generated_images(model, classifier, latent_dim=32,
 
     with torch.no_grad():
         for digit in range(10):
-            z = torch.randn(n_per_digit, latent_dim).to(DEVICE)
+            z = torch.randn(n_per_digit, latent_dim).to(DEVICE) * 0.75
             label = torch.zeros(n_per_digit, 10).to(DEVICE)
             label[:, digit] = 1.0
             imgs = model.decode(z, label).cpu().numpy()[:, 0, :, :]
@@ -577,7 +577,7 @@ def generate_conditional_celeba(model, attrs_dict, attr_names, n=8, latent_dim=1
     """
     model.eval()
     with torch.no_grad():
-        z = torch.randn(n, latent_dim).to(DEVICE)
+        z = torch.randn(n, latent_dim).to(DEVICE) * 0.75
         attrs = torch.zeros(n, len(attr_names)).to(DEVICE)
         for name, val in attrs_dict.items():
             idx = attr_names.index(name)
@@ -619,7 +619,7 @@ def generate_attribute_grid(model, attr_names, combos, latent_dim=128,
         axes = axes[np.newaxis, :]
 
     with torch.no_grad():
-        z_shared = torch.randn(n_per_row, latent_dim).to(DEVICE)
+        z_shared = torch.randn(n_per_row, latent_dim).to(DEVICE) * 0.75
         for row, combo in enumerate(combos):
             attrs = torch.zeros(n_per_row, len(attr_names)).to(DEVICE)
             for name, val in combo.items():
@@ -814,7 +814,7 @@ def evaluate_generated_celeba(model, predictor, attr_names, latent_dim=128,
     attrs_t = torch.tensor(attrs_np).to(DEVICE)
 
     with torch.no_grad():
-        z = torch.randn(n_samples, latent_dim).to(DEVICE)
+        z = torch.randn(n_samples, latent_dim).to(DEVICE) * 0.75
         gen_imgs = model.decode(z, attrs_t)
         preds = torch.sigmoid(predictor(gen_imgs)).cpu().numpy()
 

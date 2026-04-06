@@ -88,9 +88,14 @@ def load_celeba(max_samples=30000):
 
     from PIL import Image
 
+    # Matches EleMisi/ConditionalVAE preprocessing:
+    # crop 128x128 patch at offset (y=45, x=25), then resize to 64x64.
+    # Original CelebA images are 218x178 (H x W); this cut centres on the face.
     transform = transforms.Compose([
-        transforms.CenterCrop(178),
-        transforms.Resize(64),
+        transforms.Lambda(
+            lambda img: transforms.functional.crop(img, top=45, left=25, height=128, width=128)
+        ),
+        transforms.Resize((64, 64)),
         transforms.ToTensor(),
     ])
 
