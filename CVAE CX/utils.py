@@ -436,7 +436,7 @@ def evaluate_generated_images(model, classifier, latent_dim=32,
 # =============================================================================
 
 def train_cvae_celeba(model, loss_fn, X_train_np, attrs_train_np,
-                      epochs=25, batch_size=64, lr=1e-3, beta=1.0):
+                      epochs=25, batch_size=32, lr=1e-3, beta=1.0):
     """
     Train a CelebA Conditional VAE.
 
@@ -451,8 +451,7 @@ def train_cvae_celeba(model, loss_fn, X_train_np, attrs_train_np,
     a_t = torch.tensor(attrs_train_np).to(DEVICE)
     loader = DataLoader(TensorDataset(X_t, a_t), batch_size=batch_size, shuffle=True)
 
-    opt   = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
-    sched = optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    opt = optim.Adam(model.parameters(), lr=lr)
     model.train()
 
     history = {'total': [], 'recon': [], 'kl': []}
@@ -464,14 +463,12 @@ def train_cvae_celeba(model, loss_fn, X_train_np, attrs_train_np,
             recon_x, mu, log_var = model(xb, ab)
             total, recon, kl = loss_fn(recon_x, xb, mu, log_var, beta)
             total.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             opt.step()
             bs = xb.size(0)
             sum_total += total.item() * bs
             sum_recon += recon.item() * bs
             sum_kl    += kl.item() * bs
             n += bs
-        sched.step()
 
         history['total'].append(sum_total / n)
         history['recon'].append(sum_recon / n)
@@ -479,8 +476,7 @@ def train_cvae_celeba(model, loss_fn, X_train_np, attrs_train_np,
 
         if epoch % 5 == 0 or epoch == 1:
             print(f"  Epoch {epoch:3d}/{epochs} -- Total: {history['total'][-1]:.2f}  "
-                  f"Recon: {history['recon'][-1]:.2f}  KL: {history['kl'][-1]:.2f}  "
-                  f"(lr={sched.get_last_lr()[0]:.5f})")
+                  f"Recon: {history['recon'][-1]:.2f}  KL: {history['kl'][-1]:.2f}")
 
     print("Training complete!")
     return model, history
