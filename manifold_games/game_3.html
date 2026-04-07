@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game 3 · The Valley Manifold · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-green); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-green);
+  font-weight: 700;
+}
+.header-meta h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Concept strip ────────────────────────────────────────────── */
+.concept-strip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.cs-pill {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.25rem 0.85rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.cs-pill.hl { border-color: var(--accent-green); color: var(--accent-green); }
+.cs-arrow { color: var(--text-muted); }
+
+/* ── Game area ────────────────────────────────────────────────── */
+.game-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.panel-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ── Valley canvas ────────────────────────────────────────────── */
+.canvas-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: grab;
+  position: relative;
+}
+.canvas-wrap:active { cursor: grabbing; }
+.canvas-wrap canvas { display: block; width: 100%; height: auto; }
+
+.canvas-hint {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.active-bubble {
+  background: var(--bg-tertiary);
+  border: 1px solid rgba(63,185,80,0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.8rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--accent-green);
+  display: none;
+}
+.active-bubble.show { display: block; }
+
+/* ── Quiz ─────────────────────────────────────────────────────── */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.score-badge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.score-badge b { color: var(--accent-green); }
+
+.question-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+}
+.q-sublabel {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.point-display {
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  text-align: center;
+  padding: 0.3rem 0 0.15rem;
+}
+.question-ask {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 0.35rem;
+}
+.question-ask code {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+/* ── Answer buttons ───────────────────────────────────────────── */
+.answer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+.answer-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.7rem;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.answer-btn .lbl {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+  font-family: -apple-system, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.answer-btn:hover:not(:disabled) {
+  border-color: var(--accent-green);
+  background: rgba(63,185,80,0.07);
+}
+.answer-btn:disabled { cursor: default; }
+.answer-btn.correct {
+  border-color: var(--accent-green);
+  background: rgba(63,185,80,0.13);
+  color: var(--accent-green);
+}
+.answer-btn.wrong {
+  border-color: var(--accent-red);
+  background: rgba(255,123,114,0.09);
+  color: var(--accent-red);
+}
+
+/* ── Feedback ─────────────────────────────────────────────────── */
+.feedback-box {
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.83rem;
+  line-height: 1.55;
+  display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-box.ok {
+  background: rgba(63,185,80,0.09);
+  border: 1px solid rgba(63,185,80,0.3);
+  color: var(--accent-green);
+}
+.feedback-box.bad {
+  background: rgba(255,123,114,0.07);
+  border: 1px solid rgba(255,123,114,0.25);
+  color: var(--accent-red);
+}
+
+/* ── Controls ─────────────────────────────────────────────────── */
+.controls-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.82; }
+.btn-hint {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-next {
+  background: var(--accent-green);
+  color: #0d1117;
+  margin-left: auto;
+  display: none;
+}
+.btn-next.show { display: block; }
+
+.hint-area {
+  background: rgba(227,179,65,0.07);
+  border: 1px solid rgba(227,179,65,0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--accent-orange);
+  line-height: 1.55;
+  display: none;
+}
+.hint-area.show { display: block; }
+
+/* ── Explorer section ─────────────────────────────────────────── */
+.explorer-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.explorer-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.explorer-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.map-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+#mapCanvas {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: crosshair;
+  display: block;
+  width: 220px;
+  height: 220px;
+}
+.mapping-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.mapping-arrow .albl {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--accent-green);
+  white-space: nowrap;
+}
+.result-box {
+  flex: 1;
+  min-width: 220px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 130px;
+}
+.result-box .rlbl {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.result-box .rcoords {
+  font-family: 'Courier New', monospace;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.85;
+}
+.result-box .rnote {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: auto;
+}
+
+/* ── Insight section ──────────────────────────────────────────── */
+.insight-section {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(63,185,80,0.35);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+.insight-section.show {
+  display: block;
+  animation: fadeIn 0.5s ease-out both;
+}
+.insight-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 80% at 50% 0%, rgba(63,185,80,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.insight-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-green);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+.insight-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+.insight-card .ic-title {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.insight-card .ic-formula {
+  font-family: 'Courier New', monospace;
+  font-size: 0.83rem;
+  color: var(--accent-green);
+  line-height: 1.9;
+}
+.insight-card .ic-note {
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 750px) {
+  .game-area { grid-template-columns: 1fr; }
+  .insight-grid { grid-template-columns: 1fr; }
+  main { padding: 1rem; }
+  .explorer-layout { flex-direction: column; align-items: flex-start; }
+  .mapping-arrow { flex-direction: row; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">← All Games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Game 3</span>
+    <h1>The Valley Manifold</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- Concept strip -->
+  <div class="concept-strip">
+    <span class="cs-pill">h(x,y) = sin(x) + 0.5·sin(y)</span>
+    <span class="cs-arrow">&nbsp;⟶&nbsp;</span>
+    <span class="cs-pill hl">φ(x,y) = (x, y, h(x,y))</span>
+    <span class="cs-arrow">&nbsp;⟶&nbsp;</span>
+    <span class="cs-pill">M ⊂ ℝ³</span>
+    <span class="cs-arrow">&nbsp;⟶ φ⁻¹ ⟶&nbsp;</span>
+    <span class="cs-pill">ℝ²</span>
+  </div>
+
+  <!-- Main game area -->
+  <div class="game-area">
+
+    <!-- Left: 3D Valley -->
+    <div class="panel">
+      <div class="panel-label">The Surface M — drag to rotate · scroll to zoom</div>
+      <div class="canvas-wrap" id="valleyWrap">
+        <canvas id="valleyCanvas" width="480" height="360"></canvas>
+      </div>
+      <div class="canvas-hint">The valley surface M is a 2D manifold embedded in ℝ³</div>
+      <div id="activeBubble" class="active-bubble">
+        Quiz point: <span id="quizPointSpan"></span>
+      </div>
+    </div>
+
+    <!-- Right: Quiz -->
+    <div class="panel">
+      <div class="quiz-header">
+        <div class="panel-label">Guess φ⁻¹</div>
+        <div class="score-badge">Score: <b id="scoreNum">0</b> / <b id="totalNum">0</b></div>
+      </div>
+
+      <div class="question-box">
+        <div class="q-sublabel">A house sits at this 3D point on the surface M:</div>
+        <div id="pointDisplay" class="point-display">&mdash;</div>
+        <div class="question-ask">What is <code>φ⁻¹(x, y, z)</code> &nbsp;?</div>
+      </div>
+
+      <div class="answer-grid" id="answerGrid"></div>
+
+      <div id="feedbackBox" class="feedback-box"></div>
+
+      <div class="controls-row">
+        <button id="hintBtn" class="btn btn-hint">Show Hint</button>
+        <button id="nextBtn" class="btn btn-next">Next →</button>
+      </div>
+
+      <div id="hintArea" class="hint-area"></div>
+    </div>
+  </div>
+
+  <!-- Explorer -->
+  <div class="explorer-section">
+    <div class="explorer-title">Explorer — click the flat map to place a house and watch φ lift it onto the valley</div>
+    <div class="explorer-layout">
+      <div class="map-wrap">
+        <canvas id="mapCanvas" width="220" height="220"></canvas>
+        <div class="canvas-hint">2D flat map — input (x, y) to φ</div>
+      </div>
+
+      <div class="mapping-arrow">
+        <span>↓</span>
+        <span class="albl">φ(x, y)</span>
+        <span>↓</span>
+      </div>
+
+      <div class="result-box">
+        <div class="rlbl">3D output — φ(x, y) = (x, y, h(x,y))</div>
+        <div id="resultCoords" class="rcoords">Click anywhere on the map&hellip;</div>
+        <div id="resultNote" class="rnote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insight (unlocked after 3 correct) -->
+  <div id="insightSection" class="insight-section">
+    <div class="insight-title">Key Insight Unlocked</div>
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="ic-title">Forward mapping φ</div>
+        <div class="ic-formula">
+          φ: ℝ² → M ⊂ ℝ³<br>
+          (x, y) ↦ (x, y, h(x,y))
+        </div>
+        <div class="ic-note">Takes a flat 2D position and <em>lifts</em> it onto the valley surface, adding the height z.</div>
+      </div>
+      <div class="insight-card">
+        <div class="ic-title">Inverse mapping φ⁻¹</div>
+        <div class="ic-formula">
+          φ⁻¹: M → ℝ²<br>
+          (x, y, z) ↦ (x, y)
+        </div>
+        <div class="ic-note">Just <em>drops z</em>. Because z = h(x,y) is already determined by (x,y) — it carries no new information.</div>
+      </div>
+      <div class="insight-card">
+        <div class="ic-title">Why the manifold is 2D</div>
+        <div class="ic-formula">
+          z = sin(x) + 0.5·sin(y)
+        </div>
+        <div class="ic-note">M is a graph surface: every point (x,y) gives exactly one z. So M is parameterized by just 2 numbers — it is intrinsically 2-dimensional despite living in ℝ³.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>BMAI 2026 · Weekend 4</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// MATH
+// ═══════════════════════════════════════════════════════════════
+
+function hFn(x, y) {
+  return Math.sin(x) + 0.5 * Math.sin(y);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TERRAIN GEOMETRY  (precomputed once)
+// ═══════════════════════════════════════════════════════════════
+
+const GRID_N = 32;
+const RANGE  = 2 * Math.PI;
+
+const terrain = [];
+for (let i = 0; i <= GRID_N; i++) {
+  terrain.push([]);
+  for (let j = 0; j <= GRID_N; j++) {
+    const x = -RANGE + (2 * RANGE * i / GRID_N);
+    const y = -RANGE + (2 * RANGE * j / GRID_N);
+    terrain[i].push({ x, y, z: hFn(x, y) });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CAMERA STATE
+// ═══════════════════════════════════════════════════════════════
+
+let azimuth   = 215;   // degrees
+let elevation = 30;    // degrees
+let camScale  = 32;
+
+function projectPt(x, y, z, W, H) {
+  const az = azimuth   * Math.PI / 180;
+  const el = elevation * Math.PI / 180;
+  // Rotate around world-z by azimuth
+  const rx = x * Math.cos(az) - y * Math.sin(az);
+  const ry = x * Math.sin(az) + y * Math.cos(az);
+  // Tilt by elevation
+  const sx =  rx;
+  const sy =  ry * Math.cos(el) - z * Math.sin(el);
+  const sd =  ry * Math.sin(el) + z * Math.cos(el);   // depth (into screen)
+  return { sx: W / 2 + sx * camScale, sy: H / 2 - sy * camScale, depth: sd };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COLOR
+// ═══════════════════════════════════════════════════════════════
+
+const COLOR_STOPS = [
+  [0.00, [12,  30,  95]],
+  [0.18, [22,  75, 145]],
+  [0.32, [32, 125,  85]],
+  [0.48, [50, 152,  60]],
+  [0.62, [102,162,  50]],
+  [0.76, [152,130,  65]],
+  [0.90, [183,162, 118]],
+  [1.00, [228,222, 218]],
+];
+
+function heightToRGB(z) {
+  const t = Math.max(0, Math.min(1, (z + 1.5) / 3.0));
+  for (let i = 1; i < COLOR_STOPS.length; i++) {
+    if (t <= COLOR_STOPS[i][0]) {
+      const f = (t - COLOR_STOPS[i-1][0]) / (COLOR_STOPS[i][0] - COLOR_STOPS[i-1][0]);
+      const a = COLOR_STOPS[i-1][1];
+      const b = COLOR_STOPS[i][1];
+      return [
+        Math.round(a[0] + f * (b[0]-a[0])),
+        Math.round(a[1] + f * (b[1]-a[1])),
+        Math.round(a[2] + f * (b[2]-a[2])),
+      ];
+    }
+  }
+  return [228, 222, 218];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3D VALLEY RENDERER
+// ═══════════════════════════════════════════════════════════════
+
+let quizDot     = null;   // {x, y, z, answered, correct}
+let explorerDot = null;   // {x, y, z}
+
+function drawValley() {
+  const canvas = document.getElementById('valleyCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, W, H);
+
+  // Build quad list
+  const quads = [];
+  for (let i = 0; i < GRID_N; i++) {
+    for (let j = 0; j < GRID_N; j++) {
+      const v00 = terrain[i][j];
+      const v10 = terrain[i+1][j];
+      const v11 = terrain[i+1][j+1];
+      const v01 = terrain[i][j+1];
+      const avgZ = (v00.z + v10.z + v11.z + v01.z) * 0.25;
+      const midX = (v00.x + v10.x + v11.x + v01.x) * 0.25;
+      const midY = (v00.y + v10.y + v11.y + v01.y) * 0.25;
+      // Slope-based shading
+      const dzdx = (v10.z - v00.z);
+      const dzdy = (v01.z - v00.z);
+      const shade = Math.max(0.52, Math.min(1.0, 0.75 + dzdx * 0.18 - dzdy * 0.07));
+      quads.push({ v: [v00, v10, v11, v01], avgZ, midX, midY, shade });
+    }
+  }
+
+  // Depth-sort (back→front): painter's algorithm
+  const az = azimuth   * Math.PI / 180;
+  const el = elevation * Math.PI / 180;
+  quads.sort((a, b) => {
+    const da = (a.midX*Math.sin(az)+a.midY*Math.cos(az))*Math.sin(el) + a.avgZ*Math.cos(el);
+    const db = (b.midX*Math.sin(az)+b.midY*Math.cos(az))*Math.sin(el) + b.avgZ*Math.cos(el);
+    return db - da;
+  });
+
+  // Draw terrain quads
+  for (const q of quads) {
+    const pts = q.v.map(v => projectPt(v.x, v.y, v.z, W, H));
+    ctx.beginPath();
+    ctx.moveTo(pts[0].sx, pts[0].sy);
+    ctx.lineTo(pts[1].sx, pts[1].sy);
+    ctx.lineTo(pts[2].sx, pts[2].sy);
+    ctx.lineTo(pts[3].sx, pts[3].sy);
+    ctx.closePath();
+    const [r, g, b] = heightToRGB(q.avgZ);
+    const s = q.shade;
+    ctx.fillStyle = `rgb(${Math.round(r*s)},${Math.round(g*s)},${Math.round(b*s)})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth   = 0.3;
+    ctx.stroke();
+  }
+
+  // Draw explorer dot (blue)
+  if (explorerDot) {
+    const pt = projectPt(explorerDot.x, explorerDot.y, explorerDot.z, W, H);
+    const grd = ctx.createRadialGradient(pt.sx, pt.sy, 2, pt.sx, pt.sy, 16);
+    grd.addColorStop(0, 'rgba(88,166,255,0.65)');
+    grd.addColorStop(1, 'rgba(88,166,255,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 16, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#58a6ff';
+    ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 4.5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Draw quiz dot
+  if (quizDot) {
+    const pt = projectPt(quizDot.x, quizDot.y, quizDot.z, W, H);
+    const clr = quizDot.answered
+      ? (quizDot.correct ? [63,185,80] : [255,123,114])
+      : [227,179,65];
+    const [cr, cg, cb] = clr;
+    const grd = ctx.createRadialGradient(pt.sx, pt.sy, 2, pt.sx, pt.sy, 22);
+    grd.addColorStop(0, `rgba(${cr},${cg},${cb},0.72)`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 22, 0, Math.PI*2); ctx.fill();
+    // House marker
+    drawHouseMarker(ctx, pt.sx, pt.sy - 14, `rgb(${cr},${cg},${cb})`);
+    // Dot
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 5.5, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+  }
+}
+
+function drawHouseMarker(ctx, cx, cy, color) {
+  ctx.save();
+  ctx.fillStyle   = color;
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  ctx.lineWidth   = 1;
+  // Body
+  ctx.fillRect(cx - 6, cy - 6, 12, 9);
+  ctx.strokeRect(cx - 6, cy - 6, 12, 9);
+  // Roof
+  ctx.beginPath();
+  ctx.moveTo(cx - 8, cy - 6);
+  ctx.lineTo(cx,     cy - 14);
+  ctx.lineTo(cx + 8, cy - 6);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+// ── Mouse / touch drag on valley canvas ───────────────────────
+
+const valleyCanvas = document.getElementById('valleyCanvas');
+let isDragging = false, lastMX = 0, lastMY = 0;
+
+valleyCanvas.addEventListener('mousedown', e => {
+  isDragging = true; lastMX = e.clientX; lastMY = e.clientY;
+});
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  azimuth   = (azimuth + (e.clientX - lastMX) * 0.5) % 360;
+  elevation = Math.max(8, Math.min(75, elevation - (e.clientY - lastMY) * 0.35));
+  lastMX = e.clientX; lastMY = e.clientY;
+  drawValley();
+});
+window.addEventListener('mouseup', () => { isDragging = false; });
+
+valleyCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  camScale = Math.max(14, Math.min(75, camScale - e.deltaY * 0.04));
+  drawValley();
+}, { passive: false });
+
+valleyCanvas.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  isDragging = true;
+  lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+}, { passive: true });
+window.addEventListener('touchmove', e => {
+  if (!isDragging || e.touches.length !== 1) return;
+  azimuth   = (azimuth + (e.touches[0].clientX - lastMX) * 0.5) % 360;
+  elevation = Math.max(8, Math.min(75, elevation - (e.touches[0].clientY - lastMY) * 0.35));
+  lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+  drawValley();
+}, { passive: true });
+window.addEventListener('touchend', () => { isDragging = false; });
+
+// ═══════════════════════════════════════════════════════════════
+// TOPOGRAPHIC MAP  (2D explorer)
+// ═══════════════════════════════════════════════════════════════
+
+let topoImageData = null;
+
+function buildTopoMap() {
+  const canvas = document.getElementById('mapCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const img = ctx.createImageData(W, H);
+  const d   = img.data;
+  for (let px = 0; px < W; px++) {
+    for (let py = 0; py < H; py++) {
+      const x = -RANGE + (2 * RANGE * px / W);
+      const y =  RANGE - (2 * RANGE * py / H);
+      const [r, g, b] = heightToRGB(hFn(x, y));
+      const idx = (py * W + px) * 4;
+      d[idx] = r; d[idx+1] = g; d[idx+2] = b; d[idx+3] = 255;
+    }
+  }
+  topoImageData = img;
+}
+
+function drawTopoMap() {
+  const canvas = document.getElementById('mapCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  if (topoImageData) ctx.putImageData(topoImageData, 0, 0);
+
+  // Grid lines at multiples of π
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth   = 0.6;
+  for (const val of [-Math.PI, 0, Math.PI]) {
+    const px_ = (val + RANGE) / (2 * RANGE) * W;
+    const py_ = (RANGE - val) / (2 * RANGE) * H;
+    ctx.beginPath(); ctx.moveTo(px_, 0);   ctx.lineTo(px_, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,   py_); ctx.lineTo(W,  py_); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '10px monospace';
+  ctx.fillText('x →', W - 26, H/2 - 4);
+  ctx.fillText('y ↑', W/2 + 4, 10);
+
+  // Explorer dot
+  if (explorerDot) {
+    const px_ = (explorerDot.x + RANGE) / (2 * RANGE) * W;
+    const py_ = (RANGE - explorerDot.y) / (2 * RANGE) * H;
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(px_ - 7, py_); ctx.lineTo(px_ + 7, py_); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px_,  py_ - 7); ctx.lineTo(px_,  py_ + 7); ctx.stroke();
+    ctx.fillStyle = '#58a6ff';
+    ctx.beginPath(); ctx.arc(px_, py_, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function mapClickToWorld(canvas, clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const px = (clientX - rect.left) / rect.width  * canvas.width;
+  const py = (clientY - rect.top)  / rect.height * canvas.height;
+  const x  = -RANGE + (2 * RANGE * px / canvas.width);
+  const y  =  RANGE - (2 * RANGE * py / canvas.height);
+  return { x, y };
+}
+
+function onMapInteract(clientX, clientY) {
+  const mapCanvas = document.getElementById('mapCanvas');
+  const { x, y } = mapClickToWorld(mapCanvas, clientX, clientY);
+  const z = hFn(x, y);
+  explorerDot = { x, y, z };
+
+  document.getElementById('resultCoords').innerHTML =
+    `Input:&nbsp;&nbsp; (x, y) = (${x.toFixed(2)}, ${y.toFixed(2)})<br>` +
+    `h(x,y) = sin(${x.toFixed(2)}) + 0.5·sin(${y.toFixed(2)}) = <b style="color:var(--accent-green)">${z.toFixed(3)}</b><br>` +
+    `<span style="color:var(--accent-green)">φ(x,y) = (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(3)})</span>`;
+
+  document.getElementById('resultNote').innerHTML =
+    `z is <em>completely determined</em> by (x, y).<br>` +
+    `So if you know (x, y, z) ∈ M, you can recover (x, y) by simply ignoring z.`;
+
+  drawTopoMap();
+  drawValley();
+}
+
+const mapCanvas = document.getElementById('mapCanvas');
+mapCanvas.addEventListener('click',     e => onMapInteract(e.clientX, e.clientY));
+mapCanvas.addEventListener('mousemove', e => { if (e.buttons) onMapInteract(e.clientX, e.clientY); });
+mapCanvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  onMapInteract(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: false });
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════════════
+
+const state = { score: 0, total: 0, hintLevel: 0, answered: false };
+
+const HINTS = [
+  'Look at φ(x, y) = (x, y, h(x,y)). What does φ <em>add</em> to the input (x, y)?',
+  'φ adds the z-coordinate. So φ⁻¹ must <em>undo</em> that — it should remove z. But how?',
+  'Key: z = h(x, y) is fully determined by (x, y). z carries <em>no extra information</em>. So φ⁻¹ simply drops z and returns (x, y).',
+];
+
+function randomPoint() {
+  const x = parseFloat(( Math.random() * 2*Math.PI - Math.PI ).toFixed(2));
+  const y = parseFloat(( Math.random() * 2*Math.PI - Math.PI ).toFixed(2));
+  const z = parseFloat( hFn(x, y).toFixed(3) );
+  return { x, y, z };
+}
+
+let currentOptions = [];
+
+function buildOptions(pt) {
+  const opts = [
+    { label: `(${pt.x},  ${pt.y})`,               isCorrect: true  },
+    { label: `(${pt.x},  ${pt.z})`,               isCorrect: false },
+    { label: `(${pt.y},  ${pt.z})`,               isCorrect: false },
+    { label: `(${pt.x},  ${pt.y},  ${pt.z})`,     isCorrect: false },
+  ];
+  // Fisher-Yates shuffle
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+  return opts;
+}
+
+function loadQuestion() {
+  const pt = randomPoint();
+  state.answered = false;
+  state.hintLevel = 0;
+
+  quizDot = { x: pt.x, y: pt.y, z: pt.z, answered: false, correct: false };
+
+  document.getElementById('pointDisplay').textContent =
+    `(x, y, z)  =  (${pt.x},  ${pt.y},  ${pt.z})`;
+
+  document.getElementById('activeBubble').classList.add('show');
+  document.getElementById('quizPointSpan').textContent =
+    `(${pt.x}, ${pt.y}, ${pt.z})`;
+
+  currentOptions = buildOptions(pt);
+  const grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  ['A', 'B', 'C', 'D'].forEach((lbl, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${currentOptions[i].label}`;
+    btn.addEventListener('click', () => checkAnswer(i));
+    grid.appendChild(btn);
+  });
+
+  // Reset UI
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  const ha = document.getElementById('hintArea');
+  ha.className = 'hint-area';
+  ha.innerHTML = '';
+
+  document.getElementById('hintBtn').textContent = 'Show Hint';
+  document.getElementById('nextBtn').classList.remove('show');
+
+  drawValley();
+}
+
+function checkAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  state.total++;
+
+  const isCorrect = currentOptions[idx].isCorrect;
+
+  document.querySelectorAll('.answer-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (currentOptions[i].isCorrect) b.classList.add('correct');
+    else if (i === idx && !isCorrect) b.classList.add('wrong');
+  });
+
+  quizDot.answered = true;
+  quizDot.correct  = isCorrect;
+
+  if (isCorrect) {
+    state.score++;
+    showFeedback(true,
+      'Correct! φ⁻¹(x, y, z) = (x, y) &mdash; we simply drop z. ' +
+      'Since z = h(x,y) is determined by (x, y), it carries no extra information.');
+    if (state.score >= 3) {
+      setTimeout(() => {
+        const sec = document.getElementById('insightSection');
+        sec.classList.add('show');
+        sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 700);
+    }
+  } else {
+    showFeedback(false,
+      'Not quite &mdash; the correct answer is highlighted in green. ' +
+      'Remember: φ took (x, y) and added z. So φ⁻¹ just removes z, returning (x, y).');
+  }
+
+  updateScore();
+  document.getElementById('nextBtn').classList.add('show');
+  drawValley();
+}
+
+function showFeedback(ok, msg) {
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box show ' + (ok ? 'ok' : 'bad');
+  fb.innerHTML = msg;
+}
+
+function updateScore() {
+  document.getElementById('scoreNum').textContent = state.score;
+  document.getElementById('totalNum').textContent = state.total;
+}
+
+document.getElementById('hintBtn').addEventListener('click', () => {
+  if (state.answered) return;
+  const i   = Math.min(state.hintLevel, HINTS.length - 1);
+  state.hintLevel++;
+  const ha  = document.getElementById('hintArea');
+  ha.innerHTML  = `<b>Hint ${i+1}:</b> ` + HINTS[i];
+  ha.className  = 'hint-area show';
+  document.getElementById('hintBtn').textContent =
+    state.hintLevel < HINTS.length ? 'Another Hint' : 'Show Answer';
+  if (state.hintLevel >= HINTS.length)
+    document.getElementById('hintBtn').textContent = 'Show Answer';
+});
+
+document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+buildTopoMap();
+drawTopoMap();
+loadQuestion();
+
+</script>
+</body>
+</html>

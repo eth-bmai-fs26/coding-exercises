@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game 2 · The Circular Lake · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-purple); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-purple);
+  font-weight: 700;
+}
+.header-meta h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.panel:nth-child(1) { animation-delay: 0.00s; }
+.panel:nth-child(2) { animation-delay: 0.07s; }
+.panel:nth-child(3) { animation-delay: 0.14s; }
+.panel:nth-child(4) { animation-delay: 0.21s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { margin-bottom: 1.25rem; }
+.panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.panel-header p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.panel-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(188, 140, 255, 0.12);
+  color: var(--accent-purple);
+  border: 1px solid rgba(188, 140, 255, 0.28);
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.dual-view {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.view-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.view-box svg,
+.view-box canvas {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: block;
+}
+
+.view-label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+.view-label .dim-note {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.map-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  min-width: 72px;
+}
+
+.phi-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-purple);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.phi-label.pulse { animation: phiPulse 0.4s ease-out; }
+@keyframes phiPulse {
+  0%   { color: var(--accent-purple); transform: scale(1); }
+  40%  { color: #fff; transform: scale(1.3); }
+  100% { color: var(--accent-purple); transform: scale(1); }
+}
+.phi-inv-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+
+.coord-display { margin-top: 1rem; display: flex; justify-content: center; }
+.coord-pill {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.4rem 1.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--accent-purple);
+  letter-spacing: 0.02em;
+}
+
+/* Example panel grid */
+.example-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.example-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.example-item .ex-label {
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  color: var(--text-muted);
+}
+
+/* Smoothness panel */
+.smoothness-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.smoothness-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 110px;
+  max-width: 140px;
+  flex-shrink: 0;
+}
+
+.anim-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.anim-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+.anim-btn.active {
+  background: rgba(188, 140, 255, 0.12);
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+}
+.anim-btn .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.anim-btn.active .dot { animation: dotPulse 0.8s ease-in-out infinite; }
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.5); }
+}
+
+#smoothness-canvas, #trace-canvas {
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--bg-tertiary);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  display: block;
+}
+#smoothness-canvas.animating, #trace-canvas.animating {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 20px rgba(188, 140, 255, 0.25);
+}
+
+.formula-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.9;
+}
+.hi-purple { color: var(--accent-purple); }
+.hi-green  { color: var(--accent-green); }
+.hi-blue   { color: var(--accent-blue); }
+
+/* Inverse panel */
+.inverse-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.inverse-readout {
+  flex: 1;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.inverse-readout h3 { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+.measurement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Courier New', monospace;
+}
+.measurement-swatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+.measurement-value { font-size: 1.2rem; font-weight: 700; }
+
+@media (max-width: 700px) {
+  main { padding: 1rem; }
+  header { padding: 0.75rem 1rem; gap: 1rem; }
+  .dual-view { gap: 0.75rem; }
+  .map-arrows { flex-direction: row; min-width: auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← All Games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Game 2</span>
+    <h1>The Circular Lake</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- Panel A: Forward & Inverse Map -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel A</span> The Forward &amp; Inverse Map</h2>
+      <p>Drag the slider to choose an angle θ — φ maps it to a 2D position (x, y) on the lake circle. Click anywhere on the lake to apply φ⁻¹ and recover θ from a position.</p>
+    </div>
+    <div class="dual-view">
+      <div class="view-box">
+        <svg id="slider-svg" width="280" height="110" style="cursor:ew-resize"></svg>
+        <div class="view-label">
+          Parameter Space [0°, 360°]
+          <span class="dim-note">1 dimension: angle θ</span>
+        </div>
+      </div>
+      <div class="map-arrows">
+        <span class="phi-label" id="phi-fwd">φ &nbsp;→</span>
+        <span class="phi-inv-label">← φ⁻¹</span>
+      </div>
+      <div class="view-box">
+        <canvas id="lake-canvas" width="280" height="280"></canvas>
+        <div class="view-label">
+          Position Space ℝ²
+          <span class="dim-note">2D embedding of S¹</span>
+        </div>
+      </div>
+    </div>
+    <div class="coord-display">
+      <div class="coord-pill" id="coord-display">θ = 45.0° &nbsp;|&nbsp; x = 3.54,&nbsp; y = 3.54</div>
+    </div>
+  </div>
+
+  <!-- Panel B: Example Houses -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel B</span> Six Houses Around the Lake</h2>
+      <p>Six houses at θ = 0°, 60°, 120°, 180°, 240°, 300°. Each coloured dot marks a 2D position (x, y) on the circle — but only one number θ encodes it.</p>
+    </div>
+    <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center;">
+      <canvas id="example-canvas" width="320" height="320"></canvas>
+      <div style="display:flex; flex-direction:column; gap:0.6rem; min-width:180px;">
+        <div id="example-legend" style="display:flex; flex-direction:column; gap:0.4rem; font-family:monospace; font-size:0.82rem;"></div>
+        <div class="formula-box" style="margin-top:0.5rem;">
+          <div>φ(θ) = (r·cosθ, r·sinθ)</div>
+          <div style="margin-top:0.3rem; color:var(--text-muted);">r = 5,&nbsp; θ ∈ [0°, 360°]</div>
+          <div style="margin-top:0.6rem;">φ⁻¹(x,y) = <span class="hi-purple">atan2(y,x)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel C: Smoothness -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel C</span> Smoothness of φ</h2>
+      <p>As θ advances smoothly around [0°, 360°], the position (x, y) traces S¹ continuously. The sinusoidal trace shows x = r·cos θ (blue) and y = r·sin θ (purple) — smooth paths in ℝ².</p>
+    </div>
+    <div class="smoothness-layout">
+      <div class="smoothness-controls">
+        <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.2rem;">Animation:</p>
+        <button class="anim-btn" id="btn-anim-go" onclick="LakeGame.startAnim()">
+          <span class="dot"></span> Animate θ around S¹
+        </button>
+        <button class="anim-btn" id="btn-anim-stop" onclick="LakeGame.stopAnim()"
+                style="margin-top:0.4rem; color:var(--text-secondary);">
+          <span class="dot"></span> Stop
+        </button>
+        <div id="smoothness-coord"
+             style="margin-top:0.6rem; font-family:monospace; font-size:0.78rem; color:var(--accent-purple);
+                    background:var(--bg-tertiary); border:1px solid var(--border);
+                    border-radius:6px; padding:0.4rem 0.6rem;">
+          θ = 45.0°
+        </div>
+        <div class="formula-box" style="margin-top:0.3rem; font-size:0.78rem;">
+          <div>Continuity:</div>
+          <div class="hi-purple" style="margin-top:0.3rem;">Δθ small</div>
+          <div style="margin-top:0.2rem;">⟹ Δ(x,y) small</div>
+        </div>
+      </div>
+      <canvas id="smoothness-canvas" width="240" height="240"></canvas>
+      <canvas id="trace-canvas" width="400" height="300" style="flex:2; min-width:260px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Panel D: Inverse Map -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel D</span> The Inverse Map φ⁻¹</h2>
+      <p>Click anywhere on the lake circle to snap to the nearest point on S¹. φ⁻¹ = atan2(y, x) recovers the angle θ from the 2D position — demonstrating perfect invertibility.</p>
+    </div>
+    <div class="inverse-layout">
+      <canvas id="inverse-canvas" width="280" height="280"></canvas>
+      <div class="inverse-readout">
+        <h3>Recovered parameters:</h3>
+        <div class="measurement-item">
+          <div class="measurement-swatch" style="background:#bc8cff;"></div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">angle θ</div>
+            <div class="measurement-value" id="inv-theta" style="color:var(--accent-purple);">45.0°</div>
+          </div>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-swatch" style="background:#58a6ff;"></div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">x = r·cosθ</div>
+            <div class="measurement-value" id="inv-x" style="color:var(--accent-blue);">3.54</div>
+          </div>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-swatch" style="background:#3fb950;"></div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">y = r·sinθ</div>
+            <div class="measurement-value" id="inv-y" style="color:var(--accent-green);">3.54</div>
+          </div>
+        </div>
+        <div class="formula-box">
+          <div>φ⁻¹: S¹ → [0°,360°]</div>
+          <div style="margin-top:0.3rem;">(x,y) ↦ θ</div>
+          <div style="margin-top:0.65rem;">φ⁻¹ ∘ φ = <span class="hi-green">id</span><sub>[0°,360°]</sub></div>
+          <div>φ &nbsp;&nbsp;∘ φ⁻¹ = <span class="hi-green">id</span><sub>S¹</sub></div>
+        </div>
+        <div class="formula-box" style="font-size:0.82rem;">
+          <div style="color:var(--accent-purple);">θ = atan2(y, x)</div>
+          <div style="color:var(--text-muted); margin-top:0.25rem;">adjusted to [0°, 360°]</div>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Click on the lake canvas above to try φ⁻¹</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+/* ── HI-DPI HELPERS ── */
+const DPR = window.devicePixelRatio || 1;
+
+function setupHiDPI(canvas) {
+  const logW = +canvas.getAttribute('width');
+  const logH = +canvas.getAttribute('height');
+  canvas.width  = Math.round(logW * DPR);
+  canvas.height = Math.round(logH * DPR);
+  canvas.style.width  = logW + 'px';
+  canvas.style.height = logH + 'px';
+  canvas._logW = logW;
+  canvas._logH = logH;
+}
+
+function getCtx(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return ctx;
+}
+
+/* ── MATH ── */
+const LAKE_R = 5.0;
+const VIEW   = 7.0;   // world coords: ±VIEW fits in canvas
+
+function degToRad(d) { return d * Math.PI / 180; }
+function radToDeg(r) { return r * 180 / Math.PI; }
+
+function phi(theta) {
+  const r = degToRad(theta);
+  return { x: LAKE_R * Math.cos(r), y: LAKE_R * Math.sin(r) };
+}
+
+function phiInv(x, y) {
+  let deg = radToDeg(Math.atan2(y, x));
+  if (deg < 0) deg += 360;
+  return deg;
+}
+
+/* world → logical canvas px */
+function w2c(wx, wy, cW, cH) {
+  return {
+    x: (wx + VIEW) / (2 * VIEW) * cW,
+    y: (VIEW - wy) / (2 * VIEW) * cH,
+  };
+}
+
+/* logical canvas px → world */
+function c2w(cx, cy, cW, cH) {
+  return {
+    x:  (cx / cW) * 2 * VIEW - VIEW,
+    y: -(cy / cH) * 2 * VIEW + VIEW,
+  };
+}
+
+/* ── HOUSE DOT COLORS ── */
+const HOUSE_COLORS = ['#ff7b72','#3fb950','#e3b341','#bc8cff','#ff9580','#58a6ff'];
+const HOUSE_ANGLES = [0, 60, 120, 180, 240, 300];
+
+/* ── DRAW LAKE ── */
+function drawLake(ctx, cW, cH, theta, opts) {
+  opts = opts || {};
+  ctx.clearRect(0, 0, cW, cH);
+
+  // Background
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, cW, cH);
+
+  // Grid lines
+  ctx.strokeStyle = '#21262d';
+  ctx.lineWidth = 1;
+  for (let v = -6; v <= 6; v += 2) {
+    const { x: gx } = w2c(v, 0, cW, cH);
+    const { y: gy } = w2c(0, v, cW, cH);
+    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke();
+  }
+
+  // Axes
+  const org = w2c(0, 0, cW, cH);
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(org.x, 0); ctx.lineTo(org.x, cH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, org.y); ctx.lineTo(cW, org.y); ctx.stroke();
+
+  // Lake fill
+  const rPx = (LAKE_R / (2 * VIEW)) * cW;
+  ctx.beginPath();
+  ctx.arc(org.x, org.y, rPx, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(32, 90, 140, 0.25)';
+  ctx.fill();
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Lake centre
+  ctx.beginPath();
+  ctx.arc(org.x, org.y, 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#58a6ff';
+  ctx.fill();
+
+  // Optional: example house dots
+  if (opts.showExamples) {
+    HOUSE_ANGLES.forEach((ang, i) => {
+      const pos = phi(ang);
+      const cp  = w2c(pos.x, pos.y, cW, cH);
+      ctx.beginPath();
+      ctx.arc(cp.x, cp.y, Math.max(6, cW * 0.025), 0, 2 * Math.PI);
+      ctx.fillStyle = HOUSE_COLORS[i];
+      ctx.fill();
+      ctx.strokeStyle = '#e6edf3';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  // Current position dot
+  const pos = phi(theta);
+  const cp  = w2c(pos.x, pos.y, cW, cH);
+  const dotR   = Math.max(7, cW * 0.032);
+  const fontSize = Math.max(11, Math.round(cW * 0.042));
+
+  // Radius line
+  ctx.strokeStyle = 'rgba(188,140,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(org.x, org.y); ctx.lineTo(cp.x, cp.y); ctx.stroke();
+
+  // Dot
+  ctx.beginPath();
+  ctx.arc(cp.x, cp.y, dotR, 0, 2 * Math.PI);
+  ctx.fillStyle = '#bc8cff';
+  ctx.fill();
+  ctx.strokeStyle = '#e6edf3';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Coordinate label — clamped to canvas
+  const MARGIN = fontSize * 5;
+  let llx = cp.x + dotR + 5;
+  let lly = cp.y - dotR - 5;
+  llx = Math.max(MARGIN, Math.min(cW - MARGIN, llx));
+  lly = Math.max(fontSize + 4, Math.min(cH - fontSize - 4, lly));
+
+  ctx.font = `bold ${fontSize}px Courier New`;
+  ctx.fillStyle = '#bc8cff';
+  ctx.textAlign = 'left';
+  ctx.fillText(`θ=${theta.toFixed(1)}°`, llx, lly);
+  ctx.font = `${fontSize - 1}px Courier New`;
+  ctx.fillStyle = '#8b949e';
+  ctx.fillText(`(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`, llx, lly + fontSize + 3);
+
+  // Axis labels
+  ctx.font = `${Math.max(10, Math.round(cW * 0.036))}px Courier New`;
+  ctx.fillStyle = '#6e7681';
+  ctx.textAlign = 'center';
+  ctx.fillText('x', cW - 10, org.y - 5);
+  ctx.textAlign = 'left';
+  ctx.fillText('y', org.x + 5, 12);
+}
+
+/* ── DRAW EXAMPLE LAKE ── */
+function drawExampleLake(ctx, cW, cH) {
+  ctx.clearRect(0, 0, cW, cH);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, cW, cH);
+
+  // Axes
+  const org = w2c(0, 0, cW, cH);
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(org.x, 0); ctx.lineTo(org.x, cH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, org.y); ctx.lineTo(cW, org.y); ctx.stroke();
+
+  const rPx = (LAKE_R / (2 * VIEW)) * cW;
+
+  // Lake fill
+  ctx.beginPath();
+  ctx.arc(org.x, org.y, rPx, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(32, 90, 140, 0.25)';
+  ctx.fill();
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  const dotR = Math.max(7, cW * 0.030);
+  const fontSize = Math.max(10, Math.round(cW * 0.038));
+
+  HOUSE_ANGLES.forEach((ang, i) => {
+    const pos  = phi(ang);
+    const cp   = w2c(pos.x, pos.y, cW, cH);
+    const col  = HOUSE_COLORS[i];
+
+    // Radius line
+    ctx.strokeStyle = col + '60';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(org.x, org.y); ctx.lineTo(cp.x, cp.y); ctx.stroke();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(cp.x, cp.y, dotR, 0, 2 * Math.PI);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#e6edf3';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Label outside dot — clamped
+    const MARGIN = fontSize * 3;
+    let lx = cp.x + dotR * 1.5;
+    let ly = cp.y - dotR * 0.5;
+    lx = Math.max(MARGIN, Math.min(cW - MARGIN, lx));
+    ly = Math.max(fontSize + 4, Math.min(cH - 4, ly));
+    ctx.font = `bold ${fontSize}px Courier New`;
+    ctx.fillStyle = col;
+    ctx.textAlign = 'left';
+    ctx.fillText(`${ang}°`, lx, ly);
+  });
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(org.x, org.y, 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#58a6ff';
+  ctx.fill();
+}
+
+/* ── DRAW TRACE (sinusoidal) ── */
+function drawTrace(ctx, cW, cH, currentTheta) {
+  ctx.clearRect(0, 0, cW, cH);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, cW, cH);
+
+  const PAD = 20;
+  const plotW = cW - 2 * PAD;
+  const plotH = cH - 2 * PAD;
+  const midY  = PAD + plotH / 2;
+
+  // Grid
+  ctx.strokeStyle = '#21262d';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, midY); ctx.lineTo(PAD + plotW, midY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD, PAD); ctx.lineTo(PAD, PAD + plotH); ctx.stroke();
+
+  const thetaToX = t => PAD + (t / 360) * plotW;
+  const valToY   = v => midY - v / LAKE_R * (plotH / 2.2);
+
+  // x = r·cosθ (blue)
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let t = 0; t <= 360; t += 1) {
+    const yv = LAKE_R * Math.cos(degToRad(t));
+    const xp = thetaToX(t);
+    const yp = valToY(yv);
+    t === 0 ? ctx.moveTo(xp, yp) : ctx.lineTo(xp, yp);
+  }
+  ctx.stroke();
+
+  // y = r·sinθ (purple)
+  ctx.strokeStyle = '#bc8cff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let t = 0; t <= 360; t += 1) {
+    const yv = LAKE_R * Math.sin(degToRad(t));
+    const xp = thetaToX(t);
+    const yp = valToY(yv);
+    t === 0 ? ctx.moveTo(xp, yp) : ctx.lineTo(xp, yp);
+  }
+  ctx.stroke();
+
+  // Vertical cursor at currentTheta
+  const cx = thetaToX(currentTheta);
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(cx, PAD); ctx.lineTo(cx, PAD + plotH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Dots on curves
+  const cosY = valToY(LAKE_R * Math.cos(degToRad(currentTheta)));
+  const sinY = valToY(LAKE_R * Math.sin(degToRad(currentTheta)));
+  ctx.beginPath(); ctx.arc(cx, cosY, 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#58a6ff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, sinY, 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#bc8cff'; ctx.fill();
+
+  // Axis labels
+  const fz = Math.max(9, Math.round(cW * 0.033));
+  ctx.font = `${fz}px Courier New`;
+  ctx.fillStyle = '#58a6ff';
+  ctx.textAlign = 'left';
+  ctx.fillText('x=r·cosθ', PAD + 4, PAD + 12);
+  ctx.fillStyle = '#bc8cff';
+  ctx.fillText('y=r·sinθ', PAD + 4, PAD + 12 + fz + 3);
+  ctx.fillStyle = '#6e7681';
+  ctx.textAlign = 'center';
+  ctx.fillText('0°', thetaToX(0),   PAD + plotH + 14);
+  ctx.fillText('180°', thetaToX(180), PAD + plotH + 14);
+  ctx.fillText('360°', thetaToX(360), PAD + plotH + 14);
+}
+
+/* ── LAKE GAME MODULE ── */
+const LakeGame = (function () {
+
+  const state = {
+    theta:  45.0,
+    animId: null,
+  };
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  /* ---- Slider SVG (Panel A) ---- */
+  const SVG_W = 280, SVG_H = 110;
+  const SL_X0 = 28, SL_X1 = SVG_W - 28, SL_Y = 55;
+
+  function thetaToSliderX(t) { return SL_X0 + (t / 360) * (SL_X1 - SL_X0); }
+  function sliderXToTheta(x) { return clamp((x - SL_X0) / (SL_X1 - SL_X0) * 360, 0, 360); }
+
+  function buildSlider() {
+    const svg = document.getElementById('slider-svg');
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+
+    let html = `<rect x="0" y="0" width="${SVG_W}" height="${SVG_H}" fill="#21262d" rx="6"/>`;
+
+    // Track
+    html += `<rect x="${SL_X0}" y="${SL_Y - 3}" width="${SL_X1 - SL_X0}" height="6"
+               fill="#30363d" rx="3"/>`;
+
+    // Tick marks
+    [0, 90, 180, 270, 360].forEach(t => {
+      const x = thetaToSliderX(t);
+      html += `<line x1="${x}" y1="${SL_Y - 10}" x2="${x}" y2="${SL_Y + 10}"
+                stroke="#30363d" stroke-width="1"/>`;
+      html += `<text x="${x}" y="${SL_Y + 24}" fill="#6e7681" font-size="10"
+                text-anchor="middle" font-family="Courier New">${t}°</text>`;
+    });
+
+    // Axis label
+    html += `<text x="${SVG_W / 2}" y="${SL_Y - 22}" fill="#8b949e" font-size="12"
+              text-anchor="middle" font-family="sans-serif">θ (angle)</text>`;
+
+    // Draggable handle
+    const hx = thetaToSliderX(state.theta);
+    html += `<circle id="slider-dot" cx="${hx}" cy="${SL_Y}" r="11"
+               fill="#bc8cff" stroke="#e6edf3" stroke-width="2.5" style="cursor:grab"/>`;
+
+    svg.innerHTML = html;
+    bindSliderDrag(svg, document.getElementById('slider-dot'));
+  }
+
+  function bindSliderDrag(svg, dot) {
+    let dragging = false;
+    const getTheta = e => {
+      const rect = svg.getBoundingClientRect();
+      const src  = e.touches ? e.touches[0] : e;
+      const x    = (src.clientX - rect.left) * (SVG_W / rect.width);
+      return sliderXToTheta(x);
+    };
+    const move = e => {
+      if (!dragging) return;
+      e.preventDefault();
+      state.theta = getTheta(e);
+      dot.setAttribute('cx', thetaToSliderX(state.theta));
+      onParamChange();
+    };
+    dot.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
+    dot.addEventListener('touchstart', () => { dragging = true; }, { passive: false });
+    svg.addEventListener('mousedown', e => {
+      if (e.target === dot) return;
+      dragging = true; state.theta = getTheta(e);
+      dot.setAttribute('cx', thetaToSliderX(state.theta));
+      onParamChange();
+    });
+    window.addEventListener('mouseup',   () => { dragging = false; });
+    window.addEventListener('touchend',  () => { dragging = false; });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: false });
+  }
+
+  function updateSliderDot(theta) {
+    const dot = document.getElementById('slider-dot');
+    if (dot) dot.setAttribute('cx', thetaToSliderX(theta));
+  }
+
+  /* ---- Pulse ---- */
+  function pulsePhi() {
+    const el = document.getElementById('phi-fwd');
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+    el.addEventListener('animationend', () => el.classList.remove('pulse'), { once: true });
+  }
+
+  /* ---- Main update ---- */
+  function onParamChange() {
+    const t = state.theta;
+    const pos = phi(t);
+
+    // Panel A lake
+    const lc = document.getElementById('lake-canvas');
+    drawLake(getCtx(lc), lc._logW, lc._logH, t);
+    pulsePhi();
+
+    const posStr = `θ = ${t.toFixed(1)}°  |  x = ${pos.x.toFixed(2)},  y = ${pos.y.toFixed(2)}`;
+    document.getElementById('coord-display').textContent = posStr;
+
+    // Panel C smoothness canvas + trace
+    const sc = document.getElementById('smoothness-canvas');
+    drawLake(getCtx(sc), sc._logW, sc._logH, t);
+    document.getElementById('smoothness-coord').textContent = `θ = ${t.toFixed(1)}°`;
+
+    const tc = document.getElementById('trace-canvas');
+    drawTrace(getCtx(tc), tc._logW, tc._logH, t);
+
+    // Panel D inverse
+    const ic = document.getElementById('inverse-canvas');
+    drawLake(getCtx(ic), ic._logW, ic._logH, t);
+    document.getElementById('inv-theta').textContent = t.toFixed(1) + '°';
+    document.getElementById('inv-x').textContent     = pos.x.toFixed(4);
+    document.getElementById('inv-y').textContent     = pos.y.toFixed(4);
+  }
+
+  /* ---- Lake click → φ⁻¹ ---- */
+  function bindLakeClick(canvas) {
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const cx   = (e.clientX - rect.left) * (canvas._logW / rect.width);
+      const cy   = (e.clientY - rect.top)  * (canvas._logH / rect.height);
+      const wpos = c2w(cx, cy, canvas._logW, canvas._logH);
+      // Snap to circle
+      const mag  = Math.sqrt(wpos.x * wpos.x + wpos.y * wpos.y) || 1;
+      const sx   = wpos.x / mag * LAKE_R;
+      const sy   = wpos.y / mag * LAKE_R;
+      state.theta = phiInv(sx, sy);
+      updateSliderDot(state.theta);
+      onParamChange();
+    });
+  }
+
+  /* ---- Animation ---- */
+  function startAnim() {
+    stopAnim();
+    const PERIOD = 5000;
+    let start = null;
+    document.getElementById('btn-anim-go').classList.add('active');
+    document.getElementById('smoothness-canvas').classList.add('animating');
+    document.getElementById('trace-canvas').classList.add('animating');
+
+    const loop = ts => {
+      if (!start) start = ts;
+      const t = ((ts - start) % PERIOD) / PERIOD;
+      state.theta = t * 360;
+      updateSliderDot(state.theta);
+      onParamChange();
+      state.animId = requestAnimationFrame(loop);
+    };
+    state.animId = requestAnimationFrame(loop);
+  }
+
+  function stopAnim() {
+    if (state.animId) { cancelAnimationFrame(state.animId); state.animId = null; }
+    document.getElementById('btn-anim-go').classList.remove('active');
+    document.getElementById('smoothness-canvas').classList.remove('animating');
+    document.getElementById('trace-canvas').classList.remove('animating');
+  }
+
+  /* ---- Example panel ---- */
+  function buildExamplePanel() {
+    const ec = document.getElementById('example-canvas');
+    drawExampleLake(getCtx(ec), ec._logW, ec._logH);
+
+    // Build legend
+    const legend = document.getElementById('example-legend');
+    legend.innerHTML = '';
+    HOUSE_ANGLES.forEach((ang, i) => {
+      const pos = phi(ang);
+      const item = document.createElement('div');
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.gap = '0.4rem';
+      item.innerHTML = `
+        <div style="width:10px;height:10px;border-radius:50%;background:${HOUSE_COLORS[i]};flex-shrink:0;"></div>
+        <span style="color:${HOUSE_COLORS[i]};">θ=${ang}°</span>
+        <span style="color:#6e7681;"> → (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})</span>
+      `;
+      legend.appendChild(item);
+    });
+  }
+
+  function init() {
+    ['lake-canvas','smoothness-canvas','inverse-canvas','example-canvas','trace-canvas'].forEach(id => {
+      setupHiDPI(document.getElementById(id));
+    });
+    buildSlider();
+    buildExamplePanel();
+    bindLakeClick(document.getElementById('lake-canvas'));
+    bindLakeClick(document.getElementById('inverse-canvas'));
+    onParamChange();
+  }
+
+  return { init, startAnim, stopAnim };
+})();
+
+document.addEventListener('DOMContentLoaded', LakeGame.init);
+</script>
+</body>
+</html>

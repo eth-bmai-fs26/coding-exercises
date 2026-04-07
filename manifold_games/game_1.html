@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game 1 · The House Game · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-blue); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-blue);
+  font-weight: 700;
+}
+.header-meta h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.panel:nth-child(1) { animation-delay: 0.00s; }
+.panel:nth-child(2) { animation-delay: 0.07s; }
+.panel:nth-child(3) { animation-delay: 0.14s; }
+.panel:nth-child(4) { animation-delay: 0.21s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { margin-bottom: 1.25rem; }
+.panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.panel-header p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.panel-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(88, 166, 255, 0.12);
+  color: var(--accent-blue);
+  border: 1px solid rgba(88, 166, 255, 0.28);
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.dual-view {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.view-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.view-box svg,
+.view-box canvas {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: block;
+}
+
+.view-label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+.view-label .dim-note {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.map-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  min-width: 72px;
+}
+
+.phi-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.phi-label.pulse { animation: phiPulse 0.4s ease-out; }
+@keyframes phiPulse {
+  0%   { color: var(--accent-blue); transform: scale(1); }
+  40%  { color: #fff; transform: scale(1.3); }
+  100% { color: var(--accent-blue); transform: scale(1); }
+}
+.phi-inv-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+
+.coord-display { margin-top: 1rem; display: flex; justify-content: center; }
+.coord-pill {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.4rem 1.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--accent-orange);
+  letter-spacing: 0.02em;
+}
+
+#manifold-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+#manifold-grid canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  display: block;
+}
+#manifold-grid canvas:hover {
+  border-color: var(--accent-blue);
+  transform: scale(1.05);
+}
+
+.smoothness-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.smoothness-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 160px;
+}
+
+.anim-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.anim-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+.anim-btn.active {
+  background: rgba(188, 140, 255, 0.12);
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+}
+.anim-btn .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.anim-btn.active .dot { animation: dotPulse 0.8s ease-in-out infinite; }
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.5); }
+}
+
+#smoothness-canvas {
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--bg-tertiary);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  display: block;
+}
+#smoothness-canvas.animating {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 20px rgba(188, 140, 255, 0.25);
+}
+
+.formula-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.9;
+}
+.hi-purple { color: var(--accent-purple); }
+.hi-green  { color: var(--accent-green); }
+
+.inverse-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.inverse-readout {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.inverse-readout h3 { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+.measurement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Courier New', monospace;
+}
+.measurement-swatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+.measurement-value { font-size: 1.2rem; font-weight: 700; }
+
+.measure-btn {
+  background: rgba(63, 185, 80, 0.08);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.measure-btn:hover { background: rgba(63, 185, 80, 0.18); }
+
+@media (max-width: 700px) {
+  main { padding: 1rem; }
+  header { padding: 0.75rem 1rem; gap: 1rem; }
+  #manifold-grid { grid-template-columns: repeat(2, 1fr); }
+  .dual-view { gap: 0.75rem; }
+  .map-arrows { flex-direction: row; min-width: auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← All Games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Game 1</span>
+    <h1>The House Game</h1>
+  </div>
+</header>
+
+<main>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel A</span> The Forward &amp; Inverse Map</h2>
+      <p>Drag the blue dot in parameter space ℝ² — or click anywhere on the grid — to explore the manifold. The house updates live via φ. Measuring the house dimensions recovers your parameters via φ⁻¹.</p>
+    </div>
+    <div class="dual-view">
+      <div class="view-box">
+        <svg id="param-svg" width="280" height="280" style="cursor:crosshair"></svg>
+        <div class="view-label">
+          Parameter Space ℝ²
+          <span class="dim-note">2 dimensions: (height, width)</span>
+        </div>
+      </div>
+      <div class="map-arrows">
+        <span class="phi-label" id="phi-fwd">φ &nbsp;→</span>
+        <span class="phi-inv-label">← φ⁻¹</span>
+      </div>
+      <div class="view-box">
+        <canvas id="house-canvas" width="280" height="280"></canvas>
+        <div class="view-label">
+          Pixel Space (house image)
+          <span class="dim-note">12,000,000 apparent dimensions</span>
+        </div>
+      </div>
+    </div>
+    <div class="coord-display">
+      <div class="coord-pill" id="coord-display">height = 4.50 &nbsp;|&nbsp; width = 4.50</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel B</span> The 2D Manifold in Pixel Space</h2>
+      <p>Every valid house lives at a point on this 2D manifold. Width increases left→right; height increases bottom→top. Click any house to jump to that parameter point.</p>
+    </div>
+    <div style="display:flex; gap:8px; align-items:stretch;">
+      <div style="display:flex; align-items:center; justify-content:center; writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.75rem; color:var(--text-muted); font-family:monospace; letter-spacing:0.06em; flex-shrink:0;">
+        height →
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div id="manifold-grid"></div>
+        <div style="text-align:center; font-size:0.75rem; color:var(--text-muted); font-family:monospace; letter-spacing:0.06em; margin-top:6px;">
+          width →
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel C</span> Smoothness of φ</h2>
+      <p>A continuous path in ℝ² maps to a continuous path through house space. Small parameter changes yield small image changes — the defining property of a homeomorphism.</p>
+    </div>
+    <div class="smoothness-layout">
+      <div class="smoothness-controls">
+        <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:0.2rem;">Animate along:</p>
+        <button class="anim-btn" id="btn-anim-height" onclick="HouseGame.startAnim('height')">
+          <span class="dot"></span> Vary height
+        </button>
+        <button class="anim-btn" id="btn-anim-width" onclick="HouseGame.startAnim('width')">
+          <span class="dot"></span> Vary width
+        </button>
+        <button class="anim-btn" id="btn-anim-diag" onclick="HouseGame.startAnim('diagonal')">
+          <span class="dot"></span> Vary both
+        </button>
+        <button class="anim-btn" id="btn-anim-stop" onclick="HouseGame.stopAnim()"
+                style="margin-top:0.4rem; color:var(--text-secondary);">
+          <span class="dot"></span> Stop
+        </button>
+      </div>
+      <canvas id="smoothness-canvas" width="280" height="280"></canvas>
+      <div style="flex:1; min-width:150px; display:flex; flex-direction:column; gap:0.7rem;">
+        <div class="formula-box">
+          <div>φ: ℝ² → H</div>
+          <div style="margin-top:0.3rem;">(h, w) ↦ house image</div>
+          <div style="margin-top:0.6rem; color:var(--text-muted);">H ⊂ ℝ<sup style="font-size:0.7em">12M</sup></div>
+        </div>
+        <div class="formula-box">
+          <div>Continuity:</div>
+          <div class="hi-purple" style="margin-top:0.3rem;">‖Δ(h,w)‖ small</div>
+          <div style="margin-top:0.2rem;">⟹ ‖Δ image‖ small</div>
+        </div>
+        <div id="smoothness-coord"
+             style="font-family:monospace; font-size:0.88rem; color:var(--accent-orange);
+                    background:var(--bg-tertiary); border:1px solid var(--border);
+                    border-radius:6px; padding:0.5rem 0.75rem;">
+          h = 4.50,&nbsp; w = 4.50
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel D</span> The Inverse Map φ⁻¹</h2>
+      <p>Given a house image, measure its dimensions to recover the original parameters. φ⁻¹ maps back from pixel space to ℝ². Drag the dot in Panel A — measurements update here automatically.</p>
+    </div>
+    <div class="inverse-layout">
+      <canvas id="inverse-canvas" width="380" height="380"></canvas>
+      <div class="inverse-readout">
+        <h3>Measured parameters:</h3>
+        <div class="measurement-item">
+          <div class="measurement-swatch" style="background:#3fb950;"></div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">height</div>
+            <div class="measurement-value" id="inv-height" style="color:var(--accent-green);">4.50</div>
+          </div>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-swatch" style="background:#bc8cff;"></div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-secondary);">width</div>
+            <div class="measurement-value" id="inv-width" style="color:var(--accent-purple);">4.50</div>
+          </div>
+        </div>
+        <button class="measure-btn" onclick="HouseGame.animateMeasure()">&#9654; Animate measure</button>
+        <div class="formula-box">
+          <div>φ⁻¹: H → ℝ²</div>
+          <div style="margin-top:0.3rem;">image ↦ (h, w)</div>
+          <div style="margin-top:0.65rem;">φ⁻¹ ∘ φ = <span class="hi-green">id</span><sub>ℝ²</sub></div>
+          <div>φ &nbsp;&nbsp;∘ φ⁻¹ = <span class="hi-green">id</span><sub>H</sub></div>
+        </div>
+        <div class="formula-box" style="font-size:0.82rem;">
+          <div style="color:var(--accent-green);">h = measure(house.height)</div>
+          <div style="color:var(--accent-purple); margin-top:0.25rem;">w = measure(house.width)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+/* ────────────────────────────────────────────────────────────────────
+   HI-DPI CANVAS HELPERS
+───────────────────────────────────────────────────────────────────── */
+const DPR = window.devicePixelRatio || 1;
+
+function setupHiDPI(canvas) {
+  const logW = +canvas.getAttribute('width');
+  const logH = +canvas.getAttribute('height');
+  canvas.width  = Math.round(logW * DPR);
+  canvas.height = Math.round(logH * DPR);
+  canvas.style.width  = logW + 'px';
+  canvas.style.height = logH + 'px';
+  canvas._logW = logW;
+  canvas._logH = logH;
+}
+
+function getCtx(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return ctx;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   HOUSE DRAWING  (all coordinates are in logical px)
+───────────────────────────────────────────────────────────────────── */
+function drawHouse(ctx, h, w, cW, cH, pad) {
+  const PAD = (pad !== undefined) ? pad : 1.5, LOGICAL = 10.0;
+  const scale = Math.min(cW, cH) / (LOGICAL + 2 * PAD);
+  const ox = PAD * scale;
+  const oy = cH - PAD * scale;
+  const px = lx => ox + lx * scale;
+  const py = ly => oy - ly * scale;
+
+  ctx.clearRect(0, 0, cW, cH);
+
+  // Body
+  ctx.fillStyle = 'steelblue';
+  ctx.fillRect(px(0), py(h), w * scale, h * scale);
+
+  // Roof
+  const roofPeak = w * 0.30 + h * 0.20;
+  ctx.fillStyle = 'firebrick';
+  ctx.beginPath();
+  ctx.moveTo(px(0),   py(h));
+  ctx.lineTo(px(w),   py(h));
+  ctx.lineTo(px(w/2), py(h + roofPeak));
+  ctx.closePath();
+  ctx.fill();
+
+  // Door
+  const dw = 0.20 * w, dh = 0.35 * h, dx = (w - dw) / 2;
+  ctx.fillStyle = 'saddlebrown';
+  ctx.fillRect(px(dx), py(dh), dw * scale, dh * scale);
+
+  // Window
+  const winW = 0.20 * w, winH = 0.20 * h;
+  const winX = 0.15 * w, winYBot = 0.45 * h;
+  ctx.fillStyle = 'lightyellow';
+  ctx.fillRect(px(winX), py(winYBot + winH), winW * scale, winH * scale);
+}
+
+/* ── Measurement arrows (Panel D) ── */
+function drawMeasureArrows(ctx, h, w, cW, cH, progress, pad) {
+  const PAD = (pad !== undefined) ? pad : 1.5, LOGICAL = 10.0;
+  const scale = Math.min(cW, cH) / (LOGICAL + 2 * PAD);
+  const ox = PAD * scale;
+  const oy = cH - PAD * scale;
+  const px = lx => ox + lx * scale;
+  const py = ly => oy - ly * scale;
+
+  const p = Math.min(progress !== undefined ? progress : 1, 1);
+  const fontSize = Math.max(11, Math.round(scale * 0.55));
+
+  // Height arrow (green) — left side, label to the RIGHT of the line
+  const arrowX = px(0) - scale * 0.3;
+  const y0 = py(0), y1 = py(h * p);
+  ctx.save();
+  ctx.strokeStyle = '#3fb950';
+  ctx.fillStyle   = '#3fb950';
+  ctx.lineWidth   = 2;
+  ctx.beginPath(); ctx.moveTo(arrowX, y0); ctx.lineTo(arrowX, y1); ctx.stroke();
+  if (p > 0.06) {
+    arrowHead(ctx, arrowX, y0, 0, Math.max(5, scale * 0.22));
+    arrowHead(ctx, arrowX, y1, Math.PI, Math.max(5, scale * 0.22));
+  }
+  if (p > 0.45) {
+    ctx.font = `bold ${fontSize}px Courier New`;
+    ctx.textAlign = 'right';
+    ctx.fillText('h=' + (h * p).toFixed(2), arrowX - 5, (y0 + y1) / 2 + fontSize * 0.4);
+  }
+  ctx.restore();
+
+  // Width arrow (purple) — below house, label ABOVE the line
+  const arrowY = py(0) + scale * 0.3;
+  const x0 = px(0), x1 = px(w * p);
+  ctx.save();
+  ctx.strokeStyle = '#bc8cff';
+  ctx.fillStyle   = '#bc8cff';
+  ctx.lineWidth   = 2;
+  ctx.beginPath(); ctx.moveTo(x0, arrowY); ctx.lineTo(x1, arrowY); ctx.stroke();
+  if (p > 0.06) {
+    arrowHead(ctx, x0, arrowY,  Math.PI / 2, Math.max(5, scale * 0.22));
+    arrowHead(ctx, x1, arrowY, -Math.PI / 2, Math.max(5, scale * 0.22));
+  }
+  if (p > 0.45) {
+    ctx.font = `bold ${fontSize}px Courier New`;
+    ctx.textAlign = 'center';
+    ctx.fillText('w=' + (w * p).toFixed(2), (x0 + x1) / 2, arrowY + fontSize + 4);
+  }
+  ctx.restore();
+}
+
+function arrowHead(ctx, x, y, angle, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-size * 0.6, -size);
+  ctx.lineTo( size * 0.6, -size);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   HOUSE GAME
+───────────────────────────────────────────────────────────────────── */
+const HouseGame = (function () {
+
+  const H_MIN = 2, H_MAX = 7, W_MIN = 2, W_MAX = 7;
+  const SVG_SIZE = 280, SVG_PAD = 28;
+
+  const state = {
+    h: 4.5, w: 4.5,
+    animId: null,
+    animTarget: null,
+    measureAnimId: null,
+    measureProgress: 1.0,
+  };
+
+  function paramToSVG(h, w) {
+    return {
+      x: SVG_PAD + ((w - W_MIN) / (W_MAX - W_MIN)) * (SVG_SIZE - 2 * SVG_PAD),
+      y: (SVG_SIZE - SVG_PAD) - ((h - H_MIN) / (H_MAX - H_MIN)) * (SVG_SIZE - 2 * SVG_PAD),
+    };
+  }
+
+  function svgToParam(x, y) {
+    return {
+      w: W_MIN + ((x - SVG_PAD) / (SVG_SIZE - 2 * SVG_PAD)) * (W_MAX - W_MIN),
+      h: H_MIN + ((SVG_SIZE - SVG_PAD - y) / (SVG_SIZE - 2 * SVG_PAD)) * (H_MAX - H_MIN),
+    };
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function buildSVG() {
+    const svg = document.getElementById('param-svg');
+    svg.setAttribute('viewBox', `0 0 ${SVG_SIZE} ${SVG_SIZE}`);
+
+    let html = `<rect x="0" y="0" width="${SVG_SIZE}" height="${SVG_SIZE}" fill="#21262d" rx="6"/>`;
+
+    for (let v = H_MIN; v <= H_MAX; v++) {
+      const gy = paramToSVG(v, W_MIN).y;
+      const gx = paramToSVG(H_MIN, v).x;
+      html += `<line x1="${SVG_PAD}" y1="${gy}" x2="${SVG_SIZE-SVG_PAD}" y2="${gy}" stroke="#30363d" stroke-width="1"/>`;
+      html += `<line x1="${gx}" y1="${SVG_PAD}" x2="${gx}" y2="${SVG_SIZE-SVG_PAD}" stroke="#30363d" stroke-width="1"/>`;
+      html += `<text x="${SVG_PAD-5}" y="${gy+4}" fill="#6e7681" font-size="11" text-anchor="end" font-family="Courier New">${v}</text>`;
+      html += `<text x="${gx}" y="${SVG_SIZE-SVG_PAD+14}" fill="#6e7681" font-size="11" text-anchor="middle" font-family="Courier New">${v}</text>`;
+    }
+
+    html += `<text x="${SVG_SIZE/2}" y="${SVG_SIZE-4}" fill="#8b949e" font-size="13" text-anchor="middle" font-family="sans-serif">width (w)</text>`;
+    html += `<text x="12" y="${SVG_SIZE/2}" fill="#8b949e" font-size="13" text-anchor="middle" font-family="sans-serif" transform="rotate(-90,12,${SVG_SIZE/2})">height (h)</text>`;
+
+    const pos = paramToSVG(state.h, state.w);
+    html += `<circle id="param-dot" cx="${pos.x}" cy="${pos.y}" r="10" fill="#58a6ff" stroke="#e6edf3" stroke-width="2.5" style="cursor:grab"/>`;
+
+    svg.innerHTML = html;
+    bindDrag(svg, document.getElementById('param-dot'));
+  }
+
+  function bindDrag(svg, dot) {
+    let dragging = false;
+    const getPos = e => {
+      const rect = svg.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      return {
+        x: (src.clientX - rect.left) * (SVG_SIZE / rect.width),
+        y: (src.clientY - rect.top)  * (SVG_SIZE / rect.height),
+      };
+    };
+    const move = e => {
+      if (!dragging) return;
+      e.preventDefault();
+      const { x, y } = getPos(e);
+      const cx = clamp(x, SVG_PAD, SVG_SIZE - SVG_PAD);
+      const cy = clamp(y, SVG_PAD, SVG_SIZE - SVG_PAD);
+      dot.setAttribute('cx', cx);
+      dot.setAttribute('cy', cy);
+      const { h, w } = svgToParam(cx, cy);
+      state.h = h; state.w = w;
+      onParamChange();
+    };
+    dot.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
+    dot.addEventListener('touchstart', () => { dragging = true; }, { passive: false });
+    svg.addEventListener('mousedown', e => { if (e.target === dot) return; dragging = true; move(e); });
+    window.addEventListener('mouseup',   () => { dragging = false; });
+    window.addEventListener('touchend',  () => { dragging = false; });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: false });
+  }
+
+  function updateDot(h, w) {
+    const dot = document.getElementById('param-dot');
+    if (!dot) return;
+    const { x, y } = paramToSVG(h, w);
+    dot.setAttribute('cx', x);
+    dot.setAttribute('cy', y);
+  }
+
+  function pulsePhi() {
+    const el = document.getElementById('phi-fwd');
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+    el.addEventListener('animationend', () => el.classList.remove('pulse'), { once: true });
+  }
+
+  function onParamChange() {
+    const hc = clamp(state.h, H_MIN, H_MAX);
+    const wc = clamp(state.w, W_MIN, W_MAX);
+
+    const ca = document.getElementById('house-canvas');
+    drawHouse(getCtx(ca), hc, wc, ca._logW, ca._logH);
+    pulsePhi();
+    document.getElementById('coord-display').textContent =
+      `height = ${hc.toFixed(2)}  |  width = ${wc.toFixed(2)}`;
+
+    const cs = document.getElementById('smoothness-canvas');
+    drawHouse(getCtx(cs), hc, wc, cs._logW, cs._logH);
+    document.getElementById('smoothness-coord').textContent =
+      `h = ${hc.toFixed(2)},\u00a0 w = ${wc.toFixed(2)}`;
+
+    redrawInverse();
+    document.getElementById('inv-height').textContent = hc.toFixed(2);
+    document.getElementById('inv-width').textContent  = wc.toFixed(2);
+  }
+
+  function redrawInverse() {
+    const hc = clamp(state.h, H_MIN, H_MAX);
+    const wc = clamp(state.w, W_MIN, W_MAX);
+    const ic = document.getElementById('inverse-canvas');
+    const INV_PAD = 3.0;
+    drawHouse(getCtx(ic), hc, wc, ic._logW, ic._logH, INV_PAD);
+    drawMeasureArrows(getCtx(ic), hc, wc, ic._logW, ic._logH, state.measureProgress, INV_PAD);
+  }
+
+  function buildGrid() {
+    const container = document.getElementById('manifold-grid');
+    const N = 4;
+    const hs = Array.from({ length: N }, (_, i) => H_MIN + (i / (N-1)) * (H_MAX - H_MIN));
+    const ws = Array.from({ length: N }, (_, i) => W_MIN + (i / (N-1)) * (W_MAX - W_MIN));
+
+    container.innerHTML = '';
+    for (let ri = 0; ri < N; ri++) {
+      const h = hs[N - 1 - ri];
+      for (let ci = 0; ci < N; ci++) {
+        const w = ws[ci];
+        const canvas = document.createElement('canvas');
+        const LOG = 120;
+        canvas.width  = Math.round(LOG * DPR);
+        canvas.height = Math.round(LOG * DPR);
+        canvas._logW = LOG; canvas._logH = LOG;
+        canvas.title = `h=${h.toFixed(1)}, w=${w.toFixed(1)}`;
+        drawHouse(getCtx(canvas), h, w, LOG, LOG);
+        canvas.addEventListener('click', () => {
+          state.h = h; state.w = w;
+          updateDot(h, w);
+          onParamChange();
+        });
+        container.appendChild(canvas);
+      }
+    }
+  }
+
+  function startAnim(target) {
+    stopAnim();
+    state.animTarget = target;
+    const PERIOD = 3500;
+    let start = null;
+    const baseH = state.h, baseW = state.w;
+
+    document.querySelectorAll('.anim-btn').forEach(b => b.classList.remove('active'));
+    const btnMap = { height: 'btn-anim-height', width: 'btn-anim-width', diagonal: 'btn-anim-diag' };
+    document.getElementById(btnMap[target]).classList.add('active');
+    document.getElementById('smoothness-canvas').classList.add('animating');
+
+    const loop = ts => {
+      if (!start) start = ts;
+      const t = ((ts - start) % PERIOD) / PERIOD;
+      const v = 2.5 + 2.5 * Math.sin(2 * Math.PI * t);
+      if      (target === 'height')   { state.h = H_MIN + v; state.w = baseW; }
+      else if (target === 'width')    { state.h = baseH;     state.w = W_MIN + v; }
+      else                            { state.h = H_MIN + v; state.w = W_MIN + v; }
+      updateDot(state.h, state.w);
+      onParamChange();
+      state.animId = requestAnimationFrame(loop);
+    };
+    state.animId = requestAnimationFrame(loop);
+  }
+
+  function stopAnim() {
+    if (state.animId) { cancelAnimationFrame(state.animId); state.animId = null; }
+    state.animTarget = null;
+    document.querySelectorAll('.anim-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('smoothness-canvas').classList.remove('animating');
+  }
+
+  function animateMeasure() {
+    if (state.measureAnimId) cancelAnimationFrame(state.measureAnimId);
+    state.measureProgress = 0;
+    const DURATION = 1200;
+    let start = null;
+    const loop = ts => {
+      if (!start) start = ts;
+      const raw = Math.min(1, (ts - start) / DURATION);
+      state.measureProgress = 1 - Math.pow(1 - raw, 3);
+      redrawInverse();
+      if (raw < 1) { state.measureAnimId = requestAnimationFrame(loop); }
+      else { state.measureProgress = 1; state.measureAnimId = null; }
+    };
+    state.measureAnimId = requestAnimationFrame(loop);
+  }
+
+  function init() {
+    ['house-canvas', 'smoothness-canvas', 'inverse-canvas'].forEach(id => {
+      setupHiDPI(document.getElementById(id));
+    });
+    buildSVG();
+    buildGrid();
+    onParamChange();
+  }
+
+  return { init, startAnim, stopAnim, animateMeasure };
+})();
+
+document.addEventListener('DOMContentLoaded', HouseGame.init);
+</script>
+</body>
+</html>
