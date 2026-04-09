@@ -3,23 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game 4 · The Hill Road · Manifold Games</title>
+<title>Game 4 · The Cone Hill · Manifold Games</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 :root {
   --bg-primary:    #0d1117;
   --bg-secondary:  #161b22;
   --bg-tertiary:   #21262d;
   --border:        #30363d;
-  --accent:        #e3b341;
-  --accent-red:    #ff7b72;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
   --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
   --text-primary:  #e6edf3;
   --text-secondary:#8b949e;
   --text-muted:    #6e7681;
   --radius:        10px;
   --radius-sm:     6px;
 }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-primary);
@@ -28,6 +32,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
@@ -40,6 +45,7 @@ header {
   top: 0;
   z-index: 100;
 }
+
 .back-link {
   color: var(--text-secondary);
   text-decoration: none;
@@ -50,24 +56,27 @@ header {
   transition: color 0.2s;
   white-space: nowrap;
 }
-.back-link:hover { color: var(--accent); }
+.back-link:hover { color: var(--accent-orange); }
+
 .header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
 .header-meta { display: flex; flex-direction: column; }
 .header-meta .game-label {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent);
+  color: var(--accent-orange);
   font-weight: 700;
 }
 .header-meta h1 {
   font-size: 1.15rem;
   font-weight: 700;
-  background: linear-gradient(90deg, var(--accent), #ff7b72);
+  background: linear-gradient(90deg, var(--accent-orange), var(--accent-red));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
 main {
   flex: 1;
   padding: 1.75rem 2rem;
@@ -78,35 +87,14 @@ main {
   flex-direction: column;
   gap: 1.5rem;
 }
-.concept-strip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.9rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  font-family: 'Courier New', monospace;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-}
-.cs-pill {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.25rem 0.85rem;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.cs-pill.hl { border-color: var(--accent); color: var(--accent); }
-.cs-arrow { color: var(--text-muted); }
+
+/* ── Game area ─────────────────────────────────────────────── */
 .game-area {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
 }
+
 .panel {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -116,6 +104,7 @@ main {
   flex-direction: column;
   gap: 0.9rem;
 }
+
 .panel-label {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -123,6 +112,8 @@ main {
   color: var(--text-muted);
   font-weight: 700;
 }
+
+/* ── Canvas ────────────────────────────────────────────────── */
 .canvas-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -133,7 +124,9 @@ main {
 }
 .canvas-wrap:active { cursor: grabbing; }
 .canvas-wrap canvas { display: block; width: 100%; height: auto; }
+
 .canvas-hint { font-size: 0.68rem; color: var(--text-muted); text-align: center; }
+
 .active-bubble {
   background: var(--bg-tertiary);
   border: 1px solid rgba(227,179,65,0.4);
@@ -141,20 +134,12 @@ main {
   padding: 0.5rem 0.8rem;
   font-family: 'Courier New', monospace;
   font-size: 0.78rem;
-  color: var(--accent);
+  color: var(--accent-orange);
   display: none;
 }
 .active-bubble.show { display: block; }
-.quiz-header { display: flex; justify-content: space-between; align-items: center; }
-.score-badge {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-.score-badge b { color: var(--accent); }
+
+/* ── Question box ──────────────────────────────────────────── */
 .question-box {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
@@ -168,25 +153,22 @@ main {
   color: var(--text-muted);
   margin-bottom: 0.4rem;
 }
-.point-display {
-  font-family: 'Courier New', monospace;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-  text-align: center;
-  padding: 0.3rem 0 0.15rem;
-}
 .question-ask {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  text-align: center;
-  margin-top: 0.35rem;
+  margin-top: 0.65rem;
+  text-align: left;
+  line-height: 1.5;
 }
 .question-ask code {
   color: var(--text-primary);
   background: var(--bg-primary);
   padding: 0.05rem 0.3rem;
   border-radius: 3px;
+  font-size: 0.82rem;
 }
+
+/* ── Answer buttons ────────────────────────────────────────── */
 .answer-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -200,7 +182,7 @@ main {
   color: var(--text-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.76rem;
-  line-height: 1.45;
+  line-height: 1.4;
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
@@ -215,12 +197,14 @@ main {
   letter-spacing: 0.05em;
 }
 .answer-btn:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--accent-orange);
   background: rgba(227,179,65,0.07);
 }
 .answer-btn:disabled { cursor: default; }
 .answer-btn.correct { border-color: var(--accent-green); background: rgba(63,185,80,0.13); color: var(--accent-green); }
 .answer-btn.wrong   { border-color: var(--accent-red);   background: rgba(255,123,114,0.09); color: var(--accent-red); }
+
+/* ── Feedback ──────────────────────────────────────────────── */
 .feedback-box {
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.9rem;
@@ -231,6 +215,8 @@ main {
 .feedback-box.show { display: block; }
 .feedback-box.ok  { background: rgba(63,185,80,0.09);  border: 1px solid rgba(63,185,80,0.3);  color: var(--accent-green); }
 .feedback-box.bad { background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.25); color: var(--accent-red); }
+
+/* ── Controls ──────────────────────────────────────────────── */
 .controls-row { display: flex; gap: 0.5rem; align-items: center; }
 .btn {
   border: none;
@@ -243,18 +229,20 @@ main {
 }
 .btn:hover { opacity: 0.82; }
 .btn-hint { background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-secondary); }
-.btn-next { background: var(--accent); color: #0d1117; margin-left: auto; }
+
 .hint-area {
   background: rgba(227,179,65,0.07);
   border: 1px solid rgba(227,179,65,0.25);
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.9rem;
   font-size: 0.82rem;
-  color: var(--accent);
+  color: var(--accent-orange);
   line-height: 1.55;
   display: none;
 }
 .hint-area.show { display: block; }
+
+/* ── Explorer ──────────────────────────────────────────────── */
 .explorer-section {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -304,7 +292,7 @@ main {
 .mapping-arrow .albl {
   font-family: 'Courier New', monospace;
   font-size: 0.72rem;
-  color: var(--accent);
+  color: var(--accent-orange);
   white-space: nowrap;
 }
 .result-box {
@@ -317,11 +305,13 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-height: 120px;
+  min-height: 130px;
 }
 .result-box .rlbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
 .result-box .rcoords { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--text-primary); line-height: 1.85; }
 .result-box .rnote { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-top: auto; }
+
+/* ── Insight ───────────────────────────────────────────────── */
 .insight-section {
   background: var(--bg-secondary);
   border: 1px solid rgba(227,179,65,0.35);
@@ -343,7 +333,7 @@ main {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--accent);
+  color: var(--accent-orange);
   font-weight: 700;
   margin-bottom: 1rem;
 }
@@ -355,8 +345,46 @@ main {
   padding: 1rem;
 }
 .insight-card .ic-title { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.insight-card .ic-formula { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--accent); line-height: 1.9; }
+.insight-card .ic-formula { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--accent-orange); line-height: 1.9; }
 .insight-card .ic-note { font-size: 0.77rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.5; }
+
+/* ── Idea Panels ───────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi   { color: var(--accent-blue);   font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+.idea-text .hi-o { color: var(--accent-orange); font-weight: 600; }
+
 footer {
   margin-top: auto;
   padding: 1.5rem 2rem;
@@ -365,10 +393,12 @@ footer {
   color: var(--text-muted);
   border-top: 1px solid var(--border);
 }
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 @media (max-width: 750px) {
   .game-area { grid-template-columns: 1fr; }
   .insight-grid { grid-template-columns: 1fr; }
@@ -379,67 +409,99 @@ footer {
 </head>
 <body>
 
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <rect x="36" y="74" width="28" height="7"   rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="40" y="93" width="20" height="10"  rx="5"   fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
+
 <header>
   <a href="index.html" class="back-link">&#8592; All Games</a>
   <div class="header-sep"></div>
   <div class="header-meta">
     <span class="game-label">Game 4</span>
-    <h1>The Hill Road</h1>
+    <h1>The Cone Hill</h1>
   </div>
 </header>
 
 <main>
 
-  <div class="concept-strip">
-    <span class="cs-pill">t &#8712; &#8477;&nbsp;&nbsp;(1D road)</span>
-    <span class="cs-arrow">&nbsp;&#10230; &#966; &#10230;&nbsp;</span>
-    <span class="cs-pill hl">&#966;(t) = (cos t, sin t, 0.3t)</span>
-    <span class="cs-arrow">&nbsp;&#10230;&nbsp;</span>
-    <span class="cs-pill">M &#8834; &#8477;&#179;</span>
-    <span class="cs-arrow">&nbsp;&#10230; &#966;&#8315;&#185; &#10230;&nbsp;</span>
-    <span class="cs-pill">t</span>
+  <!-- Bulb 1: Context -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Houses on a Town Hill — One Road Address Per House</div>
+      <p class="idea-text">
+        Now we look at houses on a hill. The town is built on a
+        <span class="hi-o">cone-shaped hill</span> with a single winding road that spirals from the
+        wide base up to the sharp summit. Every house sits somewhere along this
+        <span class="hi">1D road M&nbsp;&#8834;&nbsp;&#8477;&#179;</span> and needs only
+        <em>one number</em> t to describe its location. The map
+        <span class="hi-o">&#966;: &#8477; &#8594; M</span> takes a road address t and places
+        the house in 3D space on the hillside. No flat map needed; a single coordinate
+        along the road is enough. Think of t as a house number, if house numbers were a continuous variable.
+      </p>
+    </div>
   </div>
 
+  <!-- Main game area -->
   <div class="game-area">
 
+    <!-- Left: 3D Cone + Road -->
     <div class="panel">
       <div class="panel-label">The Road M &#8834; &#8477;&#179; &mdash; drag to rotate &middot; scroll to zoom</div>
       <div class="canvas-wrap" id="roadWrap">
         <canvas id="roadCanvas" width="480" height="380"></canvas>
       </div>
-      <div class="canvas-hint">A 1D curve (the road) spiralling uphill through 3D space</div>
+      <div class="canvas-hint">A 1D road spiralling up a cone-shaped hill through 3D space</div>
       <div id="activeBubble" class="active-bubble"></div>
     </div>
 
+    <!-- Right: Discover φ -->
     <div class="panel">
-      <div class="quiz-header">
-        <div class="panel-label">Find the Address &mdash; recover &#966;&#8315;&#185;</div>
-        <div class="score-badge">Score: <b id="scoreNum">0</b> / <b id="totalNum">0</b></div>
-      </div>
+      <div class="panel-label">Discover &#966;</div>
 
       <div class="question-box">
-        <div class="q-sublabel">A house sits at this point on the road M:</div>
-        <div id="pointDisplay" class="point-display">&mdash;</div>
-        <div class="question-ask">What is the road address <code>t</code>&thinsp;?</div>
+        <div class="q-sublabel">&#966; maps every road address t &#8712; [0, 4&#960;] to a 3D point on the cone hill M &#8834; &#8477;&#179;</div>
+        <div class="question-ask">
+          Which formula correctly describes <code>&#966;(t)</code>?
+        </div>
       </div>
 
-      <div class="answer-grid" id="answerGrid"></div>
-      <div id="feedbackBox" class="feedback-box"></div>
+      <div class="answer-grid" id="phiAnswerGrid"></div>
+      <div id="phiFeedbackBox" class="feedback-box"></div>
 
       <div class="controls-row">
-        <button class="btn btn-hint" onclick="showHint()">Hint</button>
-        <button class="btn btn-next" onclick="nextQuestion()">Next question &rarr;</button>
+        <button id="phiHintBtn" class="btn btn-hint">Hint</button>
       </div>
-      <div id="hintArea" class="hint-area"></div>
+      <div id="phiHintArea" class="hint-area"></div>
     </div>
 
   </div>
 
+  <!-- Explorer -->
   <div class="explorer-section">
-    <div class="explorer-title">Explorer &mdash; drag along the parameter line to see the 3D position</div>
+    <div class="explorer-title">Explorer &mdash; drag along the parameter line to see the 3D position on the cone</div>
     <div class="explorer-layout">
       <div class="map-wrap">
-        <div class="map-label">Parameter space (1D)</div>
+        <div class="map-label">Parameter space (1D road)</div>
         <canvas id="paramCanvas" width="320" height="58"></canvas>
       </div>
       <div class="mapping-arrow">
@@ -447,30 +509,68 @@ footer {
         <span class="albl">&#966;(t)</span>
       </div>
       <div class="result-box">
-        <div class="rlbl">3D position on M</div>
+        <div class="rlbl">3D position on M (cone road)</div>
         <div id="explorerCoords" class="rcoords">drag the line above</div>
-        <div class="rnote">&#966;(t) = (cos t,&ensp;sin t,&ensp;0.3&middot;t)</div>
+        <div class="rnote">&#966;(t) = ( (1&minus;t/4&#960;)&middot;cos t, (1&minus;t/4&#960;)&middot;sin t, t/4&#960; )</div>
       </div>
     </div>
   </div>
 
+  <!-- Bulb 2: φ⁻¹ -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">&#966;&#8315;&#185; &mdash; Reading the Address Back from Height</div>
+      <p class="idea-text">
+        Given a 3D point <span class="hi">(X, Y, Z)</span> on the cone road, can we recover t?
+        The coordinates X and Y each combine a <span class="hi-o">shrinking radius</span>
+        with a <span class="hi-o">periodic trig function</span>. Neither climbs steadily
+        as t grows, they loop and shrink together. But the height
+        <span class="hi-g">Z&nbsp;=&nbsp;t&nbsp;/&nbsp;4&#960;</span> increases
+        <em>monotonically</em> from 0 at the base to 1 at the apex. It is a perfect,
+        unambiguous address label. So <span class="hi-o">&#966;&#8315;&#185;</span>
+        simply reads off Z and scales back:
+        <span class="hi-g">t&nbsp;=&nbsp;Z&nbsp;&times;&nbsp;4&#960;</span>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Inverse quiz -->
+  <div class="panel" id="inversePanel">
+    <div class="panel-label">Guess &#966;&#8315;&#185;</div>
+
+    <div class="question-box">
+      <div class="q-sublabel">Given a 3D point (X, Y, Z) on the road M</div>
+      <div class="question-ask">
+        Which formula correctly recovers the road address <code>t</code> from a point on the cone?
+      </div>
+    </div>
+
+    <div class="answer-grid" id="invAnswerGrid"></div>
+    <div id="invFeedbackBox" class="feedback-box"></div>
+  </div>
+
+  <!-- Insight (unlocked after φ⁻¹ quiz) -->
   <div id="insightSection" class="insight-section">
-    <div class="insight-title">Key Insight &mdash; The Inverse Map &#966;&#8315;&#185;</div>
+    <div class="insight-title">Key Insight Unlocked &mdash; The Inverse Map &#966;&#8315;&#185;</div>
     <div class="insight-grid">
       <div class="insight-card">
         <div class="ic-title">Why Z works</div>
-        <div class="ic-formula">Z = 0.3 &middot; t<br>&#10233; t = Z / 0.3</div>
-        <div class="ic-note">Height Z increases monotonically along the spiral &mdash; it uniquely encodes the address t.</div>
+        <div class="ic-formula">Z = t / 4&#960;<br>&#10233; t = Z &times; 4&#960;</div>
+        <div class="ic-note">Height Z climbs monotonically from the base (Z = 0) to the apex (Z = 1). It uniquely encodes the road address t with zero ambiguity.</div>
       </div>
       <div class="insight-card">
         <div class="ic-title">Why X and Y fail alone</div>
-        <div class="ic-formula">X = cos(t) &nbsp;periodic<br>Y = sin(t) &nbsp;periodic</div>
-        <div class="ic-note">Every full turn brings X, Y back to the same values. Many t values share the same (X, Y).</div>
+        <div class="ic-formula">X = (1&minus;t/4&#960;)&middot;cos t<br>Y = (1&minus;t/4&#960;)&middot;sin t</div>
+        <div class="ic-note">Both combine a shrinking radius with a periodic trig function. Neither is monotone in t, so a given X or Y value does not uniquely identify the address.</div>
       </div>
       <div class="insight-card">
         <div class="ic-title">The inverse formula</div>
-        <div class="ic-formula">&#966;&#8315;&#185;(X, Y, Z)<br>= Z / 0.3</div>
-        <div class="ic-note">Only one coordinate is needed. X and Y are &ldquo;redundant&rdquo; for recovering t from the spiral.</div>
+        <div class="ic-formula">&#966;&#8315;&#185;(X, Y, Z)<br>= Z &times; 4&#960;</div>
+        <div class="ic-note">Only height Z is needed. X and Y are redundant for recovering t &mdash; the monotone height alone acts as a perfect, unambiguous address label along the road.</div>
       </div>
     </div>
   </div>
@@ -481,269 +581,416 @@ footer {
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// GAME 4 — THE HILL ROAD
-// φ : ℝ → ℝ³,  φ(t) = (cos t, sin t, 0.3·t)
-// φ⁻¹(X, Y, Z) = Z / 0.3
+// GAME 4 — THE CONE HILL
+// φ: ℝ → ℝ³,  φ(t) = ((1-t/4π)·cos t,  (1-t/4π)·sin t,  t/4π)
+// φ⁻¹(X,Y,Z) = Z × 4π
 // ═══════════════════════════════════════════════════════════════
 
-const T_MIN  = 0;
-const T_MAX  = 4 * Math.PI;
-const Z_K    = 0.3;
-const Z_MAX  = Z_K * T_MAX;
-const Z_CTR  = Z_MAX / 2;
+const T_MIN = 0;
+const T_MAX = 4 * Math.PI;
 
 function phi(t) {
-  return [Math.cos(t), Math.sin(t), Z_K * t];
+  const r = 1 - t / T_MAX;
+  return [r * Math.cos(t), r * Math.sin(t), t / T_MAX];
 }
 
-// ── Road mesh ────────────────────────────────────────────────
-const N_ROAD = 400;
-const roadPts = [];
-for (let i = 0; i <= N_ROAD; i++) {
-  roadPts.push(phi(T_MIN + i * (T_MAX - T_MIN) / N_ROAD));
+// Lifted version used only for rendering (explorer dot + road mesh)
+function phiRoad(t) {
+  const [x, y, z] = phi(t);
+  const cosT = Math.cos(t), sinT = Math.sin(t);
+  const nl = Math.SQRT2;
+  return [x + ROAD_LIFT * cosT / nl,
+          y + ROAD_LIFT * sinT / nl,
+          z + ROAD_LIFT / nl];
 }
 
-// Altitude rings (one per half-turn)
-const rings = [];
-for (let k = 0; k <= 4; k++) {
-  const z0 = k * Z_K * Math.PI;
-  const pts = [];
-  for (let j = 0; j <= 64; j++) {
-    const a = j * 2 * Math.PI / 64;
-    pts.push([Math.cos(a), Math.sin(a), z0]);
+// ── Cone mesh ─────────────────────────────────────────────────
+const N_RING = 24, N_SEG = 64;
+const coneFaces = [];
+
+for (let k = 0; k < N_RING; k++) {
+  const z0 = k / N_RING;
+  const z1 = (k + 1) / N_RING;
+  const r0 = 1 - z0;
+  const r1 = 1 - z1;
+  for (let j = 0; j < N_SEG; j++) {
+    const a0 = (j / N_SEG) * 2 * Math.PI;
+    const a1 = ((j + 1) / N_SEG) * 2 * Math.PI;
+    const midA = (a0 + a1) / 2;
+    coneFaces.push({
+      v: [
+        [r0 * Math.cos(a0), r0 * Math.sin(a0), z0],
+        [r0 * Math.cos(a1), r0 * Math.sin(a1), z0],
+        [r1 * Math.cos(a1), r1 * Math.sin(a1), z1],
+        [r1 * Math.cos(a0), r1 * Math.sin(a0), z1],
+      ],
+      midZ: (z0 + z1) / 2,
+      midA,
+    });
   }
-  rings.push(pts);
 }
 
-// ── Renderer state ───────────────────────────────────────────
+// ── Road points (lifted off cone surface along outward normal) ───────────
+const N_ROAD    = 400;
+const ROAD_LIFT = 0.028;
+const roadPts   = [];
+for (let i = 0; i <= N_ROAD; i++) {
+  roadPts.push(phiRoad(T_MIN + i * (T_MAX - T_MIN) / N_ROAD));
+}
+
+// ── Renderer state ────────────────────────────────────────────
 const canvas = document.getElementById('roadCanvas');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
+const Z_CTR = 0.5;
 
-let rotX = 0.38, rotY = 0.42, zoom = 70;
+let rotX = 0.40, rotY = 0.55, zoom = 135;
 let isDragging = false, lastMX = 0, lastMY = 0;
-let quizT = null, explorerT = null;
+let explorerT = null;
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-function spiralColor(frac) {
-  const h = 280 - 255 * frac;
-  return `hsl(${h},85%,${40 + 22 * frac}%)`;
+function project(x, y, z) {
+  const dz = z - Z_CTR;
+  const x1 =  x * Math.cos(rotY) - dz * Math.sin(rotY);
+  const z1 =  x * Math.sin(rotY) + dz * Math.cos(rotY);
+  const y2 =  y * Math.cos(rotX) - z1 * Math.sin(rotX);
+  const z2 =  y * Math.sin(rotX) + z1 * Math.cos(rotX);
+  const fov = 5, d = Math.max(0.5, fov + z2);
+  return { sx: W/2 + (x1/d) * zoom * fov, sy: H/2 - (y2/d) * zoom * fov, depth: z2 };
 }
 
-function project(x, y, z) {
-  let dz = z - Z_CTR;
-  let x1 = x  * Math.cos(rotY) - dz * Math.sin(rotY);
-  let z1 = x  * Math.sin(rotY) + dz * Math.cos(rotY);
-  let y2 = y  * Math.cos(rotX) - z1 * Math.sin(rotX);
-  let z2 = y  * Math.sin(rotX) + z1 * Math.cos(rotX);
-  const fov = 5, d = Math.max(0.5, fov + z2);
-  return { sx: W/2 + (x1/d)*zoom*fov, sy: H/2 - (y2/d)*zoom*fov, depth: z2 };
+// Mountain color: dark forest at base → rocky stone → snow at apex
+function coneColor(midZ, shade) {
+  let r, g, b;
+  const t = midZ;
+  if (t < 0.32) {
+    const f = t / 0.32;
+    r = Math.round(15  + f * 52);
+    g = Math.round(55  + f * 68);
+    b = Math.round(10  + f * 25);
+  } else if (t < 0.58) {
+    const f = (t - 0.32) / 0.26;
+    r = Math.round(67  + f * 88);
+    g = Math.round(123 - f * 30);
+    b = Math.round(35  - f * 12);
+  } else if (t < 0.82) {
+    const f = (t - 0.58) / 0.24;
+    r = Math.round(155 + f * 60);
+    g = Math.round(93  + f * 82);
+    b = Math.round(23  + f * 97);
+  } else {
+    const f = (t - 0.82) / 0.18;
+    r = Math.round(215 + f * 25);
+    g = Math.round(175 + f * 48);
+    b = Math.round(120 + f * 105);
+  }
+  return `rgb(${Math.round(r*shade)},${Math.round(g*shade)},${Math.round(b*shade)})`;
+}
+
+function roadColor(frac) {
+  const h = 28 + 18 * frac;   // deep orange → warm yellow
+  const l = 46 + 20 * frac;
+  return `hsl(${h},92%,${l}%)`;
 }
 
 function drawDot(sx, sy, radius, fill, stroke) {
   ctx.beginPath();
-  ctx.arc(sx, sy, radius, 0, 2*Math.PI);
+  ctx.arc(sx, sy, radius, 0, 2 * Math.PI);
   ctx.fillStyle = fill; ctx.fill();
   ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
 }
 
 function drawScene() {
   ctx.clearRect(0, 0, W, H);
-  const segs = [];
 
-  for (const ring of rings) {
-    for (let i = 0; i < ring.length - 1; i++) {
-      const a = project(...ring[i]), b = project(...ring[i+1]);
-      segs.push({ x1:a.sx,y1:a.sy,x2:b.sx,y2:b.sy,
-        depth:(a.depth+b.depth)/2, color:'rgba(110,130,160,0.18)', lw:0.8 });
+  const items = [];
+
+  // Cone faces
+  for (const face of coneFaces) {
+    const pts = face.v.map(v => project(...v));
+    const avgDepth = pts.reduce((s, p) => s + p.depth, 0) / pts.length;
+    // Directional shading: faces pointing toward camera lit brighter
+    const angleShade = clamp(0.38 + 0.52 * Math.cos(face.midA - rotY - 0.25), 0.28, 0.92);
+    items.push({ type: 'face', pts, depth: avgDepth, midZ: face.midZ, shade: angleShade });
+  }
+
+  // Road segments — already lifted off the cone; no extra depth bias needed
+  for (let i = 0; i < N_ROAD; i++) {
+    const a = project(...roadPts[i]);
+    const b = project(...roadPts[i + 1]);
+    items.push({ type: 'seg', a, b, depth: (a.depth + b.depth) / 2, frac: i / N_ROAD });
+  }
+
+  // Sort back-to-front
+  items.sort((a, b) => a.depth - b.depth);
+
+  for (const item of items) {
+    if (item.type === 'face') {
+      const p = item.pts;
+      ctx.beginPath();
+      ctx.moveTo(p[0].sx, p[0].sy);
+      ctx.lineTo(p[1].sx, p[1].sy);
+      ctx.lineTo(p[2].sx, p[2].sy);
+      ctx.lineTo(p[3].sx, p[3].sy);
+      ctx.closePath();
+      ctx.fillStyle = coneColor(item.midZ, item.shade);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 0.3;
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(item.a.sx, item.a.sy);
+      ctx.lineTo(item.b.sx, item.b.sy);
+      ctx.strokeStyle = roadColor(item.frac);
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.stroke();
     }
   }
 
-  {
-    const bot = project(0,0,0), top = project(0,0,Z_MAX);
-    segs.push({ x1:bot.sx,y1:bot.sy,x2:top.sx,y2:top.sy,
-      depth:(bot.depth+top.depth)/2, color:'rgba(120,140,180,0.28)', lw:1.5 });
-  }
-
-  for (let i = 0; i < N_ROAD; i++) {
-    const a = project(...roadPts[i]), b = project(...roadPts[i+1]);
-    segs.push({ x1:a.sx,y1:a.sy,x2:b.sx,y2:b.sy,
-      depth:(a.depth+b.depth)/2, color:spiralColor((i+0.5)/N_ROAD), lw:2.6 });
-  }
-
-  segs.sort((a, b) => a.depth - b.depth);
-
-  for (const s of segs) {
-    ctx.beginPath(); ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2);
-    ctx.strokeStyle = s.color; ctx.lineWidth = s.lw; ctx.stroke();
-  }
-
+  // Explorer dot (blue) — placed on the lifted road, not on the bare cone
   if (explorerT !== null) {
-    const ep = project(...phi(explorerT));
-    drawDot(ep.sx, ep.sy, 6, '#58a6ff', '#fff');
-  }
-  if (quizT !== null) {
-    const qp = project(...phi(quizT));
-    drawDot(qp.sx, qp.sy, 9, '#e3b341', '#0d1117');
+    const ep = project(...phiRoad(explorerT));
+    drawDot(ep.sx, ep.sy, 7, '#58a6ff', '#ffffff');
   }
 }
 
-// ── Mouse / touch (3D view) ──────────────────────────────────
+// ── Mouse / touch (3D view) ───────────────────────────────────
 const roadWrap = document.getElementById('roadWrap');
 
-roadWrap.addEventListener('mousedown', e => { isDragging=true; lastMX=e.clientX; lastMY=e.clientY; });
+roadWrap.addEventListener('mousedown', e => { isDragging = true; lastMX = e.clientX; lastMY = e.clientY; });
 window.addEventListener('mousemove', e => {
   if (!isDragging) return;
   rotY += (e.clientX - lastMX) * 0.012;
-  rotX  = clamp(rotX + (e.clientY - lastMY) * 0.012, -Math.PI/2, Math.PI/2);
+  rotX  = clamp(rotX + (e.clientY - lastMY) * 0.012, -Math.PI / 2, Math.PI / 2);
   lastMX = e.clientX; lastMY = e.clientY;
   drawScene();
 });
 window.addEventListener('mouseup', () => { isDragging = false; });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
-  zoom = clamp(zoom * Math.exp(-e.deltaY*0.001), 20, 250);
+  zoom = clamp(zoom * Math.exp(-e.deltaY * 0.001), 50, 400);
   drawScene();
-}, {passive:false});
-
+}, { passive: false });
 roadWrap.addEventListener('touchstart', e => {
-  if (e.touches.length===1) { isDragging=true; lastMX=e.touches[0].clientX; lastMY=e.touches[0].clientY; }
+  if (e.touches.length === 1) { isDragging = true; lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY; }
 });
 window.addEventListener('touchmove', e => {
-  if (!isDragging||e.touches.length!==1) return;
+  if (!isDragging || e.touches.length !== 1) return;
   rotY += (e.touches[0].clientX - lastMX) * 0.012;
-  rotX  = clamp(rotX + (e.touches[0].clientY - lastMY) * 0.012, -Math.PI/2, Math.PI/2);
+  rotX  = clamp(rotX + (e.touches[0].clientY - lastMY) * 0.012, -Math.PI / 2, Math.PI / 2);
   lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
   drawScene();
 });
 window.addEventListener('touchend', () => { isDragging = false; });
 
-// ── Quiz ─────────────────────────────────────────────────────
-let score=0, total=0, answered=false, insightShown=false;
+// ═══════════════════════════════════════════════════════════════
+// φ DISCOVERY QUIZ  (single one-shot MCQ)
+// ═══════════════════════════════════════════════════════════════
 
-function makeChoices(t0) {
-  const [X, Y, Z] = phi(t0);
-  return [
-    { formula:'t = Z / 0.3', val: Z / Z_K,  isCorrect:true,
-      wrongFeedback:'' },
-    { formula:'t = X',       val: X,          isCorrect:false,
-      wrongFeedback:'X = cos(t) is periodic — the spiral revisits the same X each full turn, so X cannot uniquely identify t.' },
-    { formula:'t = Y',       val: Y,          isCorrect:false,
-      wrongFeedback:'Y = sin(t) is also periodic. Many positions on the spiral share the same Y value.' },
-    { formula:'t = Z',       val: Z,          isCorrect:false,
-      wrongFeedback:'Almost! Z = 0.3&middot;t, not t itself. You still need to divide by 0.3.' },
-  ].sort(() => Math.random() - 0.5);
+const PHI_OPTS_RAW = [
+  {
+    label: '&#966;(t) = ( (1&minus;t/4&#960;)&middot;cos t, &ensp;(1&minus;t/4&#960;)&middot;sin t, &ensp;t/4&#960; )',
+    isCorrect: true,
+    wrongHint: '',
+  },
+  {
+    label: '&#966;(t) = ( cos t, &ensp;sin t, &ensp;t/4&#960; )',
+    isCorrect: false,
+    wrongHint: 'This traces a <em>cylinder</em> — the radius stays at 1 throughout. The cone must narrow as t grows.',
+  },
+  {
+    label: '&#966;(t) = ( (1&minus;t/4&#960;)&middot;cos t, &ensp;(1&minus;t/4&#960;)&middot;sin t, &ensp;t )',
+    isCorrect: false,
+    wrongHint: 'Z&nbsp;=&nbsp;t would grow to 4&#960;&nbsp;&#8776;&nbsp;12.6, far off the unit cone. The hill is bounded: Z must go from 0 to 1.',
+  },
+  {
+    label: '&#966;(t) = ( cos(t/4&#960;), &ensp;sin(t/4&#960;), &ensp;1&minus;t/4&#960; )',
+    isCorrect: false,
+    wrongHint: 'This road descends (Z decreases) and completes only a quarter-turn over the full range, rather than four full spirals.',
+  },
+];
+
+const PHI_OPTS = [...PHI_OPTS_RAW];
+for (let i = PHI_OPTS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [PHI_OPTS[i], PHI_OPTS[j]] = [PHI_OPTS[j], PHI_OPTS[i]];
 }
 
-function generateQuestion() {
-  answered = false;
-  const t0 = T_MIN + 0.25 + Math.random() * (T_MAX - 0.5);
-  quizT = t0;
+const phiState = { answered: false, hintShown: false };
 
-  const [X, Y, Z] = phi(t0);
-  document.getElementById('pointDisplay').textContent =
-    `(${X.toFixed(3)},  ${Y.toFixed(3)},  ${Z.toFixed(3)})`;
-  document.getElementById('activeBubble').className = 'active-bubble show';
-  document.getElementById('activeBubble').textContent =
-    `Quiz house at: (${X.toFixed(2)}, ${Y.toFixed(2)}, ${Z.toFixed(2)})`;
-  document.getElementById('feedbackBox').className  = 'feedback-box';
-  document.getElementById('hintArea').className     = 'hint-area';
-
-  total++;
-  document.getElementById('totalNum').textContent = total;
-
-  const choices = makeChoices(t0);
-  const grid    = document.getElementById('answerGrid');
-  grid.innerHTML = '';
-  ['A','B','C','D'].forEach((lbl, i) => {
-    const ch  = choices[i];
+(function buildPhiGrid() {
+  const grid = document.getElementById('phiAnswerGrid');
+  ['A', 'B', 'C', 'D'].forEach((lbl, i) => {
     const btn = document.createElement('button');
     btn.className = 'answer-btn';
-    btn.innerHTML =
-      `<span class="lbl">Option ${lbl}</span>${ch.formula}<br>= ${ch.val.toFixed(3)}`;
-    btn.addEventListener('click', () => handleAnswer(btn, ch, choices));
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${PHI_OPTS[i].label}`;
+    btn.addEventListener('click', () => checkPhiAnswer(i));
     grid.appendChild(btn);
   });
-  drawScene();
-}
+})();
 
-function handleAnswer(btn, ch, allChoices) {
-  if (answered) return;
-  answered = true;
-  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+function checkPhiAnswer(idx) {
+  if (phiState.answered) return;
+  phiState.answered = true;
+  const isCorrect = PHI_OPTS[idx].isCorrect;
 
-  if (ch.isCorrect) {
-    btn.classList.add('correct');
-    score++;
-    document.getElementById('scoreNum').textContent = score;
-    document.getElementById('feedbackBox').className = 'feedback-box ok show';
-    document.getElementById('feedbackBox').innerHTML =
-      `&#10003; Correct! Since Z = 0.3&middot;t, we get <strong>t = Z / 0.3</strong>. ` +
-      `The height Z grows monotonically along the spiral and uniquely encodes t.`;
-    if (score >= 3 && !insightShown) {
-      insightShown = true;
-      document.getElementById('insightSection').classList.add('show');
-    }
+  document.querySelectorAll('#phiAnswerGrid .answer-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (PHI_OPTS[i].isCorrect) b.classList.add('correct');
+    else if (i === idx && !isCorrect) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('phiFeedbackBox');
+  if (isCorrect) {
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '&#10003; Correct! The road spirals up the cone: as t grows from 0 to 4&#960;, ' +
+      'the radius (1&minus;t/4&#960;) shrinks from 1 at the base to 0 at the apex, while the height ' +
+      'Z&nbsp;=&nbsp;t/4&#960; climbs steadily from 0 to 1. ' +
+      'Try the Explorer below &mdash; then scroll down to discover &#966;&#8315;&#185;.';
   } else {
-    btn.classList.add('wrong');
-    document.querySelectorAll('.answer-btn').forEach(b => {
-      if (b.innerHTML.includes('Z / 0.3')) b.classList.add('correct');
-    });
-    document.getElementById('feedbackBox').className = 'feedback-box bad show';
-    document.getElementById('feedbackBox').innerHTML =
-      `&#10007; Not quite. ${ch.wrongFeedback} The correct formula is <strong>t = Z / 0.3</strong>.`;
+    fb.className = 'feedback-box show bad';
+    fb.innerHTML = '&#10007; Not quite &mdash; the correct formula is highlighted. ' +
+      (PHI_OPTS[idx].wrongHint ? PHI_OPTS[idx].wrongHint + ' ' : '') +
+      'The key: the road <em>narrows toward the apex</em>, so the radius must shrink as t increases.';
   }
 }
 
-function nextQuestion() { generateQuestion(); }
+document.getElementById('phiHintBtn').addEventListener('click', () => {
+  const ha = document.getElementById('phiHintArea');
+  if (phiState.hintShown) {
+    ha.className = 'hint-area';
+    phiState.hintShown = false;
+    document.getElementById('phiHintBtn').textContent = 'Hint';
+  } else {
+    ha.innerHTML =
+      'Look at the 3D shape: the road is <strong>widest at the base</strong> (t&nbsp;=&nbsp;0, radius&nbsp;=&nbsp;1) ' +
+      'and <strong>narrows to a point</strong> at the summit (t&nbsp;=&nbsp;4&#960;, radius&nbsp;=&nbsp;0). ' +
+      'Which formula makes the radius shrink <em>linearly</em> with t, ' +
+      'while the height Z rises <em>proportionally</em> to t?';
+    ha.className = 'hint-area show';
+    phiState.hintShown = true;
+    document.getElementById('phiHintBtn').textContent = 'Hide Hint';
+  }
+});
 
-function showHint() {
-  document.getElementById('hintArea').className = 'hint-area show';
-  document.getElementById('hintArea').innerHTML =
-    `Focus on the <strong>Z</strong> coordinate. The road climbs uphill with Z&nbsp;=&nbsp;0.3&middot;t, ` +
-    `so the height directly reveals t. Can you compute t from Z?`;
+// ═══════════════════════════════════════════════════════════════
+// φ⁻¹ QUIZ  (single MCQ — unlocks insight on any answer)
+// ═══════════════════════════════════════════════════════════════
+
+const INV_OPTS_RAW = [
+  { label: 't = Z &times; 4&#960;',              isCorrect: true  },
+  { label: 't = arctan(Y&nbsp;/&nbsp;X)',         isCorrect: false },
+  { label: 't = 4&#960; &middot; (X&#178; + Y&#178;)', isCorrect: false },
+  { label: 't = 4&#960; &middot; Z&#178;',        isCorrect: false },
+];
+
+const INV_OPTS = [...INV_OPTS_RAW];
+for (let i = INV_OPTS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [INV_OPTS[i], INV_OPTS[j]] = [INV_OPTS[j], INV_OPTS[i]];
 }
 
-// ── Explorer (1D parameter line) ─────────────────────────────
+let invAnswered = false;
+
+(function buildInvGrid() {
+  const grid = document.getElementById('invAnswerGrid');
+  ['A', 'B', 'C', 'D'].forEach((lbl, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${INV_OPTS[i].label}`;
+    btn.addEventListener('click', () => checkInvAnswer(i));
+    grid.appendChild(btn);
+  });
+})();
+
+function checkInvAnswer(idx) {
+  if (invAnswered) return;
+  invAnswered = true;
+  const isCorrect = INV_OPTS[idx].isCorrect;
+  const label = INV_OPTS[idx].label;
+
+  document.querySelectorAll('#invAnswerGrid .answer-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (INV_OPTS[i].isCorrect) b.classList.add('correct');
+    else if (i === idx && !isCorrect) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('invFeedbackBox');
+  if (isCorrect) {
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '&#10003; Exactly! Since Z&nbsp;=&nbsp;t&nbsp;/&nbsp;4&#960; increases monotonically, ' +
+      'multiplying back by 4&#960; recovers t directly &mdash; no ambiguity, no periodic trap. ' +
+      'Height is the perfect address label on the cone.';
+  } else {
+    let why = '';
+    if (label.includes('arctan')) {
+      why = 'arctan(Y/X) only recovers the angle in (&minus;&#960;/2, &#960;/2) and repeats every half-turn &mdash; it cannot distinguish multiple loops of the spiral. ';
+    } else if (label.includes('X&#178;')) {
+      why = 'X&#178;+Y&#178; = r&#178; = (1&minus;t/4&#960;)&#178;, a quadratic &mdash; solving it for t requires a square root and loses information about which loop you are on. ';
+    } else if (label.includes('Z&#178;')) {
+      why = 'Z&#178; = (t/4&#960;)&#178; grows as t&#178;, not t &mdash; squaring distorts the address and you would need a square root to undo it. ';
+    }
+    fb.className = 'feedback-box show bad';
+    fb.innerHTML = `&#10007; Not quite. ${why}The correct formula is <strong>t&nbsp;=&nbsp;Z&nbsp;&times;&nbsp;4&#960;</strong>: ` +
+      'height Z&nbsp;=&nbsp;t/4&#960; is the only coordinate that grows <em>monotonically</em> with t.';
+  }
+
+  setTimeout(() => {
+    const sec = document.getElementById('insightSection');
+    sec.classList.add('show');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 900);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPLORER  (1D parameter line)
+// ═══════════════════════════════════════════════════════════════
+
 const pCanvas = document.getElementById('paramCanvas');
 const pCtx    = pCanvas.getContext('2d');
 const PW = 320, PH = 58, PPAD = 24;
-{ const dpr = window.devicePixelRatio || 1;
+{
+  const dpr = window.devicePixelRatio || 1;
   pCanvas.width  = PW * dpr; pCanvas.height = PH * dpr;
   pCanvas.style.width = PW + 'px'; pCanvas.style.height = PH + 'px';
-  pCtx.scale(dpr, dpr); }
+  pCtx.scale(dpr, dpr);
+}
 
 function drawParamLine(selT) {
   pCtx.clearRect(0, 0, PW, PH);
-  const usable = PW - 2*PPAD;
+  const usable = PW - 2 * PPAD;
 
-  const grad = pCtx.createLinearGradient(PPAD, 0, PW-PPAD, 0);
-  grad.addColorStop(0,   'hsl(280,85%,45%)');
-  grad.addColorStop(0.5, 'hsl(30,85%,52%)');
-  grad.addColorStop(1,   'hsl(55,85%,62%)');
+  const grad = pCtx.createLinearGradient(PPAD, 0, PW - PPAD, 0);
+  grad.addColorStop(0,   'hsl(25,92%,45%)');
+  grad.addColorStop(0.5, 'hsl(35,92%,55%)');
+  grad.addColorStop(1,   'hsl(48,92%,62%)');
   pCtx.beginPath();
-  pCtx.moveTo(PPAD, PH/2); pCtx.lineTo(PW-PPAD, PH/2);
+  pCtx.moveTo(PPAD, PH / 2); pCtx.lineTo(PW - PPAD, PH / 2);
   pCtx.strokeStyle = grad; pCtx.lineWidth = 5; pCtx.lineCap = 'round';
   pCtx.stroke();
 
-  ['0','π','2π','3π','4π'].forEach((lbl, k) => {
+  ['0', '&#960;', '2&#960;', '3&#960;', '4&#960;'].forEach((lbl, k) => {
     const t  = k * Math.PI;
-    const sx = PPAD + (t/T_MAX)*usable;
-    pCtx.beginPath(); pCtx.moveTo(sx, PH/2-5); pCtx.lineTo(sx, PH/2+5);
-    pCtx.strokeStyle='#484f58'; pCtx.lineWidth=1; pCtx.stroke();
-    pCtx.fillStyle='#6e7681'; pCtx.font='10px Courier New';
-    pCtx.textAlign='center'; pCtx.fillText(lbl, sx, PH-2);
+    const sx = PPAD + (t / T_MAX) * usable;
+    pCtx.beginPath(); pCtx.moveTo(sx, PH / 2 - 5); pCtx.lineTo(sx, PH / 2 + 5);
+    pCtx.strokeStyle = '#484f58'; pCtx.lineWidth = 1; pCtx.stroke();
+    pCtx.fillStyle = '#6e7681'; pCtx.font = '10px Courier New';
+    pCtx.textAlign = 'center';
+    const plain = ['0', 'π', '2π', '3π', '4π'][k];
+    pCtx.fillText(plain, sx, PH - 2);
   });
 
-  pCtx.fillStyle='#6e7681'; pCtx.font='italic 11px sans-serif';
-  pCtx.textAlign='left'; pCtx.fillText('t', 4, PH/2+4);
+  pCtx.fillStyle = '#6e7681'; pCtx.font = 'italic 11px sans-serif';
+  pCtx.textAlign = 'left'; pCtx.fillText('t', 4, PH / 2 + 4);
 
   if (selT !== null) {
-    const sx = PPAD + (selT/T_MAX)*usable;
-    pCtx.beginPath(); pCtx.arc(sx, PH/2, 7, 0, 2*Math.PI);
-    pCtx.fillStyle='#58a6ff'; pCtx.fill();
-    pCtx.strokeStyle='#fff'; pCtx.lineWidth=1.5; pCtx.stroke();
+    const sx = PPAD + (selT / T_MAX) * usable;
+    pCtx.beginPath(); pCtx.arc(sx, PH / 2, 7, 0, 2 * Math.PI);
+    pCtx.fillStyle = '#58a6ff'; pCtx.fill();
+    pCtx.strokeStyle = '#fff'; pCtx.lineWidth = 1.5; pCtx.stroke();
   }
 }
 
@@ -751,29 +998,33 @@ let pDragging = false;
 
 function setExplorerT(clientX) {
   const rect   = pCanvas.getBoundingClientRect();
-  const usable = PW - 2*PPAD;
+  const usable = PW - 2 * PPAD;
   explorerT = clamp((clientX - rect.left - PPAD) / usable * T_MAX, T_MIN, T_MAX);
   drawParamLine(explorerT);
   const [X, Y, Z] = phi(explorerT);
+  const r = (1 - explorerT / T_MAX).toFixed(3);
   document.getElementById('explorerCoords').innerHTML =
     `t = ${explorerT.toFixed(3)}<br>` +
-    `X = cos(t) = ${X.toFixed(3)}<br>` +
-    `Y = sin(t) = ${Y.toFixed(3)}<br>` +
-    `Z = 0.3&middot;t&ensp;= ${Z.toFixed(3)}`;
+    `r(t) = 1&minus;t/4&#960; = ${r}<br>` +
+    `X = r&middot;cos t = ${X.toFixed(3)}<br>` +
+    `Y = r&middot;sin t = ${Y.toFixed(3)}<br>` +
+    `Z = t/4&#960;&ensp;&ensp;= ${Z.toFixed(3)}`;
+  document.getElementById('activeBubble').className = 'active-bubble show';
+  document.getElementById('activeBubble').textContent =
+    `Explorer: (${X.toFixed(2)}, ${Y.toFixed(2)}, ${Z.toFixed(2)})`;
   drawScene();
 }
 
 pCanvas.addEventListener('mousedown', e => { pDragging = true; setExplorerT(e.clientX); });
 window.addEventListener('mousemove',  e => { if (pDragging) setExplorerT(e.clientX); });
 window.addEventListener('mouseup',    () => { pDragging = false; });
-pCanvas.addEventListener('touchstart', e => { e.preventDefault(); pDragging = true;  setExplorerT(e.touches[0].clientX); }, {passive:false});
-pCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (pDragging) setExplorerT(e.touches[0].clientX); }, {passive:false});
+pCanvas.addEventListener('touchstart', e => { e.preventDefault(); pDragging = true;  setExplorerT(e.touches[0].clientX); }, { passive: false });
+pCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (pDragging) setExplorerT(e.touches[0].clientX); }, { passive: false });
 pCanvas.addEventListener('touchend',   () => { pDragging = false; });
 
-// ── Init ─────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────
 drawParamLine(null);
 drawScene();
-generateQuestion();
 </script>
 </body>
 </html>

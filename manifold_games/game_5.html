@@ -6,21 +6,24 @@
 <title>Game 5 · Space Station · Manifold Games</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 :root {
   --bg-primary:    #0d1117;
   --bg-secondary:  #161b22;
   --bg-tertiary:   #21262d;
   --border:        #30363d;
-  --accent:        #bc8cff;
-  --accent-b:      #79c0ff;
-  --accent-red:    #ff7b72;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
   --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
   --text-primary:  #e6edf3;
   --text-secondary:#8b949e;
   --text-muted:    #6e7681;
   --radius:        10px;
   --radius-sm:     6px;
 }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-primary);
@@ -29,6 +32,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
@@ -51,342 +55,212 @@ header {
   transition: color 0.2s;
   white-space: nowrap;
 }
-.back-link:hover { color: var(--accent); }
+.back-link:hover { color: var(--accent-purple); }
 .header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
 .header-meta { display: flex; flex-direction: column; }
 .header-meta .game-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  font-weight: 700;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent-purple); font-weight: 700;
 }
 .header-meta h1 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, var(--accent), var(--accent-b));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.15rem; font-weight: 700;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+
 main {
-  flex: 1;
-  padding: 1.75rem 2rem;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  flex: 1; padding: 1.75rem 2rem; max-width: 1100px;
+  width: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 1.5rem;
 }
-.concept-strip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.9rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  font-family: 'Courier New', monospace;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-}
-.cs-pill {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.25rem 0.85rem;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.cs-pill.hl { border-color: var(--accent); color: var(--accent); }
-.cs-arrow { color: var(--text-muted); }
-.game-area {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-}
+
+/* ── Game area ─────────────────────────────────────────────── */
+.game-area { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+
 .panel {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 0.9rem;
 }
 .panel-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  font-weight: 700;
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700;
 }
+
+/* ── Canvas ────────────────────────────────────────────────── */
 .canvas-wrap {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  cursor: grab;
-  position: relative;
-  background: #07090f;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  overflow: hidden; cursor: grab; position: relative; background: #07090f;
 }
 .canvas-wrap:active { cursor: grabbing; }
 .canvas-wrap canvas { display: block; width: 100%; height: auto; }
 .canvas-hint { font-size: 0.68rem; color: var(--text-muted); text-align: center; }
+
 .active-bubble {
-  background: var(--bg-tertiary);
-  border: 1px solid rgba(188,140,255,0.4);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.8rem;
-  font-family: 'Courier New', monospace;
-  font-size: 0.78rem;
-  color: var(--accent);
-  display: none;
+  background: var(--bg-tertiary); border: 1px solid rgba(188,140,255,0.4);
+  border-radius: var(--radius-sm); padding: 0.5rem 0.8rem;
+  font-family: 'Courier New', monospace; font-size: 0.78rem;
+  color: var(--accent-purple); display: none;
 }
 .active-bubble.show { display: block; }
-.quiz-header { display: flex; justify-content: space-between; align-items: center; }
-.score-badge {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-.score-badge b { color: var(--accent); }
+
+/* ── Question / answer ─────────────────────────────────────── */
 .question-box {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.9rem 1rem;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.9rem 1rem;
 }
 .q-sublabel {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 0.4rem;
-}
-.point-display {
-  font-family: 'Courier New', monospace;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-  text-align: center;
-  padding: 0.3rem 0 0.15rem;
+  font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.4rem;
 }
 .question-ask {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-top: 0.35rem;
+  font-size: 0.88rem; color: var(--text-secondary);
+  margin-top: 0.65rem; text-align: left; line-height: 1.5;
 }
 .question-ask code {
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  padding: 0.05rem 0.3rem;
-  border-radius: 3px;
+  color: var(--text-primary); background: var(--bg-primary);
+  padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.82rem;
 }
-.answer-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
-}
+
+.answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
 .answer-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 0.7rem;
-  color: var(--text-primary);
-  font-family: 'Courier New', monospace;
-  font-size: 0.76rem;
-  line-height: 1.45;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.65rem 0.7rem;
+  color: var(--text-primary); font-family: 'Courier New', monospace;
+  font-size: 0.74rem; line-height: 1.4; cursor: pointer;
+  text-align: left; transition: border-color 0.15s, background 0.15s;
 }
 .answer-btn .lbl {
-  display: block;
-  font-size: 0.62rem;
-  color: var(--text-muted);
-  margin-bottom: 0.2rem;
-  font-family: -apple-system, sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  display: block; font-size: 0.62rem; color: var(--text-muted);
+  margin-bottom: 0.2rem; font-family: -apple-system, sans-serif;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
 .answer-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: rgba(188,140,255,0.07);
+  border-color: var(--accent-purple); background: rgba(188,140,255,0.07);
 }
 .answer-btn:disabled { cursor: default; }
 .answer-btn.correct { border-color: var(--accent-green); background: rgba(63,185,80,0.13); color: var(--accent-green); }
 .answer-btn.wrong   { border-color: var(--accent-red);   background: rgba(255,123,114,0.09); color: var(--accent-red); }
+
 .feedback-box {
-  border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
-  font-size: 0.83rem;
-  line-height: 1.55;
-  display: none;
+  border-radius: var(--radius-sm); padding: 0.7rem 0.9rem;
+  font-size: 0.83rem; line-height: 1.55; display: none;
 }
 .feedback-box.show { display: block; }
-.feedback-box.ok  { background: rgba(63,185,80,0.09);  border: 1px solid rgba(63,185,80,0.3);  color: var(--accent-green); }
+.feedback-box.ok  { background: rgba(63,185,80,0.09);   border: 1px solid rgba(63,185,80,0.3);   color: var(--accent-green); }
 .feedback-box.bad { background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.25); color: var(--accent-red); }
+
 .controls-row { display: flex; gap: 0.5rem; align-items: center; }
 .btn {
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.95rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
+  border: none; border-radius: var(--radius-sm);
+  padding: 0.5rem 0.95rem; font-size: 0.8rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.15s;
 }
 .btn:hover { opacity: 0.82; }
 .btn-hint { background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-secondary); }
-.btn-next { background: var(--accent); color: #0d1117; margin-left: auto; }
+
 .hint-area {
-  background: rgba(188,140,255,0.07);
-  border: 1px solid rgba(188,140,255,0.25);
-  border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
-  font-size: 0.82rem;
-  color: var(--accent);
-  line-height: 1.55;
-  display: none;
+  background: rgba(188,140,255,0.07); border: 1px solid rgba(188,140,255,0.25);
+  border-radius: var(--radius-sm); padding: 0.7rem 0.9rem;
+  font-size: 0.82rem; color: var(--accent-purple); line-height: 1.55; display: none;
 }
 .hint-area.show { display: block; }
 
-/* ── Explorer ─────────────────────────────────────────────── */
+/* ── Explorer / challenge ──────────────────────────────────── */
 .explorer-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
 }
 .explorer-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  font-weight: 700;
-  margin-bottom: 1rem;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted); font-weight: 700; margin-bottom: 1rem;
 }
-.explorer-layout {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  flex-wrap: wrap;
+.challenge-spawn-row {
+  display: flex; gap: 0.65rem; align-items: center;
+  flex-wrap: wrap; margin-bottom: 1rem;
 }
-.map-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
+.btn-spawn { background: var(--accent-purple); color: #0d1117; }
+.btn-new   { background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-secondary); display: none; }
+.btn-new.show { display: inline-block; }
+.score-badge {
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 20px; padding: 0.2rem 0.75rem; font-size: 0.75rem;
+  color: var(--text-secondary);
 }
+.score-badge b { color: var(--accent-purple); }
+
+.explorer-layout { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.map-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 .map-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 #flatCanvas {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: crosshair;
-  display: block;
-  width: 200px;
-  height: 200px;
-  background: #07090f;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: default; display: block; width: 260px; height: 260px; background: #07090f;
 }
+#flatCanvas.spawned { cursor: crosshair; }
+
 .mapping-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--text-muted);
-  font-size: 1.4rem;
-  flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.3rem; color: var(--text-muted); font-size: 1.4rem; flex-shrink: 0;
 }
-.mapping-arrow .albl {
-  font-family: 'Courier New', monospace;
-  font-size: 0.72rem;
-  color: var(--accent);
-  white-space: nowrap;
-}
+.mapping-arrow .albl { font-family: 'Courier New', monospace; font-size: 0.72rem; color: var(--accent-purple); white-space: nowrap; }
+
 .result-box {
-  flex: 1;
-  min-width: 220px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem 1.1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-height: 140px;
+  flex: 1; min-width: 220px; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem; display: flex; flex-direction: column;
+  gap: 0.5rem; min-height: 160px;
 }
 .result-box .rlbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
 .result-box .rcoords { font-family: 'Courier New', monospace; font-size: 0.88rem; color: var(--text-primary); line-height: 1.85; }
 .result-box .rnote { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-top: auto; }
 
-/* ── Insight ──────────────────────────────────────────────── */
+.challenge-score-big {
+  font-size: 2.2rem; font-weight: 700;
+  color: var(--accent-purple); font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.challenge-score-big.good  { color: var(--accent-green); }
+.challenge-score-big.bad   { color: var(--accent-red); }
+
+/* ── Insight ───────────────────────────────────────────────── */
 .insight-section {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(188,140,255,0.35);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  display: none;
+  background: var(--bg-secondary); border: 1px solid rgba(188,140,255,0.35);
+  border-radius: var(--radius); padding: 1.5rem;
+  position: relative; overflow: hidden; display: none;
 }
 .insight-section.show { display: block; animation: fadeIn 0.5s ease-out both; }
 .insight-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: radial-gradient(ellipse 70% 80% at 50% 0%, rgba(188,140,255,0.05) 0%, transparent 70%);
   pointer-events: none;
 }
-.insight-title {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
+.insight-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-purple); font-weight: 700; margin-bottom: 1rem; }
 .insight-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-.insight-card {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-}
+.insight-card { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; }
 .insight-card .ic-title { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.insight-card .ic-formula { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--accent); line-height: 1.9; }
+.insight-card .ic-formula { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--accent-purple); line-height: 1.9; }
 .insight-card .ic-note { font-size: 0.77rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.5; }
 
-/* ── Glue note ────────────────────────────────────────────── */
-.glue-note {
-  background: rgba(121,192,255,0.05);
-  border: 1px solid rgba(121,192,255,0.2);
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  font-size: 0.83rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
+/* ── Idea Panels ───────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38); border-radius: var(--radius);
+  padding: 1.1rem 1.4rem; display: flex; align-items: flex-start;
+  gap: 1.1rem; animation: fadeIn 0.35s ease-out both;
 }
-.glue-note strong { color: var(--accent-b); }
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent-orange); margin-bottom: 0.35rem; }
+.idea-title { font-size: 0.97rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; line-height: 1.4; }
+.idea-text  { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+.idea-text .hi   { color: var(--accent-blue);   font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+.idea-text .hi-p { color: var(--accent-orange); font-weight: 600; }
 
-footer {
-  margin-top: auto;
-  padding: 1.5rem 2rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+footer { margin-top: auto; padding: 1.5rem 2rem; text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
 @media (max-width: 750px) {
   .game-area { grid-template-columns: 1fr; }
   .insight-grid { grid-template-columns: 1fr; }
@@ -396,6 +270,25 @@ footer {
 </style>
 </head>
 <body>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <rect x="36" y="74" width="28" height="7"   rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="40" y="93" width="20" height="10"  rx="5"   fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
 
 <header>
   <a href="index.html" class="back-link">&#8592; All Games</a>
@@ -408,57 +301,63 @@ footer {
 
 <main>
 
-  <div class="concept-strip">
-    <span class="cs-pill">(u, v) &#8712; [0,1]&#178;&nbsp;&nbsp;(flat map)</span>
-    <span class="cs-arrow">&nbsp;&#10230; &#966; &#10230;&nbsp;</span>
-    <span class="cs-pill hl">&#966;(u,v) = torus point &#8712; &#8477;&#179;</span>
-    <span class="cs-arrow">&nbsp;&#10230;&nbsp;</span>
-    <span class="cs-pill">T &#8834; &#8477;&#179;</span>
-    <span class="cs-arrow">&nbsp;&#10230; &#966;&#8315;&#185; &#10230;&nbsp;</span>
-    <span class="cs-pill">(u, v)</span>
+  <!-- Bulb 1 -->
+  <div class="idea-panel">
+    <div class="idea-icon"><svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg></div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Houses on a Space Station — A UV Map onto a Torus</div>
+      <p class="idea-text">
+        The station is shaped like a <span class="hi-p">torus</span> (donut); a 2D surface living in &#8477;&#179;.
+        Engineers address every pod using a <span class="hi">flat UV map [0,1]&#178;</span> where
+        <em>both edges wrap around</em>: the left edge glues to the right, the top glues to the bottom.
+        The map <span class="hi-p">&#966;: [0,1]&#178; &#8594; T &#8834; &#8477;&#179;</span> wraps this flat square
+        around the torus. <span class="hi-p">u</span> drives the big rotation around the ring (big circle, radius R&nbsp;=&nbsp;2);
+        <span class="hi-p">v</span> drives the small rotation around the tube (radius r&nbsp;=&nbsp;0.7).
+        A pod near <span class="hi">(u&nbsp;=&nbsp;0.01,&nbsp;v&nbsp;=&nbsp;0.5)</span> and one at
+        <span class="hi">(u&nbsp;=&nbsp;0.99,&nbsp;v&nbsp;=&nbsp;0.5)</span> are next-door neighbours on the station, 
+        even though they look far apart on the flat map.
+      </p>
+    </div>
   </div>
 
+  <!-- Main game area -->
   <div class="game-area">
 
+    <!-- Left: 3D torus -->
     <div class="panel">
-      <div class="panel-label">The Space Station T &#8834; &#8477;&#179; &mdash; drag to rotate &middot; scroll to zoom</div>
+      <div class="panel-label">The Station T &#8834; &#8477;&#179; &mdash; drag to rotate &middot; scroll to zoom</div>
       <div class="canvas-wrap" id="torusWrap">
         <canvas id="torusCanvas" width="480" height="380"></canvas>
       </div>
-      <div class="canvas-hint">A 2D surface (the torus) embedded in 3D space &mdash; R&nbsp;=&nbsp;2, r&nbsp;=&nbsp;0.7</div>
+      <div class="canvas-hint">A 2D surface (torus) embedded in &#8477;&#179; — R&nbsp;=&nbsp;2, r&nbsp;=&nbsp;0.7</div>
       <div id="activeBubble" class="active-bubble"></div>
     </div>
 
+    <!-- Right: Discover φ -->
     <div class="panel">
-      <div class="quiz-header">
-        <div class="panel-label">Find the Pod Address &mdash; recover &#966;&#8315;&#185;</div>
-        <div class="score-badge">Score: <b id="scoreNum">0</b> / <b id="totalNum">0</b></div>
-      </div>
-
+      <div class="panel-label">Discover &#966;</div>
       <div class="question-box">
-        <div class="q-sublabel">A pod is at this 3D point on the station T:</div>
-        <div id="pointDisplay" class="point-display">&mdash;</div>
-        <div class="question-ask">What are the flat-map coordinates <code>(u, v)</code>&thinsp;?</div>
+        <div class="q-sublabel">&#966; maps every flat address (u,&nbsp;v)&nbsp;&#8712;&nbsp;[0,1]&#178; to a 3D point on the torus T&nbsp;&#8834;&nbsp;&#8477;&#179;</div>
+        <div class="question-ask">Which formula correctly describes <code>&#966;(u,&nbsp;v)</code>?</div>
       </div>
-
-      <div class="answer-grid" id="answerGrid"></div>
-      <div id="feedbackBox" class="feedback-box"></div>
-
+      <div class="answer-grid" id="phiAnswerGrid"></div>
+      <div id="phiFeedbackBox" class="feedback-box"></div>
       <div class="controls-row">
-        <button class="btn btn-hint" onclick="showHint()">Hint</button>
-        <button class="btn btn-next" onclick="nextQuestion()">Next question &rarr;</button>
+        <button id="phiHintBtn" class="btn btn-hint">Hint</button>
       </div>
-      <div id="hintArea" class="hint-area"></div>
+      <div id="phiHintArea" class="hint-area"></div>
     </div>
 
   </div>
 
+  <!-- Explorer -->
   <div class="explorer-section">
-    <div class="explorer-title">Explorer &mdash; drag on the flat map to see where the pod lives on the station</div>
+    <div class="explorer-title">Explorer &mdash; drag the flat map to see where the pod lives on the station</div>
     <div class="explorer-layout">
       <div class="map-wrap">
-        <div class="map-label">Flat map [0,1]&#178;</div>
-        <canvas id="flatCanvas" width="200" height="200"></canvas>
+        <div class="map-label">Flat map [0,1]²</div>
+        <canvas id="explorerCanvas" style="display:block;width:200px;height:200px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:crosshair;background:#07090f"></canvas>
       </div>
       <div class="mapping-arrow">
         <span>&#8594;</span>
@@ -466,35 +365,89 @@ footer {
       </div>
       <div class="result-box">
         <div class="rlbl">3D position on T</div>
-        <div id="explorerCoords" class="rcoords">drag the map above</div>
-        <div class="rnote">u = big angle (around the ring)<br>v = small angle (around the tube)</div>
+        <div id="explorerCoords" class="rcoords" style="color:var(--text-secondary)">drag the map above</div>
+        <div class="rnote">u = big angle around the ring<br>v = small angle around the tube</div>
       </div>
     </div>
   </div>
 
-  <div class="glue-note">
-    <strong>Edge-gluing insight:</strong> The flat map [0,1]&#178; has its edges &ldquo;glued together&rdquo; on the torus.
-    A pod at (u,&nbsp;v)&nbsp;=&nbsp;(0.02,&nbsp;0.5) and one at (0.98,&nbsp;0.5) are <em>neighbours</em> on the station
-    but look far apart on the flat map. Try it in the Explorer above!
+  <!-- Pod Finder -->
+  <div class="explorer-section">
+    <div class="explorer-title">Pod Finder &mdash; spawn a pod on the station, then click the flat map to locate its UV address</div>
+
+    <div class="challenge-spawn-row">
+      <button id="spawnBtn" class="btn btn-spawn">Spawn Pod</button>
+      <div class="score-badge" style="margin-left:auto">Round <b id="roundNum">0</b></div>
+      <div class="score-badge">Last score: <b id="lastScore">&mdash;</b> / 10</div>
+      <div class="score-badge">Total: <b id="totalScore">0</b> pts</div>
+      <button id="newPodBtn" class="btn btn-new">New Pod &#8594;</button>
+    </div>
+
+    <div class="explorer-layout">
+      <div class="map-wrap">
+        <div class="map-label">UV Flat Map — click to guess</div>
+        <canvas id="flatCanvas" width="260" height="260"></canvas>
+        <div class="canvas-hint" id="flatHint">Spawn a pod first</div>
+      </div>
+      <div class="mapping-arrow">
+        <span>&#8594;</span>
+        <span class="albl">&#966;(u,v)</span>
+      </div>
+      <div class="result-box">
+        <div class="rlbl">Challenge Result</div>
+        <div id="challResult" class="rcoords" style="font-size:0.82rem;color:var(--text-secondary)">Spawn a pod to begin.</div>
+        <div class="rnote">Tip: edges wrap — (0,&thinsp;v) and (1,&thinsp;v) are the same ring on the station.</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Bulb 2: φ⁻¹ -->
+  <div class="idea-panel">
+    <div class="idea-icon"><svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg></div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">&#966;&#8315;&#185; &mdash; Recovering (u,&thinsp;v) from a 3D Point on the Torus</div>
+      <p class="idea-text">
+        Given a 3D point <span class="hi">(X, Y, Z)</span> on the station, how do we find its flat address (u,&thinsp;v)?
+        The big-ring angle <span class="hi-p">u</span> is the azimuth of (X,&thinsp;Y) around the z-axis:
+        <span class="hi-p">u&nbsp;=&nbsp;atan2(Y,&thinsp;X)&nbsp;/&nbsp;(2&#960;)</span>.
+        For the tube angle <span class="hi-p">v</span>, first compute the radial offset
+        <span class="hi-g">&#961;&nbsp;=&nbsp;&#8730;(X&#178;+Y&#178;)&nbsp;&minus;&nbsp;R</span> — this is how far the point sits from the ring centre.
+        Then <span class="hi-p">v&nbsp;=&nbsp;atan2(Z,&thinsp;&#961;)&nbsp;/&nbsp;(2&#960;)</span>.
+        Both atan2 calls recover a full 360&#176; angle, giving a unique (u,&thinsp;v)&nbsp;&#8712;&nbsp;[0,1]&#178;.
+      </p>
+    </div>
+  </div>
+
+  <!-- φ⁻¹ quiz -->
+  <div class="panel" id="invPanel">
+    <div class="panel-label">Guess &#966;&#8315;&#185;</div>
+    <div class="question-box">
+      <div class="q-sublabel">Given a 3D point (X, Y, Z) on the torus T</div>
+      <div class="question-ask">Which formula correctly recovers the flat address <code>(u,&thinsp;v)</code>?</div>
+    </div>
+    <div class="answer-grid" id="invAnswerGrid"></div>
+    <div id="invFeedbackBox" class="feedback-box"></div>
+  </div>
+
+  <!-- Insight -->
   <div id="insightSection" class="insight-section">
-    <div class="insight-title">Key Insight &mdash; The Inverse Map &#966;&#8315;&#185;</div>
+    <div class="insight-title">Key Insight Unlocked &mdash; The Inverse Map &#966;&#8315;&#185;</div>
     <div class="insight-grid">
       <div class="insight-card">
         <div class="ic-title">Recovering u (big angle)</div>
-        <div class="ic-formula">&#952; = atan2(Y, X)<br>u = &#952; / (2&#960;)</div>
-        <div class="ic-note">u encodes which sector of the ring the pod is in. atan2 recovers the angle from (X, Y).</div>
+        <div class="ic-formula">u = atan2(Y,&thinsp;X) / (2&#960;)</div>
+        <div class="ic-note">u encodes which sector around the ring the pod is in. atan2 recovers the full azimuth from (X,&thinsp;Y) without ambiguity.</div>
       </div>
       <div class="insight-card">
         <div class="ic-title">Recovering v (tube angle)</div>
-        <div class="ic-formula">&#961; = &radic;(X&#178;+Y&#178;) &minus; R<br>v = atan2(Z, &#961;) / (2&#960;)</div>
-        <div class="ic-note">v encodes how far around the tube the pod is. &#961; is the signed radial offset from the ring center.</div>
+        <div class="ic-formula">&#961; = &#8730;(X&#178;+Y&#178;) &minus; R<br>v = atan2(Z,&thinsp;&#961;) / (2&#960;)</div>
+        <div class="ic-note">&#961; is the signed radial offset from the ring centre. atan2(Z,&thinsp;&#961;) gives the full tube angle across all four quadrants.</div>
       </div>
       <div class="insight-card">
         <div class="ic-title">Full inverse</div>
-        <div class="ic-formula">&#966;&#8315;&#185;(X,Y,Z) =<br>(atan2(Y,X)/(2&#960;),<br>&ensp;atan2(Z,&#961;&minus;R)/(2&#960;))</div>
-        <div class="ic-note">Both angles are mod 1 (wrap to [0,1]). Two atan2 calls recover both parameters uniquely.</div>
+        <div class="ic-formula">&#966;&#8315;&#185;(X,Y,Z) =<br>(atan2(Y,X)/(2&#960;),<br>&ensp;atan2(Z,&thinsp;&#961;&minus;R)/(2&#960;))</div>
+        <div class="ic-note">Both angles are mapped mod 1 into [0,1]. Two atan2 calls uniquely recover the flat UV address from any point on the torus.</div>
       </div>
     </div>
   </div>
@@ -506,75 +459,72 @@ footer {
 <script>
 // ═══════════════════════════════════════════════════════════════
 // GAME 5 — SPACE STATION (TORUS)
-// φ : [0,1]² → T ⊂ ℝ³
-// φ(u,v) = ((R + r·cos(2πv))·cos(2πu),
-//           (R + r·cos(2πv))·sin(2πu),
-//            r·sin(2πv))
-// φ⁻¹(X,Y,Z) = (atan2(Y,X)/(2π), atan2(Z, ρ−R)/(2π))
-//               where ρ = √(X²+Y²)
+// φ(u,v) = ((R+r·cos 2πv)·cos 2πu, (R+r·cos 2πv)·sin 2πu, r·sin 2πv)
+// φ⁻¹(X,Y,Z) = (atan2(Y,X)/(2π),  atan2(Z, ρ−R)/(2π))  ρ=√(X²+Y²)
 // ═══════════════════════════════════════════════════════════════
 
-const R_MAJ = 2.0;
-const R_MIN = 0.7;
-const TAU   = 2 * Math.PI;
+const R_MAJ = 2.0, R_MIN = 0.7, TAU = 2 * Math.PI;
 
 function phiTorus(u, v) {
-  const theta = TAU * u;
-  const alpha = TAU * v;
-  const rho   = R_MAJ + R_MIN * Math.cos(alpha);
-  return [rho * Math.cos(theta), rho * Math.sin(theta), R_MIN * Math.sin(alpha)];
+  const th = TAU * u, al = TAU * v;
+  const rh = R_MAJ + R_MIN * Math.cos(al);
+  return [rh * Math.cos(th), rh * Math.sin(th), R_MIN * Math.sin(al)];
 }
 
 function phiTorusInv(X, Y, Z) {
-  let u = Math.atan2(Y, X) / TAU;
-  if (u < 0) u += 1;
-  const rho = Math.sqrt(X*X + Y*Y) - R_MAJ;
-  let v = Math.atan2(Z, rho) / TAU;
-  if (v < 0) v += 1;
+  let u = Math.atan2(Y, X) / TAU; if (u < 0) u += 1;
+  const rh = Math.sqrt(X*X + Y*Y) - R_MAJ;
+  let v = Math.atan2(Z, rh) / TAU; if (v < 0) v += 1;
   return [u, v];
 }
 
-// ── Torus wireframe ──────────────────────────────────────────
-const N_MER = 18, N_PAR = 12, N_SEG = 60;
-const torusLines = [];
-
-for (let iu = 0; iu < N_MER; iu++) {
-  const u0  = iu / N_MER;
-  const pts = [];
-  for (let k = 0; k <= N_SEG; k++) pts.push(phiTorus(u0, k / N_SEG));
-  torusLines.push({ pts, isMeridian: true });
+function toroidalDist(u1, v1, u2, v2) {
+  const du = Math.abs(u1 - u2), dv = Math.abs(v1 - v2);
+  const wdu = Math.min(du, 1-du), wdv = Math.min(dv, 1-dv);
+  return Math.sqrt(wdu*wdu + wdv*wdv);
 }
 
+function challScore(d) {
+  return Math.round(Math.max(0, Math.min(10, 10 * (1 - d / 0.25))));
+}
+
+// ── Torus wireframe ───────────────────────────────────────────
+const N_MER = 20, N_PAR = 14, N_SEG = 64;
+const torusLines = [];
+for (let iu = 0; iu < N_MER; iu++) {
+  const u0 = iu / N_MER, pts = [];
+  for (let k = 0; k <= N_SEG; k++) pts.push(phiTorus(u0, k/N_SEG));
+  torusLines.push({ pts, isMeridian: true });
+}
 for (let iv = 0; iv < N_PAR; iv++) {
-  const v0  = iv / N_PAR;
-  const pts = [];
-  for (let k = 0; k <= N_SEG; k++) pts.push(phiTorus(k / N_SEG, v0));
+  const v0 = iv / N_PAR, pts = [];
+  for (let k = 0; k <= N_SEG; k++) pts.push(phiTorus(k/N_SEG, v0));
   torusLines.push({ pts, isMeridian: false });
 }
 
-// ── Renderer state ───────────────────────────────────────────
+// ── Renderer ──────────────────────────────────────────────────
 const canvas = document.getElementById('torusCanvas');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 let rotX = 0.45, rotY = 0.3, zoom = 62;
 let isDragging = false, lastMX = 0, lastMY = 0;
-let quizUV = null, explorerUV = null;
+let spawnUV = null, guessUV = null;
+let explorerUV = [0.5, 0.5];
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 function project(x, y, z) {
-  let x1 = x  * Math.cos(rotY) - z * Math.sin(rotY);
-  let z1 = x  * Math.sin(rotY) + z * Math.cos(rotY);
-  let y2 = y  * Math.cos(rotX) - z1 * Math.sin(rotX);
-  let z2 = y  * Math.sin(rotX) + z1 * Math.cos(rotX);
+  const x1 = x * Math.cos(rotY) - z * Math.sin(rotY);
+  const z1 = x * Math.sin(rotY) + z * Math.cos(rotY);
+  const y2 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+  const z2 = y * Math.sin(rotX) + z1 * Math.cos(rotX);
   const fov = 5, d = Math.max(0.5, fov + z2);
   return { sx: W/2 + (x1/d)*zoom*fov, sy: H/2 - (y2/d)*zoom*fov, depth: z2 };
 }
 
-function drawDot(sx, sy, radius, fill, stroke) {
-  ctx.beginPath();
-  ctx.arc(sx, sy, radius, 0, TAU);
+function drawDot(sx, sy, r, fill, stroke) {
+  ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU);
   ctx.fillStyle = fill; ctx.fill();
   ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
 }
@@ -582,250 +532,437 @@ function drawDot(sx, sy, radius, fill, stroke) {
 function drawScene() {
   ctx.clearRect(0, 0, W, H);
   const segs = [];
-
   for (const line of torusLines) {
     const col = line.isMeridian ? 'rgba(188,140,255,0.28)' : 'rgba(121,192,255,0.22)';
     const lw  = line.isMeridian ? 0.9 : 0.7;
     for (let i = 0; i < line.pts.length - 1; i++) {
       const a = project(...line.pts[i]), b = project(...line.pts[i+1]);
-      segs.push({ x1:a.sx,y1:a.sy,x2:b.sx,y2:b.sy,
-        depth:(a.depth+b.depth)/2, color:col, lw });
+      segs.push({ x1:a.sx, y1:a.sy, x2:b.sx, y2:b.sy, depth:(a.depth+b.depth)/2, col, lw });
     }
   }
-
-  segs.sort((a, b) => a.depth - b.depth);
+  segs.sort((a,b) => a.depth - b.depth);
   for (const s of segs) {
     ctx.beginPath(); ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2);
-    ctx.strokeStyle = s.color; ctx.lineWidth = s.lw; ctx.stroke();
+    ctx.strokeStyle = s.col; ctx.lineWidth = s.lw; ctx.stroke();
   }
-
-  if (explorerUV !== null) {
+  if (spawnUV !== null) {
+    const p = project(...phiTorus(...spawnUV));
+    drawDot(p.sx, p.sy, 9, '#e3b341', '#0d1117');
+  }
+  if (guessUV !== null) {
+    const p = project(...phiTorus(...guessUV));
+    drawDot(p.sx, p.sy, 7, '#58a6ff', '#ffffff');
+  }
+  // Explorer dot — only when no active pod challenge
+  if (challState === 'idle') {
     const ep = project(...phiTorus(...explorerUV));
-    drawDot(ep.sx, ep.sy, 6, '#79c0ff', '#fff');
-  }
-  if (quizUV !== null) {
-    const qp = project(...phiTorus(...quizUV));
-    drawDot(qp.sx, qp.sy, 9, '#bc8cff', '#0d1117');
+    drawDot(ep.sx, ep.sy, 7, '#58a6ff', '#ffffff');
   }
 }
 
-// ── Mouse / touch (3D view) ──────────────────────────────────
+// ── Torus mouse/touch ─────────────────────────────────────────
 const torusWrap = document.getElementById('torusWrap');
-
 torusWrap.addEventListener('mousedown', e => { isDragging=true; lastMX=e.clientX; lastMY=e.clientY; });
 window.addEventListener('mousemove', e => {
   if (!isDragging) return;
-  rotY += (e.clientX - lastMX) * 0.012;
-  rotX  = clamp(rotX + (e.clientY - lastMY) * 0.012, -Math.PI/2, Math.PI/2);
-  lastMX = e.clientX; lastMY = e.clientY;
-  drawScene();
+  rotY += (e.clientX-lastMX)*0.012;
+  rotX  = clamp(rotX+(e.clientY-lastMY)*0.012, -Math.PI/2, Math.PI/2);
+  lastMX=e.clientX; lastMY=e.clientY; drawScene();
 });
-window.addEventListener('mouseup', () => { isDragging = false; });
+window.addEventListener('mouseup', () => { isDragging=false; });
 canvas.addEventListener('wheel', e => {
-  e.preventDefault();
-  zoom = clamp(zoom * Math.exp(-e.deltaY*0.001), 20, 250);
-  drawScene();
-}, {passive:false});
-
+  e.preventDefault(); zoom=clamp(zoom*Math.exp(-e.deltaY*0.001),20,250); drawScene();
+},{passive:false});
 torusWrap.addEventListener('touchstart', e => {
-  if (e.touches.length===1) { isDragging=true; lastMX=e.touches[0].clientX; lastMY=e.touches[0].clientY; }
+  if(e.touches.length===1){isDragging=true;lastMX=e.touches[0].clientX;lastMY=e.touches[0].clientY;}
 });
 window.addEventListener('touchmove', e => {
-  if (!isDragging||e.touches.length!==1) return;
-  rotY += (e.touches[0].clientX - lastMX) * 0.012;
-  rotX  = clamp(rotX + (e.touches[0].clientY - lastMY) * 0.012, -Math.PI/2, Math.PI/2);
-  lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
-  drawScene();
+  if(!isDragging||e.touches.length!==1)return;
+  rotY+=(e.touches[0].clientX-lastMX)*0.012;
+  rotX=clamp(rotX+(e.touches[0].clientY-lastMY)*0.012,-Math.PI/2,Math.PI/2);
+  lastMX=e.touches[0].clientX;lastMY=e.touches[0].clientY;drawScene();
 });
-window.addEventListener('touchend', () => { isDragging = false; });
+window.addEventListener('touchend',()=>{isDragging=false;});
 
-// ── Quiz ─────────────────────────────────────────────────────
-let score=0, total=0, answered=false, insightShown=false;
+// ═══════════════════════════════════════════════════════════════
+// φ DISCOVERY QUIZ
+// ═══════════════════════════════════════════════════════════════
 
-function fmtUV(u, v) { return `(${u.toFixed(3)}, ${v.toFixed(3)})`; }
+const PHI_OPTS_RAW = [
+  {
+    label: '&#966;(u,v) = ( (R+r&middot;cos 2&#960;v)&middot;cos 2&#960;u,<br>&ensp;(R+r&middot;cos 2&#960;v)&middot;sin 2&#960;u,<br>&ensp;r&middot;sin 2&#960;v )',
+    isCorrect: true,
+    wrongHint: '',
+  },
+  {
+    label: '&#966;(u,v) = ( R&middot;cos 2&#960;u + r&middot;cos 2&#960;v,<br>&ensp;R&middot;sin 2&#960;u + r&middot;sin 2&#960;v,<br>&ensp;r&middot;sin 2&#960;v )',
+    isCorrect: false,
+    wrongHint: 'This just adds two independent circle terms. It does not nest the small circle <em>around</em> the big ring.',
+  },
+  {
+    label: '&#966;(u,v) = ( (R+r&middot;cos 2&#960;u)&middot;cos 2&#960;v,<br>&ensp;(R+r&middot;cos 2&#960;u)&middot;sin 2&#960;v,<br>&ensp;r&middot;sin 2&#960;u )',
+    isCorrect: false,
+    wrongHint: 'u and v are swapped here: u should drive the big ring, v should drive the tube.',
+  },
+  {
+    label: '&#966;(u,v) = ( cos 2&#960;u&middot;cos 2&#960;v,<br>&ensp;sin 2&#960;u&middot;cos 2&#960;v,<br>&ensp;sin 2&#960;u )',
+    isCorrect: false,
+    wrongHint: 'This is the sphere parameterisation, not a torus. It never adds the big-ring offset R.',
+  },
+];
 
-function makeChoices(u0, v0) {
-  const off = () => 0.22 + Math.random() * 0.18;
-  const wrap1 = x => ((x % 1) + 1) % 1;
+const PHI_OPTS = [...PHI_OPTS_RAW];
+for (let i=PHI_OPTS.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[PHI_OPTS[i],PHI_OPTS[j]]=[PHI_OPTS[j],PHI_OPTS[i]];}
 
-  const u1 = wrap1(u0 + off()), v1 = v0;
-  const u2 = u0,                v2 = wrap1(v0 + off());
-  const u3 = v0,                v3 = u0;
+const phiState = { answered: false, hintShown: false };
 
-  return [
-    { u:u0, v:v0, isCorrect:true, wrongFeedback:'' },
-    { u:u1, v:v1, isCorrect:false,
-      wrongFeedback:'The u coordinate (big angle) is off. Try u&nbsp;=&nbsp;atan2(Y,&thinsp;X)&thinsp;/&thinsp;(2&#960;) to find the sector around the ring.' },
-    { u:u2, v:v2, isCorrect:false,
-      wrongFeedback:'The v coordinate (tube angle) is off. Try v&nbsp;=&nbsp;atan2(Z,&thinsp;&#961;&minus;R)&thinsp;/&thinsp;(2&#960;) where &#961;&nbsp;=&nbsp;&radic;(X&#178;+Y&#178;).' },
-    { u:u3, v:v3, isCorrect:false,
-      wrongFeedback:'You found the right numbers but swapped u and v! Remember: u is the big-circle angle, v is the tube angle.' },
-  ].sort(() => Math.random() - 0.5);
-}
-
-function generateQuestion() {
-  answered = false;
-  const u0 = 0.04 + Math.random() * 0.92;
-  const v0 = 0.04 + Math.random() * 0.92;
-  quizUV = [u0, v0];
-
-  const [X, Y, Z] = phiTorus(u0, v0);
-  document.getElementById('pointDisplay').textContent =
-    `(${X.toFixed(3)},  ${Y.toFixed(3)},  ${Z.toFixed(3)})`;
-  document.getElementById('activeBubble').className = 'active-bubble show';
-  document.getElementById('activeBubble').textContent =
-    `Quiz pod at: (${X.toFixed(2)}, ${Y.toFixed(2)}, ${Z.toFixed(2)})`;
-  document.getElementById('feedbackBox').className = 'feedback-box';
-  document.getElementById('hintArea').className    = 'hint-area';
-
-  total++;
-  document.getElementById('totalNum').textContent = total;
-
-  const choices = makeChoices(u0, v0);
-  const grid    = document.getElementById('answerGrid');
-  grid.innerHTML = '';
-  ['A','B','C','D'].forEach((lbl, i) => {
-    const ch  = choices[i];
+(function buildPhiGrid() {
+  const grid = document.getElementById('phiAnswerGrid');
+  ['A','B','C','D'].forEach((lbl,i) => {
     const btn = document.createElement('button');
     btn.className = 'answer-btn';
-    btn.innerHTML =
-      `<span class="lbl">Option ${lbl}</span>(u, v) = ${fmtUV(ch.u, ch.v)}`;
-    btn.addEventListener('click', () => handleAnswer(btn, ch, choices));
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${PHI_OPTS[i].label}`;
+    btn.addEventListener('click', () => checkPhi(i));
     grid.appendChild(btn);
   });
-  drawScene();
-}
+})();
 
-function handleAnswer(btn, ch, allChoices) {
-  if (answered) return;
-  answered = true;
-  document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-
-  const [u0, v0] = quizUV;
-
-  if (ch.isCorrect) {
-    btn.classList.add('correct');
-    score++;
-    document.getElementById('scoreNum').textContent = score;
-    document.getElementById('feedbackBox').className = 'feedback-box ok show';
-    document.getElementById('feedbackBox').innerHTML =
-      `&#10003; Correct! ` +
-      `u&nbsp;=&nbsp;atan2(Y,X)/(2&#960;)&nbsp;=&nbsp;${u0.toFixed(3)} (big-ring angle), ` +
-      `v&nbsp;=&nbsp;atan2(Z,&#961;&minus;R)/(2&#960;)&nbsp;=&nbsp;${v0.toFixed(3)} (tube angle). ` +
-      `Two atan2 calls recover the flat-map address from any 3D point on the torus.`;
-    if (score >= 3 && !insightShown) {
-      insightShown = true;
-      document.getElementById('insightSection').classList.add('show');
-    }
+function checkPhi(idx) {
+  if (phiState.answered) return;
+  phiState.answered = true;
+  const ok = PHI_OPTS[idx].isCorrect;
+  document.querySelectorAll('#phiAnswerGrid .answer-btn').forEach((b,i) => {
+    b.disabled = true;
+    if (PHI_OPTS[i].isCorrect) b.classList.add('correct');
+    else if (i===idx && !ok) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('phiFeedbackBox');
+  if (ok) {
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '&#10003; Correct! &#966; first places a small circle of radius r around a centre at distance R from the z-axis (controlled by v&nbsp;=&nbsp;tube angle), then rotates that whole assembly around the z-axis by the big angle 2&#960;u. Try the Pod Finder below to feel the topology.';
   } else {
-    btn.classList.add('wrong');
-    document.querySelectorAll('.answer-btn').forEach(b => {
-      if (b.innerHTML.includes(fmtUV(u0, v0))) b.classList.add('correct');
-    });
-    document.getElementById('feedbackBox').className = 'feedback-box bad show';
-    document.getElementById('feedbackBox').innerHTML =
-      `&#10007; Not quite. ${ch.wrongFeedback} ` +
-      `The correct address is <strong>(u,&thinsp;v) = ${fmtUV(u0, v0)}</strong>.`;
+    fb.className = 'feedback-box show bad';
+    fb.innerHTML = `&#10007; Not quite. The correct formula is highlighted. ${PHI_OPTS[idx].wrongHint} The key: the radial distance from the z-axis is <strong>R+r&middot;cos(2&#960;v)</strong>, not just R.`;
   }
 }
 
-function nextQuestion() { generateQuestion(); }
+document.getElementById('phiHintBtn').addEventListener('click', () => {
+  const ha = document.getElementById('phiHintArea');
+  if (phiState.hintShown) {
+    ha.className='hint-area'; phiState.hintShown=false;
+    document.getElementById('phiHintBtn').textContent='Hint';
+  } else {
+    ha.innerHTML='The torus is built by rotating a small circle (radius&nbsp;r) around a large circle (radius&nbsp;R). '
+      +'<strong>v</strong> controls where on the small circle you sit: it changes the radial offset from R. '
+      +'<strong>u</strong> then rotates the whole assembly around the z-axis. '
+      +'Which formula adds r&middot;cos(2&#960;v) to the radial distance <em>before</em> multiplying by cos/sin(2&#960;u)?';
+    ha.className='hint-area show'; phiState.hintShown=true;
+    document.getElementById('phiHintBtn').textContent='Hide Hint';
+  }
+});
 
-function showHint() {
-  document.getElementById('hintArea').className = 'hint-area show';
-  document.getElementById('hintArea').innerHTML =
-    `<strong>u</strong> (big angle): look at X and Y. ` +
-    `u = atan2(Y, X) / (2&#960;) &mdash; the angle around the station ring.<br>` +
-    `<strong>v</strong> (tube angle): compute &#961; = &radic;(X&#178;+Y&#178;), then ` +
-    `v = atan2(Z, &#961;&minus;R) / (2&#960;) &mdash; the angle around the tube.`;
+// ═══════════════════════════════════════════════════════════════
+// EXPLORER
+// ═══════════════════════════════════════════════════════════════
+
+const eCanvas = document.getElementById('explorerCanvas');
+const eCtx    = eCanvas.getContext('2d');
+const EW = 200, EH = 200, EPAD = 12;
+{ const dpr = window.devicePixelRatio||1;
+  eCanvas.width=EW*dpr; eCanvas.height=EH*dpr;
+  eCanvas.style.width=EW+'px'; eCanvas.style.height=EH+'px';
+  eCtx.scale(dpr,dpr); }
+
+let explorerDragging = false;
+
+function drawExplorerMap() {
+  eCtx.clearRect(0,0,EW,EH);
+  const ew=EW-2*EPAD, eh=EH-2*EPAD;
+  eCtx.fillStyle='#07090f'; eCtx.fillRect(EPAD,EPAD,ew,eh);
+  // Grid
+  eCtx.strokeStyle='rgba(227,179,65,0.12)'; eCtx.lineWidth=0.7;
+  for(let k=1;k<4;k++){
+    const gx=EPAD+k*ew/4, gy=EPAD+k*eh/4;
+    eCtx.beginPath();eCtx.moveTo(gx,EPAD);eCtx.lineTo(gx,EPAD+eh);eCtx.stroke();
+    eCtx.beginPath();eCtx.moveTo(EPAD,gy);eCtx.lineTo(EPAD+ew,gy);eCtx.stroke();
+  }
+  eCtx.strokeStyle='rgba(227,179,65,0.35)'; eCtx.lineWidth=1;
+  eCtx.strokeRect(EPAD,EPAD,ew,eh);
+  // Labels
+  eCtx.fillStyle='#6e7681'; eCtx.font='9px Courier New'; eCtx.textAlign='center';
+  ['0','½','1'].forEach((l,k)=>{ eCtx.fillText(l, EPAD+k*ew/2, EPAD+eh+11); });
+  eCtx.textAlign='right';
+  ['0','½','1'].forEach((l,k)=>{ eCtx.fillText(l, EPAD-3, EPAD+eh-k*eh/2+3); });
+  eCtx.fillStyle='#8b949e'; eCtx.font='italic 10px sans-serif';
+  eCtx.textAlign='center'; eCtx.fillText('u', EPAD+ew/2, EH-2);
+  eCtx.textAlign='left';   eCtx.fillText('v', 2, EPAD+eh/2+4);
+  // Dot
+  const ex=EPAD+explorerUV[0]*ew, ey=EPAD+(1-explorerUV[1])*eh;
+  eCtx.beginPath(); eCtx.arc(ex,ey,6,0,TAU);
+  eCtx.fillStyle='#58a6ff'; eCtx.fill();
+  eCtx.strokeStyle='#fff'; eCtx.lineWidth=1.5; eCtx.stroke();
 }
 
-// ── Explorer (2D flat map) ────────────────────────────────────
+function updateExplorer(clientX, clientY) {
+  const rect=eCanvas.getBoundingClientRect();
+  const ew=EW-2*EPAD, eh=EH-2*EPAD;
+  explorerUV=[
+    clamp((clientX-rect.left-EPAD)/ew,0,1),
+    clamp(1-(clientY-rect.top-EPAD)/eh,0,1)
+  ];
+  const [X,Y,Z]=phiTorus(...explorerUV);
+  document.getElementById('explorerCoords').innerHTML=
+    `u = ${explorerUV[0].toFixed(3)},&ensp;v = ${explorerUV[1].toFixed(3)}<br>`+
+    `X = ${X.toFixed(3)}<br>Y = ${Y.toFixed(3)}<br>Z = ${Z.toFixed(3)}`;
+  drawExplorerMap();
+  drawScene();
+}
+
+eCanvas.addEventListener('mousedown', e=>{ explorerDragging=true; updateExplorer(e.clientX,e.clientY); });
+window.addEventListener('mousemove', e=>{ if(explorerDragging) updateExplorer(e.clientX,e.clientY); });
+window.addEventListener('mouseup', ()=>{ explorerDragging=false; });
+eCanvas.addEventListener('touchstart', e=>{ e.preventDefault(); explorerDragging=true; updateExplorer(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
+window.addEventListener('touchmove', e=>{ if(explorerDragging) updateExplorer(e.touches[0].clientX,e.touches[0].clientY); });
+window.addEventListener('touchend', ()=>{ explorerDragging=false; });
+
+// ═══════════════════════════════════════════════════════════════
+// POD FINDER CHALLENGE
+// ═══════════════════════════════════════════════════════════════
+
 const fCanvas = document.getElementById('flatCanvas');
 const fCtx    = fCanvas.getContext('2d');
-const FW = 200, FH = 200, FPAD = 16;
-{ const dpr = window.devicePixelRatio || 1;
-  fCanvas.width  = FW * dpr; fCanvas.height = FH * dpr;
-  fCanvas.style.width = FW + 'px'; fCanvas.style.height = FH + 'px';
-  fCtx.scale(dpr, dpr); }
+const FW = 260, FH = 260, FPAD = 18;
+{ const dpr = window.devicePixelRatio||1;
+  fCanvas.width=FW*dpr; fCanvas.height=FH*dpr;
+  fCanvas.style.width=FW+'px'; fCanvas.style.height=FH+'px';
+  fCtx.scale(dpr,dpr); }
 
-function drawFlatMap(selUV) {
-  fCtx.clearRect(0, 0, FW, FH);
-  const uw = FW - 2*FPAD, uh = FH - 2*FPAD;
+let challState = 'idle';   // 'idle' | 'spawned' | 'guessed'
+let challRound = 0, challTotalScore = 0;
+let hoverUV = null;
 
-  fCtx.fillStyle = '#0d1117';
-  fCtx.fillRect(FPAD, FPAD, uw, uh);
+// spawnUV and guessUV are shared with the torus renderer above
 
-  fCtx.strokeStyle = 'rgba(188,140,255,0.15)';
-  fCtx.lineWidth   = 0.8;
-  for (let k = 1; k < 4; k++) {
-    const gx = FPAD + k * uw / 4;
-    const gy = FPAD + k * uh / 4;
-    fCtx.beginPath(); fCtx.moveTo(gx, FPAD); fCtx.lineTo(gx, FPAD+uh); fCtx.stroke();
-    fCtx.beginPath(); fCtx.moveTo(FPAD, gy); fCtx.lineTo(FPAD+uw, gy); fCtx.stroke();
+function drawFlatMap(revealSpawn, hov) {
+  fCtx.clearRect(0,0,FW,FH);
+  const uw = FW-2*FPAD, uh = FH-2*FPAD;
+
+  fCtx.fillStyle='#07090f'; fCtx.fillRect(FPAD,FPAD,uw,uh);
+
+  // Grid
+  fCtx.strokeStyle='rgba(188,140,255,0.12)'; fCtx.lineWidth=0.7;
+  for(let k=1;k<4;k++){
+    const gx=FPAD+k*uw/4, gy=FPAD+k*uh/4;
+    fCtx.beginPath();fCtx.moveTo(gx,FPAD);fCtx.lineTo(gx,FPAD+uh);fCtx.stroke();
+    fCtx.beginPath();fCtx.moveTo(FPAD,gy);fCtx.lineTo(FPAD+uw,gy);fCtx.stroke();
+  }
+  fCtx.strokeStyle='rgba(188,140,255,0.3)'; fCtx.lineWidth=1;
+  fCtx.strokeRect(FPAD,FPAD,uw,uh);
+
+  // Labels
+  fCtx.fillStyle='#6e7681'; fCtx.font='10px Courier New'; fCtx.textAlign='center';
+  ['0','¼','½','¾','1'].forEach((l,k)=>{ fCtx.fillText(l, FPAD+k*uw/4, FPAD+uh+13); });
+  fCtx.textAlign='right';
+  ['0','¼','½','¾','1'].forEach((l,k)=>{ fCtx.fillText(l, FPAD-4, FPAD+uh-k*uh/4+3); });
+  fCtx.fillStyle='#8b949e'; fCtx.font='italic 11px sans-serif';
+  fCtx.textAlign='center'; fCtx.fillText('u', FPAD+uw/2, FH-2);
+  fCtx.textAlign='left';   fCtx.fillText('v', 2, FPAD+uh/2+4);
+
+  const uvToSc = (u,v) => [FPAD+u*uw, FPAD+(1-v)*uh];
+
+  // Hover ghost
+  if (hov) {
+    const [sx,sy] = uvToSc(hov[0],hov[1]);
+    fCtx.beginPath(); fCtx.arc(sx,sy,8,0,TAU);
+    fCtx.fillStyle='rgba(88,166,255,0.25)'; fCtx.fill();
+    fCtx.strokeStyle='rgba(88,166,255,0.6)'; fCtx.lineWidth=1.5; fCtx.stroke();
   }
 
-  fCtx.strokeStyle = 'rgba(188,140,255,0.35)';
-  fCtx.lineWidth   = 1;
-  fCtx.strokeRect(FPAD, FPAD, uw, uh);
+  // Guess dot (blue)
+  if (guessUV !== null) {
+    const [sx,sy] = uvToSc(guessUV[0],guessUV[1]);
+    fCtx.beginPath(); fCtx.arc(sx,sy,7,0,TAU);
+    fCtx.fillStyle='#58a6ff'; fCtx.fill();
+    fCtx.strokeStyle='#fff'; fCtx.lineWidth=1.5; fCtx.stroke();
+  }
 
-  fCtx.fillStyle = '#6e7681';
-  fCtx.font      = '10px Courier New';
-  fCtx.textAlign = 'center';
-  ['0','¼','½','¾','1'].forEach((lbl, k) => {
-    const gx = FPAD + k * uw / 4;
-    fCtx.fillText(lbl, gx, FPAD + uh + 13);
-  });
-  fCtx.textAlign = 'right';
-  ['0','¼','½','¾','1'].forEach((lbl, k) => {
-    const gy = FPAD + uh - k * uh / 4;
-    fCtx.fillText(lbl, FPAD - 4, gy + 3);
-  });
-  fCtx.fillStyle = '#8b949e';
-  fCtx.font      = 'italic 11px sans-serif';
-  fCtx.textAlign = 'center';
-  fCtx.fillText('u', FPAD + uw/2, FH - 1);
-  fCtx.textAlign = 'left';
-  fCtx.fillText('v', 2, FPAD + uh/2);
-
-  if (selUV !== null) {
-    const sx = FPAD + selUV[0] * uw;
-    const sy = FPAD + (1 - selUV[1]) * uh;
-    fCtx.beginPath(); fCtx.arc(sx, sy, 6, 0, TAU);
-    fCtx.fillStyle   = '#79c0ff'; fCtx.fill();
-    fCtx.strokeStyle = '#fff'; fCtx.lineWidth = 1.5; fCtx.stroke();
+  // Actual pod (orange) — only revealed after guessing
+  if (revealSpawn && spawnUV !== null) {
+    const [sx,sy] = uvToSc(spawnUV[0],spawnUV[1]);
+    // Line from guess to actual
+    if (guessUV !== null) {
+      const [gx,gy] = uvToSc(guessUV[0],guessUV[1]);
+      fCtx.beginPath(); fCtx.moveTo(gx,gy); fCtx.lineTo(sx,sy);
+      fCtx.strokeStyle='rgba(227,179,65,0.4)'; fCtx.lineWidth=1.5;
+      fCtx.setLineDash([4,3]); fCtx.stroke(); fCtx.setLineDash([]);
+    }
+    fCtx.beginPath(); fCtx.arc(sx,sy,8,0,TAU);
+    fCtx.fillStyle='#e3b341'; fCtx.fill();
+    fCtx.strokeStyle='#fff'; fCtx.lineWidth=1.5; fCtx.stroke();
   }
 }
 
-let fDragging = false;
+function spawnPod() {
+  spawnUV = [0.04 + Math.random()*0.92, 0.04 + Math.random()*0.92];
+  guessUV = null;
+  challState = 'spawned';
+  hoverUV = null;
 
-function setExplorerUV(clientX, clientY) {
-  const rect = fCanvas.getBoundingClientRect();
-  const uw   = FW - 2*FPAD, uh = FH - 2*FPAD;
-  const u    = clamp((clientX - rect.left  - FPAD) / uw, 0, 1);
-  const v    = clamp(1 - (clientY - rect.top - FPAD) / uh, 0, 1);
-  explorerUV = [u, v];
-  drawFlatMap(explorerUV);
-  const [X, Y, Z] = phiTorus(u, v);
-  document.getElementById('explorerCoords').innerHTML =
-    `u = ${u.toFixed(3)}, v = ${v.toFixed(3)}<br>` +
-    `X = ${X.toFixed(3)}<br>` +
-    `Y = ${Y.toFixed(3)}<br>` +
-    `Z = ${Z.toFixed(3)}`;
+  fCanvas.classList.add('spawned');
+  document.getElementById('spawnBtn').disabled = true;
+  document.getElementById('newPodBtn').classList.remove('show');
+  document.getElementById('flatHint').textContent = 'Click the map to guess the pod\'s UV address';
+
+  const [X,Y,Z] = phiTorus(...spawnUV);
+  document.getElementById('activeBubble').className = 'active-bubble show';
+  document.getElementById('activeBubble').textContent =
+    `Pod at 3D: (${X.toFixed(2)}, ${Y.toFixed(2)}, ${Z.toFixed(2)})`;
+
+  document.getElementById('challResult').style.color = 'var(--text-secondary)';
+  document.getElementById('challResult').innerHTML =
+    'A pod has been placed on the station.<br>Study its position in the 3D view,<br>then click the flat map to guess its (u, v) address.';
+
+  drawFlatMap(false, null);
   drawScene();
 }
 
-fCanvas.addEventListener('mousedown', e => { fDragging = true; setExplorerUV(e.clientX, e.clientY); });
-window.addEventListener('mousemove',  e => { if (fDragging) setExplorerUV(e.clientX, e.clientY); });
-window.addEventListener('mouseup',    () => { fDragging = false; });
-fCanvas.addEventListener('touchstart', e => { e.preventDefault(); fDragging = true;  setExplorerUV(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
-fCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (fDragging) setExplorerUV(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
-fCanvas.addEventListener('touchend',   () => { fDragging = false; });
+function onFlatClick(clientX, clientY) {
+  if (challState !== 'spawned') return;
+  const rect = fCanvas.getBoundingClientRect();
+  const uw = FW-2*FPAD, uh = FH-2*FPAD;
+  const u = clamp((clientX-rect.left-FPAD)/uw, 0, 1);
+  const v = clamp(1-(clientY-rect.top-FPAD)/uh, 0, 1);
+  guessUV = [u, v];
+  challState = 'guessed';
+  challRound++;
+  hoverUV = null;
 
-// ── Init ─────────────────────────────────────────────────────
-drawFlatMap(null);
+  const d = toroidalDist(spawnUV[0], spawnUV[1], u, v);
+  const s = challScore(d);
+  challTotalScore += s;
+
+  fCanvas.classList.remove('spawned');
+  document.getElementById('spawnBtn').disabled = false;
+  document.getElementById('roundNum').textContent = challRound;
+  document.getElementById('lastScore').textContent = s;
+  document.getElementById('totalScore').textContent = challTotalScore;
+  document.getElementById('newPodBtn').classList.add('show');
+  document.getElementById('flatHint').textContent = 'Orange = actual · Blue = your guess';
+
+  // Wrap tip if pod was near edge
+  const [us, vs] = spawnUV;
+  const nearEdge = us < 0.1 || us > 0.9 || vs < 0.1 || vs > 0.9;
+  let wrapNote = nearEdge ? '<br><em>This pod was near an edge — the map wraps, so the opposite side was close too!</em>' : '';
+
+  const clr = s >= 8 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)';
+  document.getElementById('challResult').style.color = clr;
+  document.getElementById('challResult').innerHTML =
+    `<span class="challenge-score-big" style="color:${clr}">${s}</span><span style="color:var(--text-muted)"> / 10</span><br>` +
+    `<span style="font-size:0.78rem;color:var(--text-secondary)">` +
+    `Actual:&nbsp;&nbsp;(u=${spawnUV[0].toFixed(3)},&ensp;v=${spawnUV[1].toFixed(3)})<br>` +
+    `Your guess: (u=${u.toFixed(3)},&ensp;v=${v.toFixed(3)})<br>` +
+    `Toroidal dist: ${d.toFixed(3)}` +
+    `${wrapNote}</span>`;
+
+  drawFlatMap(true, null);
+  drawScene();
+}
+
+document.getElementById('spawnBtn').addEventListener('click', spawnPod);
+document.getElementById('newPodBtn').addEventListener('click', spawnPod);
+
+fCanvas.addEventListener('click', e => onFlatClick(e.clientX, e.clientY));
+fCanvas.addEventListener('touchstart', e => { e.preventDefault(); onFlatClick(e.touches[0].clientX, e.touches[0].clientY); },{passive:false});
+
+fCanvas.addEventListener('mousemove', e => {
+  if (challState !== 'spawned') return;
+  const rect = fCanvas.getBoundingClientRect();
+  const uw = FW-2*FPAD, uh = FH-2*FPAD;
+  hoverUV = [
+    clamp((e.clientX-rect.left-FPAD)/uw,0,1),
+    clamp(1-(e.clientY-rect.top-FPAD)/uh,0,1)
+  ];
+  drawFlatMap(false, hoverUV);
+});
+fCanvas.addEventListener('mouseleave', () => {
+  hoverUV=null;
+  if(challState==='spawned') drawFlatMap(false,null);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// φ⁻¹ QUIZ
+// ═══════════════════════════════════════════════════════════════
+
+const INV_OPTS_RAW = [
+  {
+    label: '( atan2(Y,X)/(2&#960;),&nbsp;&nbsp;atan2(Z,&nbsp;&#8730;(X&#178;+Y&#178;)&minus;R)/(2&#960;) )',
+    isCorrect: true,
+  },
+  {
+    label: '( atan2(X,Y)/(2&#960;),&nbsp;&nbsp;atan2(Z,&nbsp;&#8730;(X&#178;+Y&#178;)&minus;R)/(2&#960;) )',
+    isCorrect: false,
+    why: 'atan2(X,&thinsp;Y) swaps the arguments — this gives the angle from the Y-axis, not the X-axis, producing the wrong u.',
+  },
+  {
+    label: '( atan2(Y,X)/(2&#960;),&nbsp;&nbsp;arcsin(Z/r)/(2&#960;) )',
+    isCorrect: false,
+    why: 'arcsin only spans [&minus;&#960;/2,&thinsp;&#960;/2] — it loses the lower half of the tube (v&nbsp;&#8712;&nbsp;(0.5,&thinsp;1)) entirely.',
+  },
+  {
+    label: '( arccos(X/R)/(2&#960;),&nbsp;&nbsp;arccos(Z/r)/(2&#960;) )',
+    isCorrect: false,
+    why: 'arccos spans [0,&thinsp;&#960;] only, losing half the circle for both angles. Neither X/R nor Z/r alone has magnitude &#8804; 1 in general.',
+  },
+];
+
+const INV_OPTS = [...INV_OPTS_RAW];
+for(let i=INV_OPTS.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[INV_OPTS[i],INV_OPTS[j]]=[INV_OPTS[j],INV_OPTS[i]];}
+
+let invAnswered = false;
+
+(function buildInvGrid(){
+  const grid = document.getElementById('invAnswerGrid');
+  ['A','B','C','D'].forEach((lbl,i)=>{
+    const btn = document.createElement('button');
+    btn.className='answer-btn';
+    btn.innerHTML=`<span class="lbl">${lbl}</span>${INV_OPTS[i].label}`;
+    btn.addEventListener('click',()=>checkInv(i));
+    grid.appendChild(btn);
+  });
+})();
+
+function checkInv(idx){
+  if(invAnswered)return;
+  invAnswered=true;
+  const ok=INV_OPTS[idx].isCorrect;
+  document.querySelectorAll('#invAnswerGrid .answer-btn').forEach((b,i)=>{
+    b.disabled=true;
+    if(INV_OPTS[i].isCorrect)b.classList.add('correct');
+    else if(i===idx&&!ok)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('invFeedbackBox');
+  if(ok){
+    fb.className='feedback-box show ok';
+    fb.innerHTML='&#10003; Correct! atan2(Y,&thinsp;X) reads the azimuth around the z-axis for u. '
+      +'For v, &#961;&nbsp;&minus;&nbsp;R is the radial offset into the tube, and atan2(Z,&thinsp;&#961;&minus;R) gives the full tube angle. '
+      +'Both calls span the complete 360&#176; without ambiguity.';
+  } else {
+    fb.className='feedback-box show bad';
+    fb.innerHTML=`&#10007; Not quite. ${INV_OPTS[idx].why||''} `
+      +'The correct formula uses <strong>atan2(Y,X)</strong> for u and <strong>atan2(Z,&thinsp;&#961;&minus;R)</strong> for v, '
+      +'where &#961;&nbsp;=&nbsp;&#8730;(X&#178;+Y&#178;).';
+  }
+  setTimeout(()=>{
+    const sec=document.getElementById('insightSection');
+    sec.classList.add('show');
+    sec.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },900);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+drawExplorerMap();
+drawFlatMap(false, null);
 drawScene();
-generateQuestion();
 </script>
 </body>
 </html>

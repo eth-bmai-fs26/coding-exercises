@@ -267,7 +267,7 @@ main {
   gap: 0.45rem;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-  min-width: 155px;
+  min-width: 120px;
 }
 .sample-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
 .sample-card.active {
@@ -276,11 +276,15 @@ main {
 }
 .sample-label { font-size: 0.78rem; font-weight: 700; font-family: 'Courier New', monospace; }
 .sample-z { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-muted); }
-.mini-ft { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 0.6rem; margin-top: 0.2rem; }
-.mini-ft td { padding: 0.05rem 0.15rem; color: var(--text-secondary); }
-.mini-ft td:first-child { color: var(--text-muted); width: 46px; }
-.mini-ft td:last-child { color: var(--text-primary); text-align: right; }
-.mini-ft tr.ft-group-hdr td { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); padding-top: 0.25rem; }
+
+/* ── Panel A comparison table ───────────────────────────────── */
+.sample-cmp-wrap { margin-top: 1.25rem; overflow-x: auto; }
+.sample-cmp-tbl { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 0.72rem; }
+.sample-cmp-tbl thead th { padding: 0.35rem 0.6rem; text-align: center; border-bottom: 2px solid var(--border); font-weight: 700; }
+.sample-cmp-tbl thead th:first-child { text-align: left; color: var(--text-muted); min-width: 110px; }
+.sample-cmp-tbl td { padding: 0.18rem 0.6rem; text-align: right; border-bottom: 1px solid rgba(48,54,61,0.4); color: var(--text-primary); }
+.sample-cmp-tbl td:first-child { text-align: left; color: var(--text-muted); }
+.sample-cmp-tbl tr.grp-hdr td { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); background: var(--bg-tertiary); padding-top: 0.5rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
 
 /* ── Panel B ────────────────────────────────────────────────── */
 .b-below { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; margin-top: 1rem; }
@@ -307,7 +311,6 @@ main {
 .slider-name { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-muted); width: 46px; flex-shrink: 0; }
 .slider-row input[type="range"] { flex: 1; height: 4px; -webkit-appearance: none; appearance: none; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
 .slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent-green); border: 2px solid var(--bg-primary); cursor: grab; }
-.slider-val { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-primary); width: 40px; text-align: right; flex-shrink: 0; }
 .c-right { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; min-width: 240px; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
@@ -379,7 +382,7 @@ footer {
       <div class="idea-label">Key Idea</div>
       <div class="idea-title">20D Feature Space, 2D Manifold</div>
       <p class="idea-text">
-        Each house is described by <span class="hi-o">20 features</span> — dimensions and colors
+        Each house is described by <span class="hi-o">20 features</span>, representing dimensions and colors
         of its block, window, door, and roof. Despite living in ℝ²⁰, all valid houses lie on a
         <span class="hi">2D surface M</span>: a single pair
         <span class="hi">(z₁, z₂)</span> determines everything.
@@ -394,6 +397,7 @@ footer {
       <p>Five pre-generated latent points spanning the space. Click any card to jump to that point in the latent explorer below.</p>
     </div>
     <div class="sample-row" id="sample-row"></div>
+    <div class="sample-cmp-wrap" id="sample-feat-table"></div>
   </div>
 
   <!-- Idea Panel 2 -->
@@ -406,7 +410,7 @@ footer {
       <div class="idea-title">φ = Encoder &nbsp;·&nbsp; φ⁻¹ = Decoder</div>
       <p class="idea-text">
         The <span class="hi-g">decoder φ⁻¹: ℝ² → ℝ²⁰</span> generates all 20 features from latent coordinates.
-        The <span class="hi">encoder φ: ℝ²⁰ → ℝ²</span> compresses any feature vector back to the manifold —
+        The <span class="hi">encoder φ: ℝ²⁰ → ℝ²</span> compresses any feature vector back to the manifold, 
         finding <span class="hi">z* = argmin<sub>z</sub> ‖φ⁻¹(z) − f‖²</span> via the pseudoinverse.
       </p>
     </div>
@@ -416,7 +420,7 @@ footer {
   <div class="panel" id="panel-b">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel B</span> Explore: Drag in Latent Space</h2>
-      <p>Drag the white dot in the scatter plot. The decoder φ⁻¹ instantly updates all 20 house features — and redraws the house.</p>
+      <p>Drag the white dot in the scatter plot. The decoder φ⁻¹ instantly updates all 20 house features and redraws the house.</p>
     </div>
     <div class="dual-view">
       <div class="view-box">
@@ -466,7 +470,6 @@ footer {
           φ(f) = (AᵀA)⁻¹Aᵀ(f − b)<br>
           Reconstruction error ‖f − φ⁻¹(z*)‖ = <span id="recon-err" style="color:var(--accent-orange);">0.00</span>
         </div>
-        <div id="ft-c-container" class="feature-table" style="width:100%; margin-top:0.5rem;"></div>
       </div>
     </div>
   </div>
@@ -700,21 +703,6 @@ function drawLatentScatter(canvas, currentZ, highlightIdx, starZ){
 }
 
 // ── Feature table builders ─────────────────────────────────────
-function buildMiniFeatureTable(f){
-  const groups=['Block','Window','Door','Roof'];
-  let html='<table class="mini-ft">';
-  let i=0;
-  for(const g of groups){
-    html+=`<tr class="ft-group-hdr"><td colspan="3">${g}</td></tr>`;
-    for(let k=0;k<5;k++,i++){
-      const v=fmtFeat(f[i],i);
-      html+=`<tr><td>${FEAT_META[i].label}</td><td></td><td>${v}</td></tr>`;
-    }
-  }
-  html+='</table>';
-  return html;
-}
-
 function buildFullFeatureTable(containerId, prefix){
   const el=document.getElementById(containerId);
   el.innerHTML='';
@@ -752,6 +740,33 @@ const state = {
 };
 
 // ── Panel A ────────────────────────────────────────────────────
+function buildSampleComparisonTable(){
+  const container=document.getElementById('sample-feat-table');
+  const featData=SAMPLES.map(s=>decode(s.z[0],s.z[1]));
+  const groups=['Block','Window','Door','Roof'];
+  const GROUP_LABEL_PREFIX={Block:'blk',Window:'win',Door:'dor',Roof:'rof'};
+
+  let html='<table class="sample-cmp-tbl"><thead><tr><th>Feature</th>';
+  SAMPLES.forEach(s=>{
+    html+=`<th style="color:${s.color}">${s.label}</th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  let i=0;
+  for(const g of groups){
+    html+=`<tr class="grp-hdr"><td colspan="${SAMPLES.length+1}">${g}</td></tr>`;
+    for(let k=0;k<5;k++,i++){
+      const prefix=GROUP_LABEL_PREFIX[g];
+      html+=`<tr><td>${prefix} · ${FEAT_META[i].label}</td>`;
+      featData.forEach(f=>{ html+=`<td>${fmtFeat(f[i],i)}</td>`; });
+      html+='</tr>';
+    }
+  }
+
+  html+='</tbody></table>';
+  container.innerHTML=html;
+}
+
 function initPanelA(){
   const row=document.getElementById('sample-row');
   SAMPLES.forEach((s,idx)=>{
@@ -762,15 +777,14 @@ function initPanelA(){
 
     const canvas=document.createElement('canvas');
     canvas.className='sample-canvas';
-    canvas.setAttribute('width','155'); canvas.setAttribute('height','155');
+    canvas.setAttribute('width','120'); canvas.setAttribute('height','120');
     setupHiDPI(canvas);
-    drawHouseFromFeatures(getCtx(canvas),f,155,155);
+    drawHouseFromFeatures(getCtx(canvas),f,120,120);
 
     card.appendChild(canvas);
     card.insertAdjacentHTML('beforeend',
       `<div class="sample-label" style="color:${s.color}">${s.label}</div>` +
-      `<div class="sample-z">z=(${s.z[0].toFixed(1)}, ${s.z[1].toFixed(1)})</div>` +
-      buildMiniFeatureTable(f)
+      `<div class="sample-z">z=(${s.z[0].toFixed(1)}, ${s.z[1].toFixed(1)})</div>`
     );
 
     card.addEventListener('click',()=>{
@@ -783,6 +797,8 @@ function initPanelA(){
 
     row.appendChild(card);
   });
+
+  buildSampleComparisonTable();
 }
 
 // ── Panel B ────────────────────────────────────────────────────
@@ -850,12 +866,11 @@ function buildSliders(){
       const row=document.createElement('div'); row.className='slider-row';
       row.innerHTML=`
         <span class="slider-name">${FEAT_META[i].label}</span>
-        <input type="range" id="sl-${i}" min="${min.toFixed(3)}" max="${max.toFixed(3)}" step="${step}" value="${B_VEC[i]}">
-        <span class="slider-val" id="sv-${i}">${fmtFeat(B_VEC[i],i)}</span>`;
+        <input type="range" id="sl-${i}" min="${min.toFixed(3)}" max="${max.toFixed(3)}" step="${step}" value="${B_VEC[i]}">`;
       const inp=row.querySelector('input');
+      const idx=i; // capture index for closure
       inp.addEventListener('input',()=>{
-        state.cF[i]=parseFloat(inp.value);
-        document.getElementById(`sv-${i}`).textContent=fmtFeat(state.cF[i],i);
+        state.cF[idx]=parseFloat(inp.value);
         renderPanelC();
       });
       grpDiv.appendChild(row);
@@ -867,7 +882,6 @@ function buildSliders(){
 function initPanelC(){
   setupHiDPI(document.getElementById('house-c'));
   setupHiDPI(document.getElementById('scatter-c'));
-  buildFullFeatureTable('ft-c-container','c');
   state.cF=decode(0,0).slice();
   buildSliders();
 }
@@ -885,9 +899,6 @@ function renderPanelC(){
 
   // Scatter with star
   drawLatentScatter(document.getElementById('scatter-c'), null, -1, state.cZ);
-
-  // Feature table
-  updateFeatureTable('c',state.cF);
 
   // Reconstruction error
   const fStar=decode(state.cZ[0],state.cZ[1]);
