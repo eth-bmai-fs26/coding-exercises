@@ -346,9 +346,72 @@ main {
   .dual-view { gap: 0.75rem; }
   .map-arrows { flex-direction: row; min-width: auto; }
 }
+
+/* ── Idea Panels ────────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi { color: var(--accent-blue); font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green); font-weight: 600; }
+.idea-text .hi-o { color: var(--accent-orange); font-weight: 600; }
 </style>
 </head>
 <body>
+
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <!-- Rays -->
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <!-- Bulb body -->
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <!-- Neck fill (connect bulb to base) -->
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <!-- Shine highlight -->
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <!-- Base ridges -->
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <!-- Bottom nub -->
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
 
 <header>
   <a class="back-link" href="index.html">← All Games</a>
@@ -361,10 +424,28 @@ main {
 
 <main>
 
+  <!-- Idea Panel 1 — Setup -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Two Numbers Describe Every House</div>
+      <p class="idea-text">
+        All house images share the same anchor: the bottom-left corner is fixed.
+        A map <span class="hi">φ: ℝ² → ℋ</span> sends just two real numbers,
+        <span class="hi">(h, w)</span>, to a complete house image.
+        Despite the image living in ~12 M-dimensional pixel space,
+        its intrinsic "shape complexity" is only <span class="hi-o">2</span>.
+      </p>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel A</span> The Forward &amp; Inverse Map</h2>
-      <p>Drag the blue dot in parameter space ℝ² — or click anywhere on the grid — to explore the manifold. The house updates live via φ. Measuring the house dimensions recovers your parameters via φ⁻¹.</p>
+      <p>Drag the blue dot in parameter space ℝ² or click anywhere on the grid to explore the manifold. The house updates live via φ. Measuring the house dimensions recovers your parameters via φ⁻¹.</p>
     </div>
     <div class="dual-view">
       <div class="view-box">
@@ -409,10 +490,27 @@ main {
     </div>
   </div>
 
+  <!-- Idea Panel 2 — Homeomorphism -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">φ is a Homeomorphism</div>
+      <p class="idea-text">
+        φ is <span class="hi">invertible</span>: φ⁻¹ exists and recovers (h, w) from any house image.
+        Both φ and φ⁻¹ are <span class="hi-g">smooth</span>:
+        a small change in <span class="hi">(h, w)</span> produces a small change in the image,
+        and a small perturbation of the image corresponds to a small shift in parameters.
+      </p>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel C</span> Smoothness of φ</h2>
-      <p>A continuous path in ℝ² maps to a continuous path through house space. Small parameter changes yield small image changes — the defining property of a homeomorphism.</p>
+      <p>A continuous path in ℝ² maps to a continuous path through house space. Small parameter changes yield small image changes, the defining property of a homeomorphism.</p>
     </div>
     <div class="smoothness-layout">
       <div class="smoothness-controls">
@@ -456,7 +554,7 @@ main {
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel D</span> The Inverse Map φ⁻¹</h2>
-      <p>Given a house image, measure its dimensions to recover the original parameters. φ⁻¹ maps back from pixel space to ℝ². Drag the dot in Panel A — measurements update here automatically.</p>
+      <p>Given a house image, measure its dimensions to recover the original parameters. φ⁻¹ maps back from pixel space to ℝ². Drag the dot in Panel A, measurements update here automatically.</p>
     </div>
     <div class="inverse-layout">
       <canvas id="inverse-canvas" width="380" height="380"></canvas>
@@ -488,6 +586,23 @@ main {
           <div style="color:var(--accent-purple); margin-top:0.25rem;">w = measure(house.width)</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Idea Panel 3 — Takeaway -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Takeaway</div>
+      <div class="idea-title">Generate Houses by Sampling ℝ²</div>
+      <p class="idea-text">
+        Because φ is smooth and invertible, producing a new house is trivial:
+        <span class="hi-o">sample (h, w) ∈ ℝ² at random</span> and apply φ.
+        Every point in parameter space maps to a valid, realistic house.
+        This is the core idea behind latent-space generative models.
+      </p>
     </div>
   </div>
 

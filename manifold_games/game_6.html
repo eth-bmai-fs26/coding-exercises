@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game 6 · Autoencoder · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-green); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-green);
+  font-weight: 700;
+}
+.header-meta h1 {
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.panel:nth-child(1) { animation-delay: 0.00s; }
+.panel:nth-child(2) { animation-delay: 0.07s; }
+.panel:nth-child(3) { animation-delay: 0.14s; }
+.panel:nth-child(4) { animation-delay: 0.21s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { margin-bottom: 1.25rem; }
+.panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.panel-header p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+.panel-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--accent-green);
+  border: 1px solid rgba(63, 185, 80, 0.28);
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.dual-view {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.view-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.view-box svg,
+.view-box canvas {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: block;
+}
+
+.view-label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+.view-label .dim-note {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.map-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  min-width: 72px;
+}
+
+.phi-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.phi-inv-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+
+.coord-display { margin-top: 1rem; display: flex; justify-content: center; }
+.coord-pill {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.4rem 1.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--accent-orange);
+  letter-spacing: 0.02em;
+}
+
+.formula-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.9;
+}
+
+/* ── Idea Panels ────────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi  { color: var(--accent-blue);   font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green); font-weight: 600; }
+.idea-text .hi-o { color: var(--accent-orange); font-weight: 600; }
+
+/* ── Panel A ────────────────────────────────────────────────── */
+.sample-row { display:flex; gap:0.9rem; flex-wrap:wrap; justify-content:center; }
+.sample-card {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  min-width: 155px;
+}
+.sample-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.sample-card.active {
+  box-shadow: 0 0 0 2px var(--sample-color, #58a6ff);
+  border-color: var(--sample-color, #58a6ff);
+}
+.sample-label { font-size: 0.78rem; font-weight: 700; font-family: 'Courier New', monospace; }
+.sample-z { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-muted); }
+.mini-ft { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 0.6rem; margin-top: 0.2rem; }
+.mini-ft td { padding: 0.05rem 0.15rem; color: var(--text-secondary); }
+.mini-ft td:first-child { color: var(--text-muted); width: 46px; }
+.mini-ft td:last-child { color: var(--text-primary); text-align: right; }
+.mini-ft tr.ft-group-hdr td { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); padding-top: 0.25rem; }
+
+/* ── Panel B ────────────────────────────────────────────────── */
+.b-below { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; margin-top: 1rem; }
+.feature-table { flex: 1; min-width: 200px; }
+.ft-group { margin-bottom: 0.55rem; }
+.ft-group-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.18rem; padding-bottom: 0.12rem; border-bottom: 1px solid var(--border); }
+.ft-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.1rem 0; }
+.ft-name { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-muted); width: 50px; flex-shrink: 0; }
+.ft-val { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-primary); width: 42px; flex-shrink: 0; text-align: right; }
+.ft-bar { flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden; }
+.ft-fill { height: 100%; border-radius: 2px; transition: width 0.07s linear; }
+.ft-fill.r   { background: #ff7b72; }
+.ft-fill.g   { background: var(--accent-green); }
+.ft-fill.b   { background: var(--accent-blue); }
+.ft-fill.geo { background: var(--accent-orange); }
+
+/* ── Panel C ────────────────────────────────────────────────── */
+.c-layout { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.slider-col { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 0.55rem; }
+.slider-group { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; }
+.slider-group-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+.group-swatch { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.slider-row { display: flex; align-items: center; gap: 0.45rem; padding: 0.12rem 0; }
+.slider-name { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-muted); width: 46px; flex-shrink: 0; }
+.slider-row input[type="range"] { flex: 1; height: 4px; -webkit-appearance: none; appearance: none; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+.slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent-green); border: 2px solid var(--bg-primary); cursor: grab; }
+.slider-val { font-family: 'Courier New', monospace; font-size: 0.68rem; color: var(--text-primary); width: 40px; text-align: right; flex-shrink: 0; }
+.c-right { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; min-width: 240px; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 750px) {
+  main { padding: 1rem; }
+  header { padding: 0.75rem 1rem; gap: 1rem; }
+  .dual-view { gap: 0.75rem; }
+  .map-arrows { flex-direction: row; min-width: auto; }
+  .b-below { flex-direction: column; }
+  .c-layout { flex-direction: column; }
+  .sample-row { gap: 0.5rem; }
+}
+
+footer {
+  text-align: center;
+  padding: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+</style>
+</head>
+<body>
+
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <!-- Rays -->
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <!-- Bulb body -->
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <!-- Neck fill (connect bulb to base) -->
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <!-- Shine highlight -->
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <!-- Base ridges -->
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <!-- Bottom nub -->
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
+
+<header>
+  <a class="back-link" href="index.html">← All Games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Game 6</span>
+    <h1>Autoencoder: House Manifold</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- Idea Panel 1 -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">20D Feature Space, 2D Manifold</div>
+      <p class="idea-text">
+        Each house is described by <span class="hi-o">20 features</span> — dimensions and colors
+        of its block, window, door, and roof. Despite living in ℝ²⁰, all valid houses lie on a
+        <span class="hi">2D surface M</span>: a single pair
+        <span class="hi">(z₁, z₂)</span> determines everything.
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel A -->
+  <div class="panel" id="panel-a">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel A</span> Sample Dataset — Five Houses</h2>
+      <p>Five pre-generated latent points spanning the space. Click any card to jump to that point in the latent explorer below.</p>
+    </div>
+    <div class="sample-row" id="sample-row"></div>
+  </div>
+
+  <!-- Idea Panel 2 -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">φ = Encoder &nbsp;·&nbsp; φ⁻¹ = Decoder</div>
+      <p class="idea-text">
+        The <span class="hi-g">decoder φ⁻¹: ℝ² → ℝ²⁰</span> generates all 20 features from latent coordinates.
+        The <span class="hi">encoder φ: ℝ²⁰ → ℝ²</span> compresses any feature vector back to the manifold —
+        finding <span class="hi">z* = argmin<sub>z</sub> ‖φ⁻¹(z) − f‖²</span> via the pseudoinverse.
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel B -->
+  <div class="panel" id="panel-b">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel B</span> Explore: Drag in Latent Space</h2>
+      <p>Drag the white dot in the scatter plot. The decoder φ⁻¹ instantly updates all 20 house features — and redraws the house.</p>
+    </div>
+    <div class="dual-view">
+      <div class="view-box">
+        <canvas id="scatter-b" width="280" height="280" style="border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-tertiary); cursor:crosshair; display:block;"></canvas>
+        <div class="view-label">Latent Space ℝ²<span class="dim-note">drag to explore</span></div>
+      </div>
+      <div class="map-arrows">
+        <span style="font-size:1.1rem;font-weight:700;color:var(--accent-blue);font-family:'Courier New',monospace;white-space:nowrap;">φ⁻¹ →</span>
+        <span style="font-size:1.1rem;font-weight:700;color:var(--accent-green);font-family:'Courier New',monospace;white-space:nowrap;">← φ</span>
+      </div>
+      <div class="view-box">
+        <canvas id="house-b" width="280" height="280" style="border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-tertiary); display:block;"></canvas>
+        <div class="view-label">Feature Space ℝ²⁰<span class="dim-note">house image</span></div>
+      </div>
+    </div>
+    <div class="b-below">
+      <div>
+        <div class="coord-display">
+          <div class="coord-pill" id="z-pill-b">z = (0.00, 0.00)</div>
+        </div>
+        <div class="formula-box" style="margin-top:0.75rem; font-size:0.82rem;">
+          φ⁻¹(z) = A·z + b<br>
+          <span style="color:var(--accent-blue)">20 features</span> from <span style="color:var(--accent-orange)">2 numbers</span>
+        </div>
+      </div>
+      <div id="ft-b-container" class="feature-table"></div>
+    </div>
+  </div>
+
+  <!-- Panel C -->
+  <div class="panel" id="panel-c">
+    <div class="panel-header">
+      <h2><span class="panel-tag">Panel C</span> Encode: Tweak Features → Find z*</h2>
+      <p>Adjust any slider. The encoder φ = (AᵀA)⁻¹Aᵀ(f − b) projects your feature vector back onto the 2D manifold, finding the nearest valid house.</p>
+    </div>
+    <div class="c-layout">
+      <div class="slider-col" id="slider-col"></div>
+      <div class="c-right">
+        <canvas id="house-c" width="240" height="240" style="border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-tertiary); display:block;"></canvas>
+        <div class="view-label" style="text-align:center;">House from sliders<span class="dim-note">drawn from f directly</span></div>
+        <div class="coord-display">
+          <div class="coord-pill" id="z-pill-c">z* = (—, —)</div>
+        </div>
+        <canvas id="scatter-c" width="240" height="200" style="border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-tertiary); display:block;"></canvas>
+        <div class="view-label" style="text-align:center;">Encoder output z*<span class="dim-note">★ on manifold</span></div>
+        <div class="formula-box" style="margin-top:0.3rem; font-size:0.8rem; width:100%;">
+          φ(f) = (AᵀA)⁻¹Aᵀ(f − b)<br>
+          Reconstruction error ‖f − φ⁻¹(z*)‖ = <span id="recon-err" style="color:var(--accent-orange);">0.00</span>
+        </div>
+        <div id="ft-c-container" class="feature-table" style="width:100%; margin-top:0.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>BMAI 2026 · Weekend 4</footer>
+
+<script>
+'use strict';
+
+// ── HiDPI ──────────────────────────────────────────────────────
+const DPR = window.devicePixelRatio || 1;
+function setupHiDPI(canvas) {
+  const lW = +canvas.getAttribute('width'), lH = +canvas.getAttribute('height');
+  canvas.width  = Math.round(lW * DPR);
+  canvas.height = Math.round(lH * DPR);
+  canvas.style.width  = lW + 'px';
+  canvas.style.height = lH + 'px';
+  canvas._logW = lW; canvas._logH = lH;
+}
+function getCtx(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return ctx;
+}
+
+// ── Data ───────────────────────────────────────────────────────
+const A_MAT = [
+  [0.80, 0.20],[0.20, 0.80],
+  [25.0, 8.0],[-8.0,20.0],[-20.0,15.0],
+  [0.00, 0.10],[0.10, 0.00],
+  [8.0, 12.0],[12.0,-6.0],[-6.0,-6.0],
+  [0.15, 0.10],[0.10,-0.05],
+  [22.0,-8.0],[6.0,-10.0],[-6.0,8.0],
+  [0.20, 0.15],[0.08,-0.08],
+  [-18.0,12.0],[8.0,10.0],[6.0,-12.0],
+];
+
+const B_VEC = [3.50,3.50, 130,100,160, 0.70,0.70, 210,225,245, 1.40,0.90, 105,65,55, 1.00,0.30, 165,85,70];
+
+const FEAT_META = [
+  {label:'h',     group:'Block',  type:'geo'},
+  {label:'w',     group:'Block',  type:'geo'},
+  {label:'r',     group:'Block',  type:'r'},
+  {label:'g',     group:'Block',  type:'g'},
+  {label:'b',     group:'Block',  type:'b'},
+  {label:'h',     group:'Window', type:'geo'},
+  {label:'w',     group:'Window', type:'geo'},
+  {label:'r',     group:'Window', type:'r'},
+  {label:'g',     group:'Window', type:'g'},
+  {label:'b',     group:'Window', type:'b'},
+  {label:'h',     group:'Door',   type:'geo'},
+  {label:'w',     group:'Door',   type:'geo'},
+  {label:'r',     group:'Door',   type:'r'},
+  {label:'g',     group:'Door',   type:'g'},
+  {label:'b',     group:'Door',   type:'b'},
+  {label:'peak',  group:'Roof',   type:'geo'},
+  {label:'ovhg',  group:'Roof',   type:'geo'},
+  {label:'r',     group:'Roof',   type:'r'},
+  {label:'g',     group:'Roof',   type:'g'},
+  {label:'b',     group:'Roof',   type:'b'},
+];
+
+const GROUP_COLORS = { Block:'#e3b341', Window:'#79c0ff', Door:'#ff7b72', Roof:'#bc8cff' };
+
+const SAMPLES = [
+  {z:[-2,-2], label:'Sample 1', color:'#ff7b72'},
+  {z:[ 2,-2], label:'Sample 2', color:'#e3b341'},
+  {z:[ 0, 0], label:'Sample 3', color:'#3fb950'},
+  {z:[-2, 2], label:'Sample 4', color:'#58a6ff'},
+  {z:[ 2, 2], label:'Sample 5', color:'#bc8cff'},
+];
+
+// ── Math ───────────────────────────────────────────────────────
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+
+function decode(z1,z2){
+  return A_MAT.map((row,i) => row[0]*z1 + row[1]*z2 + B_VEC[i]);
+}
+
+function precomputeEncoder(){
+  // AᵀA (2×2)
+  let s00=0,s01=0,s11=0;
+  for(const row of A_MAT){ s00+=row[0]*row[0]; s01+=row[0]*row[1]; s11+=row[1]*row[1]; }
+  const det = s00*s11 - s01*s01;
+  const inv = [[s11/det,-s01/det],[-s01/det,s00/det]];
+  // C = inv * Aᵀ → 2×20
+  const C = [new Array(20).fill(0), new Array(20).fill(0)];
+  for(let j=0;j<20;j++){
+    C[0][j] = inv[0][0]*A_MAT[j][0] + inv[0][1]*A_MAT[j][1];
+    C[1][j] = inv[1][0]*A_MAT[j][0] + inv[1][1]*A_MAT[j][1];
+  }
+  return C;
+}
+
+function encode(f, C){
+  let z1=0,z2=0;
+  for(let i=0;i<20;i++){ z1+=C[0][i]*(f[i]-B_VEC[i]); z2+=C[1][i]*(f[i]-B_VEC[i]); }
+  return [z1,z2];
+}
+
+function sliderRange(i){
+  const a0=Math.abs(A_MAT[i][0]), a1=Math.abs(A_MAT[i][1]);
+  return { min: B_VEC[i]-(a0+a1)*3.5, max: B_VEC[i]+(a0+a1)*3.5 };
+}
+
+function fmtFeat(v,i){
+  return FEAT_META[i].type==='geo' ? v.toFixed(2) : Math.round(clamp(v,0,255)).toString();
+}
+
+function barPct(v,i){
+  const {min,max}=sliderRange(i);
+  return clamp(((v-min)/(max-min))*100,0,100);
+}
+
+// ── House drawing ──────────────────────────────────────────────
+function drawHouseFromFeatures(ctx,f,cW,cH,PAD){
+  PAD = PAD !== undefined ? PAD : 1.5;
+  const LOGICAL=10.0;
+  const bh=Math.max(0.5,f[0]), bw=Math.max(0.5,f[1]);
+  const sc=Math.min(cW,cH)/(LOGICAL+2*PAD);
+  const ox=PAD*sc, oy=cH-PAD*sc;
+  const px=lx=>ox+lx*sc, py=ly=>oy-ly*sc;
+  const rgb=(r,g,b)=>`rgb(${Math.round(clamp(r,0,255))},${Math.round(clamp(g,0,255))},${Math.round(clamp(b,0,255))})`;
+
+  ctx.clearRect(0,0,cW,cH);
+
+  const cx=(LOGICAL-bw)/2;
+
+  // Wall (block)
+  ctx.fillStyle=rgb(f[2],f[3],f[4]);
+  ctx.fillRect(px(cx),py(bh),bw*sc,bh*sc);
+
+  // Roof (triangle with overhang)
+  const rh=Math.max(0.2,f[15]), rov=Math.max(0,f[16]);
+  ctx.fillStyle=rgb(f[17],f[18],f[19]);
+  ctx.beginPath();
+  ctx.moveTo(px(cx-rov),py(bh));
+  ctx.lineTo(px(cx+bw+rov),py(bh));
+  ctx.lineTo(px(cx+bw/2),py(bh+rh));
+  ctx.closePath(); ctx.fill();
+
+  // Window (upper-left area of block)
+  const wh=Math.max(0.1,f[5]), ww=Math.max(0.1,f[6]);
+  ctx.fillStyle=rgb(f[7],f[8],f[9]);
+  ctx.fillRect(px(cx+bw*0.15), py(bh*0.55+wh), ww*sc, wh*sc);
+
+  // Door (lower-center of block)
+  const dh=Math.max(0.1,f[10]), dw=Math.max(0.1,f[11]);
+  ctx.fillStyle=rgb(f[12],f[13],f[14]);
+  ctx.fillRect(px(cx+(bw-dw)/2), py(dh), dw*sc, dh*sc);
+}
+
+// ── Latent scatter drawing ─────────────────────────────────────
+const Z_RANGE=3.5, SC_PAD=30;
+
+function toSX(z,W){ return SC_PAD + (z+Z_RANGE)/(2*Z_RANGE)*(W-2*SC_PAD); }
+function toSY(z,H){ return H-SC_PAD - (z+Z_RANGE)/(2*Z_RANGE)*(H-2*SC_PAD); }
+
+function drawLatentScatter(canvas, currentZ, highlightIdx, starZ){
+  const ctx=getCtx(canvas);
+  const W=canvas._logW, H=canvas._logH;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid lines
+  ctx.strokeStyle='rgba(48,54,61,0.8)'; ctx.lineWidth=0.5;
+  for(let v=-3;v<=3;v++){
+    const sx=toSX(v,W), sy=toSY(v,H);
+    ctx.beginPath(); ctx.moveTo(sx,SC_PAD); ctx.lineTo(sx,H-SC_PAD); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(SC_PAD,sy); ctx.lineTo(W-SC_PAD,sy); ctx.stroke();
+  }
+  // Axes
+  ctx.strokeStyle='rgba(110,118,129,0.6)'; ctx.lineWidth=1;
+  const ax=toSX(0,W), ay=toSY(0,H);
+  ctx.beginPath(); ctx.moveTo(ax,SC_PAD); ctx.lineTo(ax,H-SC_PAD); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(SC_PAD,ay); ctx.lineTo(W-SC_PAD,ay); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='rgba(110,118,129,0.7)'; ctx.font='10px monospace';
+  ctx.fillText('z\u2081',W-SC_PAD+4,ay+4);
+  ctx.fillText('z\u2082',ax+4,SC_PAD-6);
+
+  // Sample dots
+  SAMPLES.forEach((s,idx)=>{
+    const sx=toSX(s.z[0],W), sy=toSY(s.z[1],H);
+    if(idx===highlightIdx){
+      ctx.shadowColor=s.color; ctx.shadowBlur=12;
+    }
+    ctx.beginPath(); ctx.arc(sx,sy,7,0,Math.PI*2);
+    ctx.fillStyle=s.color; ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.2;
+    ctx.stroke();
+  });
+
+  // Star z* (Panel C encoder output)
+  if(starZ){
+    const sx=toSX(starZ[0],W), sy=toSY(starZ[1],H);
+    ctx.save();
+    ctx.translate(sx,sy);
+    ctx.fillStyle='#3fb950';
+    ctx.shadowColor='#3fb950'; ctx.shadowBlur=8;
+    // 4-pointed star
+    ctx.beginPath();
+    for(let k=0;k<8;k++){
+      const angle=k*Math.PI/4 - Math.PI/8;
+      const r=k%2===0?9:4;
+      if(k===0) ctx.moveTo(r*Math.cos(angle),r*Math.sin(angle));
+      else ctx.lineTo(r*Math.cos(angle),r*Math.sin(angle));
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.restore();
+  }
+
+  // Current z (white dot — Panel B draggable)
+  // Only draw when starZ is falsy AND currentZ is truthy
+  if(!starZ && currentZ){
+    const sx=toSX(currentZ[0],W), sy=toSY(currentZ[1],H);
+    ctx.shadowColor='rgba(88,166,255,0.8)'; ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.arc(sx,sy,9,0,Math.PI*2);
+    ctx.fillStyle='white'; ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='#58a6ff'; ctx.lineWidth=2;
+    ctx.stroke();
+  }
+}
+
+// ── Feature table builders ─────────────────────────────────────
+function buildMiniFeatureTable(f){
+  const groups=['Block','Window','Door','Roof'];
+  let html='<table class="mini-ft">';
+  let i=0;
+  for(const g of groups){
+    html+=`<tr class="ft-group-hdr"><td colspan="3">${g}</td></tr>`;
+    for(let k=0;k<5;k++,i++){
+      const v=fmtFeat(f[i],i);
+      html+=`<tr><td>${FEAT_META[i].label}</td><td></td><td>${v}</td></tr>`;
+    }
+  }
+  html+='</table>';
+  return html;
+}
+
+function buildFullFeatureTable(containerId, prefix){
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  const groups=['Block','Window','Door','Roof'];
+  let i=0;
+  for(const g of groups){
+    const div=document.createElement('div'); div.className='ft-group';
+    div.innerHTML=`<div class="ft-group-label">${g}</div>`;
+    for(let k=0;k<5;k++,i++){
+      const row=document.createElement('div'); row.className='ft-row';
+      row.innerHTML=`
+        <span class="ft-name">${FEAT_META[i].label}</span>
+        <span class="ft-val" id="fv-${prefix}-${i}">—</span>
+        <div class="ft-bar"><div class="ft-fill ${FEAT_META[i].type}" id="fb-${prefix}-${i}" style="width:50%"></div></div>`;
+      div.appendChild(row);
+    }
+    el.appendChild(div);
+  }
+}
+
+function updateFeatureTable(prefix,f){
+  for(let i=0;i<20;i++){
+    const v=document.getElementById(`fv-${prefix}-${i}`);
+    const b=document.getElementById(`fb-${prefix}-${i}`);
+    if(v) v.textContent=fmtFeat(f[i],i);
+    if(b) b.style.width=barPct(f[i],i)+'%';
+  }
+}
+
+// ── State ──────────────────────────────────────────────────────
+const state = {
+  bZ:[0,0], bDragging:false, bHighlightIdx:-1,
+  cF:null, cZ:[0,0],
+  C_enc:null,
+};
+
+// ── Panel A ────────────────────────────────────────────────────
+function initPanelA(){
+  const row=document.getElementById('sample-row');
+  SAMPLES.forEach((s,idx)=>{
+    const f=decode(s.z[0],s.z[1]);
+    const card=document.createElement('div');
+    card.className='sample-card';
+    card.style.setProperty('--sample-color',s.color);
+
+    const canvas=document.createElement('canvas');
+    canvas.className='sample-canvas';
+    canvas.setAttribute('width','155'); canvas.setAttribute('height','155');
+    setupHiDPI(canvas);
+    drawHouseFromFeatures(getCtx(canvas),f,155,155);
+
+    card.appendChild(canvas);
+    card.insertAdjacentHTML('beforeend',
+      `<div class="sample-label" style="color:${s.color}">${s.label}</div>` +
+      `<div class="sample-z">z=(${s.z[0].toFixed(1)}, ${s.z[1].toFixed(1)})</div>` +
+      buildMiniFeatureTable(f)
+    );
+
+    card.addEventListener('click',()=>{
+      state.bZ=[...s.z];
+      state.bHighlightIdx=idx;
+      document.querySelectorAll('.sample-card').forEach((c,i)=>c.classList.toggle('active',i===idx));
+      renderPanelB();
+      document.getElementById('panel-b').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+
+    row.appendChild(card);
+  });
+}
+
+// ── Panel B ────────────────────────────────────────────────────
+function initPanelB(){
+  setupHiDPI(document.getElementById('scatter-b'));
+  setupHiDPI(document.getElementById('house-b'));
+  buildFullFeatureTable('ft-b-container','b');
+
+  const sc=document.getElementById('scatter-b');
+  sc.style.cursor='crosshair';
+
+  function onDown(e){
+    state.bDragging=true; state.bHighlightIdx=-1;
+    document.querySelectorAll('.sample-card').forEach(c=>c.classList.remove('active'));
+    onMove(e);
+  }
+  function onMove(e){
+    if(!state.bDragging) return;
+    e.preventDefault();
+    const rect=sc.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    const cx=(src.clientX-rect.left)*(sc._logW/rect.width);
+    const cy=(src.clientY-rect.top )*(sc._logH/rect.height);
+    state.bZ=[
+      clamp((cx-SC_PAD)/(sc._logW-2*SC_PAD)*2*Z_RANGE-Z_RANGE,-Z_RANGE,Z_RANGE),
+      clamp(Z_RANGE-(cy-SC_PAD)/(sc._logH-2*SC_PAD)*2*Z_RANGE,-Z_RANGE,Z_RANGE),
+    ];
+    renderPanelB();
+  }
+
+  sc.addEventListener('mousedown',onDown);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',()=>{ state.bDragging=false; });
+  sc.addEventListener('touchstart',onDown,{passive:false});
+  window.addEventListener('touchmove',onMove,{passive:false});
+  window.addEventListener('touchend',()=>{ state.bDragging=false; });
+}
+
+function renderPanelB(){
+  const f=decode(state.bZ[0],state.bZ[1]);
+  // Scatter
+  drawLatentScatter(document.getElementById('scatter-b'), state.bZ, state.bHighlightIdx, null);
+  // House
+  const hc=document.getElementById('house-b');
+  drawHouseFromFeatures(getCtx(hc),f,hc._logW,hc._logH);
+  // z pill
+  document.getElementById('z-pill-b').textContent=`z = (${state.bZ[0].toFixed(2)}, ${state.bZ[1].toFixed(2)})`;
+  // Feature table
+  updateFeatureTable('b',f);
+}
+
+// ── Panel C ────────────────────────────────────────────────────
+function buildSliders(){
+  const col=document.getElementById('slider-col');
+  const groups=['Block','Window','Door','Roof'];
+  let i=0;
+  for(const g of groups){
+    const grpDiv=document.createElement('div'); grpDiv.className='slider-group';
+    grpDiv.innerHTML=`<div class="slider-group-label">
+      <span class="group-swatch" style="background:${GROUP_COLORS[g]}"></span>${g}
+    </div>`;
+    for(let k=0;k<5;k++,i++){
+      const {min,max}=sliderRange(i);
+      const step=FEAT_META[i].type==='geo'?'0.01':'1';
+      const row=document.createElement('div'); row.className='slider-row';
+      row.innerHTML=`
+        <span class="slider-name">${FEAT_META[i].label}</span>
+        <input type="range" id="sl-${i}" min="${min.toFixed(3)}" max="${max.toFixed(3)}" step="${step}" value="${B_VEC[i]}">
+        <span class="slider-val" id="sv-${i}">${fmtFeat(B_VEC[i],i)}</span>`;
+      const inp=row.querySelector('input');
+      inp.addEventListener('input',()=>{
+        state.cF[i]=parseFloat(inp.value);
+        document.getElementById(`sv-${i}`).textContent=fmtFeat(state.cF[i],i);
+        renderPanelC();
+      });
+      grpDiv.appendChild(row);
+    }
+    col.appendChild(grpDiv);
+  }
+}
+
+function initPanelC(){
+  setupHiDPI(document.getElementById('house-c'));
+  setupHiDPI(document.getElementById('scatter-c'));
+  buildFullFeatureTable('ft-c-container','c');
+  state.cF=decode(0,0).slice();
+  buildSliders();
+}
+
+function renderPanelC(){
+  // House from sliders
+  const hc=document.getElementById('house-c');
+  drawHouseFromFeatures(getCtx(hc),state.cF,hc._logW,hc._logH);
+
+  // Encode
+  state.cZ=encode(state.cF,state.C_enc);
+
+  // z* pill
+  document.getElementById('z-pill-c').textContent=`z* = (${state.cZ[0].toFixed(2)}, ${state.cZ[1].toFixed(2)})`;
+
+  // Scatter with star
+  drawLatentScatter(document.getElementById('scatter-c'), null, -1, state.cZ);
+
+  // Feature table
+  updateFeatureTable('c',state.cF);
+
+  // Reconstruction error
+  const fStar=decode(state.cZ[0],state.cZ[1]);
+  const err=Math.sqrt(fStar.reduce((s,v,i)=>s+(v-state.cF[i])**2,0));
+  document.getElementById('recon-err').textContent=err.toFixed(2);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  state.C_enc=precomputeEncoder();
+  initPanelA();
+  initPanelB();
+  initPanelC();
+  renderPanelB();
+  renderPanelC();
+});
+</script>
+</body>
+</html>

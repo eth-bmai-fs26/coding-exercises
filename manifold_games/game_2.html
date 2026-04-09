@@ -337,9 +337,72 @@ main {
   .dual-view { gap: 0.75rem; }
   .map-arrows { flex-direction: row; min-width: auto; }
 }
+
+/* ── Idea Panels ────────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi   { color: var(--accent-purple); font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+.idea-text .hi-o { color: var(--accent-orange);  font-weight: 600; }
 </style>
 </head>
 <body>
+
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <!-- Rays -->
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <!-- Bulb body -->
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <!-- Neck fill (connect bulb to base) -->
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <!-- Shine highlight -->
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <!-- Base ridges -->
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <!-- Bottom nub -->
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
 
 <header>
   <a class="back-link" href="index.html">← All Games</a>
@@ -352,11 +415,28 @@ main {
 
 <main>
 
+  <!-- Idea Panel 1 — Setup -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Houses on a Circle — Position is All That Matters</div>
+      <p class="idea-text">
+        Houses are placed around a circular lake at fixed radius <span class="hi">r</span>.
+        We ignore shape, size, and orientation and only consider <em>where</em> on the circle each house sits.
+        Every house is therefore a point on <span class="hi">S¹</span>,
+        the circle, embedded in ℝ².
+      </p>
+    </div>
+  </div>
+
   <!-- Panel A: Forward & Inverse Map -->
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel A</span> The Forward &amp; Inverse Map</h2>
-      <p>Drag the slider to choose an angle θ — φ maps it to a 2D position (x, y) on the lake circle. Click anywhere on the lake to apply φ⁻¹ and recover θ from a position.</p>
+      <p>Drag the slider to choose an angle θ. φ maps it to a 2D position (x, y) on the lake circle. Click anywhere on the lake to apply φ⁻¹ and recover θ from a position.</p>
     </div>
     <div class="dual-view">
       <div class="view-box">
@@ -387,7 +467,7 @@ main {
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel B</span> Six Houses Around the Lake</h2>
-      <p>Six houses at θ = 0°, 60°, 120°, 180°, 240°, 300°. Each coloured dot marks a 2D position (x, y) on the circle — but only one number θ encodes it.</p>
+      <p>Six houses at θ = 0°, 60°, 120°, 180°, 240°, 300°. Each coloured dot marks a 2D position (x, y) on the circle, but only one number θ encodes it.</p>
     </div>
     <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center;">
       <canvas id="example-canvas" width="320" height="320"></canvas>
@@ -406,7 +486,7 @@ main {
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel C</span> Smoothness of φ</h2>
-      <p>As θ advances smoothly around [0°, 360°], the position (x, y) traces S¹ continuously. The sinusoidal trace shows x = r·cos θ (blue) and y = r·sin θ (purple) — smooth paths in ℝ².</p>
+      <p>As θ advances smoothly around [0°, 360°], the position (x, y) traces S¹ continuously. The sinusoidal trace shows x = r·cos θ (blue) and y = r·sin θ (purple), smooth paths in ℝ².</p>
     </div>
     <div class="smoothness-layout">
       <div class="smoothness-controls">
@@ -439,7 +519,7 @@ main {
   <div class="panel">
     <div class="panel-header">
       <h2><span class="panel-tag">Panel D</span> The Inverse Map φ⁻¹</h2>
-      <p>Click anywhere on the lake circle to snap to the nearest point on S¹. φ⁻¹ = atan2(y, x) recovers the angle θ from the 2D position — demonstrating perfect invertibility.</p>
+      <p>Click anywhere on the lake circle to snap to the nearest point on S¹. φ⁻¹ = atan2(y, x) recovers the angle θ from the 2D position demonstrating perfect invertibility.</p>
     </div>
     <div class="inverse-layout">
       <canvas id="inverse-canvas" width="280" height="280"></canvas>
@@ -478,6 +558,24 @@ main {
         </div>
         <p style="font-size:0.8rem; color:var(--text-muted);">Click on the lake canvas above to try φ⁻¹</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Idea Panel 2 — Takeaway -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Takeaway</div>
+      <div class="idea-title">One Parameter for a 2D Object</div>
+      <p class="idea-text">
+        A position <span class="hi">(x, y) ∈ ℝ²</span> looks like 2 numbers,
+        but the constraint <span class="hi-g">x² + y² = r²</span> collapses the freedom to just one.
+        A single angle <span class="hi-o">θ ∈ [0°, 360°)</span> fully encodes any house position.
+        S¹ is a <strong style="color:var(--text-primary)">1-dimensional manifold</strong>
+        embedded in 2D space.
+      </p>
     </div>
   </div>
 

@@ -488,9 +488,66 @@ footer {
   .explorer-layout { flex-direction: column; align-items: flex-start; }
   .mapping-arrow { flex-direction: row; }
 }
+
+/* ── Idea Panels ─────────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(227,179,65,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(227,179,65,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi   { color: var(--accent-blue);   font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+.idea-text .hi-o { color: var(--accent-orange);  font-weight: 600; }
 </style>
 </head>
 <body>
+
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
 
 <header>
   <a href="index.html" class="back-link">← All Games</a>
@@ -503,15 +560,22 @@ footer {
 
 <main>
 
-  <!-- Concept strip -->
-  <div class="concept-strip">
-    <span class="cs-pill">h(x,y) = sin(x) + 0.5·sin(y)</span>
-    <span class="cs-arrow">&nbsp;⟶&nbsp;</span>
-    <span class="cs-pill hl">φ(x,y) = (x, y, h(x,y))</span>
-    <span class="cs-arrow">&nbsp;⟶&nbsp;</span>
-    <span class="cs-pill">M ⊂ ℝ³</span>
-    <span class="cs-arrow">&nbsp;⟶ φ⁻¹ ⟶&nbsp;</span>
-    <span class="cs-pill">ℝ²</span>
+  <!-- Idea Panel 1 — Setup -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Houses in a Valley — Height is a Function of Position</div>
+      <p class="idea-text">
+        Houses are placed on a hilly terrain. Their flat position
+        <span class="hi">(x, y) ∈ ℝ²</span> is the free choice, but the height is fully determined by it.
+        The map <span class="hi">φ: ℝ² → ℝ³</span> lifts each flat point
+        onto the 3D surface M, adding a third coordinate that encodes
+        <em>no new information</em> beyond (x, y).
+      </p>
+    </div>
   </div>
 
   <!-- Main game area -->
@@ -529,29 +593,25 @@ footer {
       </div>
     </div>
 
-    <!-- Right: Quiz -->
+    <!-- Right: Discover φ -->
     <div class="panel">
-      <div class="quiz-header">
-        <div class="panel-label">Guess φ⁻¹</div>
-        <div class="score-badge">Score: <b id="scoreNum">0</b> / <b id="totalNum">0</b></div>
-      </div>
+      <div class="panel-label">Discover φ</div>
 
       <div class="question-box">
-        <div class="q-sublabel">A house sits at this 3D point on the surface M:</div>
-        <div id="pointDisplay" class="point-display">&mdash;</div>
-        <div class="question-ask">What is <code>φ⁻¹(x, y, z)</code> &nbsp;?</div>
+        <div class="q-sublabel">φ maps every flat point (x, y) ∈ ℝ² to a 3D point on the surface M ⊂ ℝ³</div>
+        <div class="question-ask" style="font-size:0.88rem; margin-top:0.65rem; text-align:left;">
+          Which formula correctly describes <code>φ(x, y)</code>?
+        </div>
       </div>
 
-      <div class="answer-grid" id="answerGrid"></div>
+      <div class="answer-grid" id="phiAnswerGrid"></div>
 
-      <div id="feedbackBox" class="feedback-box"></div>
+      <div id="phiFeedbackBox" class="feedback-box"></div>
 
       <div class="controls-row">
-        <button id="hintBtn" class="btn btn-hint">Show Hint</button>
-        <button id="nextBtn" class="btn btn-next">Next →</button>
+        <button id="phiHintBtn" class="btn btn-hint">Hint</button>
       </div>
-
-      <div id="hintArea" class="hint-area"></div>
+      <div id="phiHintArea" class="hint-area"></div>
     </div>
   </div>
 
@@ -578,7 +638,42 @@ footer {
     </div>
   </div>
 
-  <!-- Insight (unlocked after 3 correct) -->
+  <!-- Idea Panel 2 — Takeaway -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Takeaway</div>
+      <div class="idea-title">φ⁻¹ is Just a Projection — Drop z</div>
+      <p class="idea-text">
+        M lives in ℝ³ but is intrinsically <span class="hi">2-dimensional</span>.
+        Recovering a house's flat position from its 3D point is trivial:
+        <span class="hi-o">φ⁻¹(x, y, z) = (x, y)</span>, just discard z.
+        Because <span class="hi-g">z = h(x, y)</span> is already encoded in the flat coordinates,
+        nothing is lost. We move to the manifold by "projecting" into a third dimension, and back
+        by dropping it.
+      </p>
+    </div>
+  </div>
+
+  <!-- Inverse concept quiz panel (single MCQ) -->
+  <div class="panel" id="inversePanel">
+    <div class="panel-label">Guess φ⁻¹</div>
+
+    <div class="question-box">
+      <div class="q-sublabel">Given a 3D point (x, y, z) on the surface M</div>
+      <div class="question-ask" style="font-size:0.88rem; margin-top:0.65rem; text-align:left;">
+        What does <code>φ⁻¹: M → ℝ²</code> return?
+      </div>
+    </div>
+
+    <div class="answer-grid" id="answerGrid"></div>
+
+    <div id="feedbackBox" class="feedback-box"></div>
+  </div>
+
+  <!-- Insight (unlocked after completing 3 questions) -->
   <div id="insightSection" class="insight-section">
     <div class="insight-title">Key Insight Unlocked</div>
     <div class="insight-grid">
@@ -945,145 +1040,131 @@ mapCanvas.addEventListener('touchstart', e => {
 }, { passive: false });
 
 // ═══════════════════════════════════════════════════════════════
-// QUIZ
+// PHI DISCOVERY QUIZ  (right panel, one-shot)
 // ═══════════════════════════════════════════════════════════════
 
-const state = { score: 0, total: 0, hintLevel: 0, answered: false };
-
-const HINTS = [
-  'Look at φ(x, y) = (x, y, h(x,y)). What does φ <em>add</em> to the input (x, y)?',
-  'φ adds the z-coordinate. So φ⁻¹ must <em>undo</em> that — it should remove z. But how?',
-  'Key: z = h(x, y) is fully determined by (x, y). z carries <em>no extra information</em>. So φ⁻¹ simply drops z and returns (x, y).',
+const PHI_OPTS_RAW = [
+  { label: 'φ(x, y) = ( x,  y,  sin(x) + 0.5·sin(y) )',  isCorrect: true  },
+  { label: 'φ(x, y) = ( x,  y,  2x − 0.7y )',            isCorrect: false },
+  { label: 'φ(x, y) = ( x,  y,  eˣ + 0.5·eʸ )',         isCorrect: false },
+  { label: 'φ(x, y) = ( x,  y,  ln(x²+1) + 0.3y )',     isCorrect: false },
 ];
 
-function randomPoint() {
-  const x = parseFloat(( Math.random() * 2*Math.PI - Math.PI ).toFixed(2));
-  const y = parseFloat(( Math.random() * 2*Math.PI - Math.PI ).toFixed(2));
-  const z = parseFloat( hFn(x, y).toFixed(3) );
-  return { x, y, z };
+// Shuffle options
+const phiOpts = [...PHI_OPTS_RAW];
+for (let i = phiOpts.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [phiOpts[i], phiOpts[j]] = [phiOpts[j], phiOpts[i]];
 }
 
-let currentOptions = [];
+const phiState = { answered: false, hintShown: false };
 
-function buildOptions(pt) {
-  const opts = [
-    { label: `(${pt.x},  ${pt.y})`,               isCorrect: true  },
-    { label: `(${pt.x},  ${pt.z})`,               isCorrect: false },
-    { label: `(${pt.y},  ${pt.z})`,               isCorrect: false },
-    { label: `(${pt.x},  ${pt.y},  ${pt.z})`,     isCorrect: false },
-  ];
-  // Fisher-Yates shuffle
-  for (let i = opts.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [opts[i], opts[j]] = [opts[j], opts[i]];
-  }
-  return opts;
-}
-
-function loadQuestion() {
-  const pt = randomPoint();
-  state.answered = false;
-  state.hintLevel = 0;
-
-  quizDot = { x: pt.x, y: pt.y, z: pt.z, answered: false, correct: false };
-
-  document.getElementById('pointDisplay').textContent =
-    `(x, y, z)  =  (${pt.x},  ${pt.y},  ${pt.z})`;
-
-  document.getElementById('activeBubble').classList.add('show');
-  document.getElementById('quizPointSpan').textContent =
-    `(${pt.x}, ${pt.y}, ${pt.z})`;
-
-  currentOptions = buildOptions(pt);
-  const grid = document.getElementById('answerGrid');
-  grid.innerHTML = '';
-  ['A', 'B', 'C', 'D'].forEach((lbl, i) => {
+(function buildPhiGrid() {
+  const grid = document.getElementById('phiAnswerGrid');
+  ['A','B','C','D'].forEach((lbl, i) => {
     const btn = document.createElement('button');
     btn.className = 'answer-btn';
-    btn.innerHTML = `<span class="lbl">${lbl}</span>${currentOptions[i].label}`;
-    btn.addEventListener('click', () => checkAnswer(i));
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${phiOpts[i].label}`;
+    btn.addEventListener('click', () => checkPhiAnswer(i));
     grid.appendChild(btn);
   });
+})();
 
-  // Reset UI
-  const fb = document.getElementById('feedbackBox');
-  fb.className = 'feedback-box';
-  fb.textContent = '';
+function checkPhiAnswer(idx) {
+  if (phiState.answered) return;
+  phiState.answered = true;
+  const isCorrect = phiOpts[idx].isCorrect;
 
-  const ha = document.getElementById('hintArea');
-  ha.className = 'hint-area';
-  ha.innerHTML = '';
-
-  document.getElementById('hintBtn').textContent = 'Show Hint';
-  document.getElementById('nextBtn').classList.remove('show');
-
-  drawValley();
-}
-
-function checkAnswer(idx) {
-  if (state.answered) return;
-  state.answered = true;
-  state.total++;
-
-  const isCorrect = currentOptions[idx].isCorrect;
-
-  document.querySelectorAll('.answer-btn').forEach((b, i) => {
+  document.querySelectorAll('#phiAnswerGrid .answer-btn').forEach((b, i) => {
     b.disabled = true;
-    if (currentOptions[i].isCorrect) b.classList.add('correct');
+    if (phiOpts[i].isCorrect) b.classList.add('correct');
     else if (i === idx && !isCorrect) b.classList.add('wrong');
   });
 
-  quizDot.answered = true;
-  quizDot.correct  = isCorrect;
-
+  const fb = document.getElementById('phiFeedbackBox');
   if (isCorrect) {
-    state.score++;
-    showFeedback(true,
-      'Correct! φ⁻¹(x, y, z) = (x, y) &mdash; we simply drop z. ' +
-      'Since z = h(x,y) is determined by (x, y), it carries no extra information.');
-    if (state.score >= 3) {
-      setTimeout(() => {
-        const sec = document.getElementById('insightSection');
-        sec.classList.add('show');
-        sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 700);
-    }
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '&#10003; Correct! φ lifts (x, y) onto the valley surface by appending h(x,y) as the height. ' +
+      'Now try the Explorer below, then scroll down to guess φ⁻¹.';
   } else {
-    showFeedback(false,
-      'Not quite &mdash; the correct answer is highlighted in green. ' +
-      'Remember: φ took (x, y) and added z. So φ⁻¹ just removes z, returning (x, y).');
+    fb.className = 'feedback-box show bad';
+    fb.innerHTML = '&#10007; Not quite — the correct answer is highlighted. ' +
+      'sin and cos produce the repeating hills and valleys you see on the surface.';
   }
-
-  updateScore();
-  document.getElementById('nextBtn').classList.add('show');
-  drawValley();
 }
 
-function showFeedback(ok, msg) {
-  const fb = document.getElementById('feedbackBox');
-  fb.className = 'feedback-box show ' + (ok ? 'ok' : 'bad');
-  fb.innerHTML = msg;
-}
-
-function updateScore() {
-  document.getElementById('scoreNum').textContent = state.score;
-  document.getElementById('totalNum').textContent = state.total;
-}
-
-document.getElementById('hintBtn').addEventListener('click', () => {
-  if (state.answered) return;
-  const i   = Math.min(state.hintLevel, HINTS.length - 1);
-  state.hintLevel++;
-  const ha  = document.getElementById('hintArea');
-  ha.innerHTML  = `<b>Hint ${i+1}:</b> ` + HINTS[i];
-  ha.className  = 'hint-area show';
-  document.getElementById('hintBtn').textContent =
-    state.hintLevel < HINTS.length ? 'Another Hint' : 'Show Answer';
-  if (state.hintLevel >= HINTS.length)
-    document.getElementById('hintBtn').textContent = 'Show Answer';
+document.getElementById('phiHintBtn').addEventListener('click', () => {
+  const ha = document.getElementById('phiHintArea');
+  if (phiState.hintShown) {
+    ha.className = 'hint-area';
+    phiState.hintShown = false;
+    document.getElementById('phiHintBtn').textContent = 'Hint';
+  } else {
+    ha.innerHTML = 'What type of mathematical function creates smooth, <em>repeating, oscillating</em> patterns like waves or hills?';
+    ha.className = 'hint-area show';
+    phiState.hintShown = true;
+    document.getElementById('phiHintBtn').textContent = 'Hide Hint';
+  }
 });
 
-document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+// ═══════════════════════════════════════════════════════════════
+// INVERSE CONCEPT QUIZ  (bottom panel, single MCQ)
+// ═══════════════════════════════════════════════════════════════
+
+const INV_OPTS_RAW = [
+  { label: 'Returns (x, y) — drops z; it\'s redundant since z = h(x, y)',          isCorrect: true  },
+  { label: 'Returns (x, y, 1/z) — inverts the height coordinate',                  isCorrect: false },
+  { label: 'Solves z = sin(x) + 0.5·sin(y) for (x, y) numerically',               isCorrect: false },
+  { label: 'Returns (y, x) — swaps coordinates to undo the forward map',           isCorrect: false },
+];
+
+const invOpts = [...INV_OPTS_RAW];
+for (let i = invOpts.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [invOpts[i], invOpts[j]] = [invOpts[j], invOpts[i]];
+}
+
+let invAnswered = false;
+
+(function buildInvGrid() {
+  const grid = document.getElementById('answerGrid');
+  ['A','B','C','D'].forEach((lbl, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="lbl">${lbl}</span>${invOpts[i].label}`;
+    btn.addEventListener('click', () => checkInvAnswer(i));
+    grid.appendChild(btn);
+  });
+})();
+
+function checkInvAnswer(idx) {
+  if (invAnswered) return;
+  invAnswered = true;
+  const isCorrect = invOpts[idx].isCorrect;
+
+  document.querySelectorAll('#answerGrid .answer-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (invOpts[i].isCorrect) b.classList.add('correct');
+    else if (i === idx && !isCorrect) b.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedbackBox');
+  if (isCorrect) {
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '&#10003; Exactly — since z = h(x, y) is fully determined by the flat coordinates, ' +
+      'it carries no new information. φ⁻¹ simply projects the 3D point back to the flat plane.';
+  } else {
+    fb.className = 'feedback-box show bad';
+    fb.innerHTML = '&#10007; Not quite — there is nothing to solve or invert. ' +
+      'Because z = h(x, y) is already encoded in (x, y), φ⁻¹ just drops z and returns (x, y).';
+  }
+
+  setTimeout(() => {
+    const sec = document.getElementById('insightSection');
+    sec.classList.add('show');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 900);
+}
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
@@ -1091,7 +1172,6 @@ document.getElementById('nextBtn').addEventListener('click', loadQuestion);
 
 buildTopoMap();
 drawTopoMap();
-loadQuestion();
 
 </script>
 </body>
