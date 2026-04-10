@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Autoencoder Problem · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-red); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-red);
+  font-weight: 700;
+}
+.header-meta h1 {
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ─── Main ────────────────────────────────────────────────────────── */
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ─── Panels ──────────────────────────────────────────────────────── */
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.panel:nth-child(1) { animation-delay: 0.00s; }
+.panel:nth-child(2) { animation-delay: 0.07s; }
+.panel:nth-child(3) { animation-delay: 0.14s; }
+.panel:nth-child(4) { animation-delay: 0.21s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { margin-bottom: 1.25rem; }
+.panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.panel-header .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* ─── Core statement banner ──────────────────────────────────────── */
+.core-statement {
+  background: rgba(255,123,114,0.08);
+  border: 1px solid rgba(255,123,114,0.3);
+  border-left: 3px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent-red);
+  font-style: italic;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Pipeline diagram wrapper ───────────────────────────────────── */
+.pipeline-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+.pipeline-element {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arrow-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.space-label {
+  font-size: 0.72rem;
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Function boxes ─────────────────────────────────────────────── */
+.func-box {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 700;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  min-width: 52px;
+  text-align: center;
+}
+
+.func-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+/* ─── Annotation styles ──────────────────────────────────────────── */
+.annotation-red {
+  font-size: 0.7rem;
+  color: var(--accent-red);
+  font-style: italic;
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.annotation-green {
+  font-size: 0.7rem;
+  color: var(--accent-green);
+  font-style: italic;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.annotation-blue {
+  font-size: 0.7rem;
+  color: var(--accent-blue);
+  font-style: italic;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* ─── Explanation box ────────────────────────────────────────────── */
+.explanation-box {
+  background: rgba(255,123,114,0.05);
+  border-left: 3px solid var(--accent-red);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1rem;
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.explanation-box strong { color: var(--accent-red); }
+
+/* ─── Theory grid ────────────────────────────────────────────────── */
+.theory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.theory-grid p { margin-bottom: 0.75rem; }
+.theory-grid p:last-child { margin-bottom: 0; }
+.theory-grid strong { color: var(--text-primary); }
+
+@media (max-width: 640px) {
+  .theory-grid { grid-template-columns: 1fr; }
+  main { padding: 1.25rem 1rem; }
+  header { padding: 0.9rem 1rem; }
+}
+
+/* ─── Failure mode tags ──────────────────────────────────────────── */
+.failure-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  font-family: 'Courier New', monospace;
+  margin: 0.15rem 0.1rem;
+}
+.failure-tag.red    { color: var(--accent-red);    border-color: rgba(255,123,114,0.4); background: rgba(255,123,114,0.08); }
+.failure-tag.purple { color: var(--accent-purple); border-color: rgba(188,140,255,0.4); background: rgba(188,140,255,0.08); }
+.failure-tag.orange { color: var(--accent-orange); border-color: rgba(227,179,65,0.4);  background: rgba(227,179,65,0.08); }
+.failure-tag.blue   { color: var(--accent-blue);   border-color: rgba(88,166,255,0.4);  background: rgba(88,166,255,0.08); }
+
+/* ─── Idea panel (matches other games) ───────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(255,123,114,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(255,123,114,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi-r { color: var(--accent-red);    font-weight: 600; }
+.idea-text .hi-p { color: var(--accent-purple); font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+
+/* ─── Footer ──────────────────────────────────────────────────────── */
+footer {
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  font-family: 'Courier New', monospace;
+}
+</style>
+</head>
+<body>
+
+<!-- Reusable lightbulb icon -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
+
+<header>
+  <a class="back-link" href="index.html">← All games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Explainer · 7</span>
+    <h1>The Autoencoder Problem</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- Core statement -->
+  <div class="core-statement">
+    Autoencoders may not compute homeomorphisms!
+  </div>
+
+  <!-- ── Diagram 1: Spiral pipeline ── -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Encoder / Latent Space / Decoder Pipeline</h2>
+      <div class="subtitle">A continuous spiral in ℝ² → fragmented 1D representation → spiral recovered</div>
+    </div>
+
+    <div class="pipeline-row" style="gap:6px; align-items:flex-start;">
+
+      <!-- INPUT MANIFOLD -->
+      <div class="pipeline-element">
+        <div class="space-label">ℝ²</div>
+        <svg width="170" height="175" viewBox="0 0 170 175">
+          <line x1="18" y1="158" x2="158" y2="158" stroke="#30363d" stroke-width="1"/>
+          <line x1="18" y1="158" x2="18" y2="10" stroke="#30363d" stroke-width="1"/>
+          <text x="160" y="161" font-size="9" fill="#6e7681">x</text>
+          <text x="12" y="8" font-size="9" fill="#6e7681">y</text>
+
+          <polyline points="
+            85,84
+            99,72 112,68 122,74 126,87 121,101 111,111 97,116 82,115 68,109
+            57,98 51,84 52,69 59,56 70,47 84,42 99,41 113,45 124,54 131,67
+            133,82 129,97 121,109 109,118 95,122 80,121 65,116 53,107 45,95
+            40,81 40,67 45,53 54,42 66,34 80,29 95,28 110,31 122,40 130,52
+            134,67 132,82 126,96
+          " fill="none" stroke="#58a6ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <circle cx="80" cy="29" r="4" fill="#58a6ff"/>
+          <text x="75" y="22" font-size="10" font-weight="bold" fill="#e6edf3">A</text>
+
+          <circle cx="110" cy="31" r="4" fill="#58a6ff"/>
+          <text x="113" y="28" font-size="10" font-weight="bold" fill="#e6edf3">B</text>
+
+          <circle cx="130" cy="52" r="4" fill="#58a6ff"/>
+          <text x="133" y="51" font-size="10" font-weight="bold" fill="#e6edf3">C</text>
+
+          <circle cx="134" cy="67" r="4" fill="#58a6ff"/>
+          <text x="137" y="67" font-size="10" font-weight="bold" fill="#e6edf3">D</text>
+
+          <circle cx="126" cy="96" r="4" fill="#58a6ff"/>
+          <text x="129" y="96" font-size="10" font-weight="bold" fill="#e6edf3">E</text>
+
+          <circle cx="109" cy="118" r="4" fill="#58a6ff"/>
+          <text x="112" y="120" font-size="10" font-weight="bold" fill="#e6edf3">F</text>
+
+          <circle cx="80" cy="121" r="4" fill="#58a6ff"/>
+          <text x="75" y="130" font-size="10" font-weight="bold" fill="#e6edf3">G</text>
+
+          <circle cx="53" cy="107" r="4" fill="#58a6ff"/>
+          <text x="40" y="109" font-size="10" font-weight="bold" fill="#e6edf3">H</text>
+
+          <circle cx="45" cy="53" r="4" fill="#58a6ff"/>
+          <text x="32" y="54" font-size="10" font-weight="bold" fill="#e6edf3">I</text>
+
+          <circle cx="85" cy="84" r="4" fill="#ff7b72"/>
+          <text x="88" y="82" font-size="10" font-weight="bold" fill="#ff7b72">J</text>
+
+          <text x="85" y="170" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">Input manifold</text>
+        </svg>
+        <div class="annotation-blue">Continuous spiral<br/>— neighbors preserved</div>
+      </div>
+
+      <!-- ARROW → φ⁻¹ -->
+      <div class="arrow-box" style="margin-top:44px;">
+        <svg width="46" height="36" viewBox="0 0 46 36">
+          <defs>
+            <marker id="ah1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="2" y1="18" x2="36" y2="18" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ah1)"/>
+        </svg>
+      </div>
+
+      <!-- ENCODER BOX -->
+      <div class="pipeline-element" style="margin-top:44px;">
+        <div class="func-box">φ⁻¹</div>
+        <div class="func-label">encoder<br/>ℝ²→ℝ</div>
+      </div>
+
+      <!-- ARROW → latent -->
+      <div class="arrow-box" style="margin-top:44px;">
+        <svg width="46" height="36" viewBox="0 0 46 36">
+          <defs>
+            <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="2" y1="18" x2="36" y2="18" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ah2)"/>
+        </svg>
+      </div>
+
+      <!-- LATENT SPACE -->
+      <div class="pipeline-element">
+        <div class="space-label">ℝ (latent)</div>
+        <svg width="210" height="175" viewBox="0 0 210 175">
+          <text x="105" y="14" font-size="8" text-anchor="middle" fill="#8b949e" font-style="italic">Not continuous or topology-preserving</text>
+
+          <line x1="10" y1="80" x2="200" y2="80" stroke="#30363d" stroke-width="2"/>
+          <line x1="10" y1="74" x2="10" y2="86" stroke="#30363d" stroke-width="1.5"/>
+          <line x1="200" y1="74" x2="200" y2="86" stroke="#30363d" stroke-width="1.5"/>
+
+          <!-- Cluster 1: F E D -->
+          <line x1="15" y1="80" x2="55" y2="80" stroke="#ff7b72" stroke-width="3"/>
+          <circle cx="18" cy="80" r="4.5" fill="#ff7b72"/>
+          <text x="14" y="68" font-size="10" font-weight="bold" fill="#ff7b72">F</text>
+          <circle cx="32" cy="80" r="4.5" fill="#ff7b72"/>
+          <text x="28" y="68" font-size="10" font-weight="bold" fill="#ff7b72">E</text>
+          <circle cx="48" cy="80" r="4.5" fill="#ff7b72"/>
+          <text x="44" y="68" font-size="10" font-weight="bold" fill="#ff7b72">D</text>
+
+          <!-- GAP -->
+          <text x="63" y="100" font-size="9" fill="#ff7b72" font-style="italic" font-weight="bold">|</text>
+
+          <!-- Cluster 2: J I H -->
+          <line x1="72" y1="80" x2="112" y2="80" stroke="#bc8cff" stroke-width="3"/>
+          <circle cx="75" cy="80" r="4.5" fill="#bc8cff"/>
+          <text x="71" y="68" font-size="10" font-weight="bold" fill="#bc8cff">J</text>
+          <circle cx="90" cy="80" r="4.5" fill="#bc8cff"/>
+          <text x="86" y="68" font-size="10" font-weight="bold" fill="#bc8cff">I</text>
+          <circle cx="108" cy="80" r="4.5" fill="#bc8cff"/>
+          <text x="104" y="68" font-size="10" font-weight="bold" fill="#bc8cff">H</text>
+
+          <!-- GAP -->
+          <text x="118" y="100" font-size="9" fill="#ff7b72" font-style="italic" font-weight="bold">|</text>
+
+          <!-- Cluster 3: A B C -->
+          <line x1="126" y1="80" x2="156" y2="80" stroke="#3fb950" stroke-width="3"/>
+          <circle cx="129" cy="80" r="4.5" fill="#3fb950"/>
+          <text x="125" y="68" font-size="10" font-weight="bold" fill="#3fb950">A</text>
+          <circle cx="141" cy="80" r="4.5" fill="#3fb950"/>
+          <text x="137" y="68" font-size="10" font-weight="bold" fill="#3fb950">B</text>
+          <circle cx="155" cy="80" r="4.5" fill="#3fb950"/>
+          <text x="151" y="68" font-size="10" font-weight="bold" fill="#3fb950">C</text>
+
+          <!-- GAP -->
+          <text x="163" y="100" font-size="9" fill="#ff7b72" font-style="italic" font-weight="bold">|</text>
+
+          <!-- Cluster 4: G -->
+          <circle cx="182" cy="80" r="4.5" fill="#e3b341"/>
+          <text x="178" y="68" font-size="10" font-weight="bold" fill="#e3b341">G</text>
+
+          <text x="105" y="130" font-size="9" text-anchor="middle" fill="#ff7b72" font-style="italic" font-weight="bold">Inverted mappings</text>
+          <line x1="105" y1="122" x2="90" y2="90" stroke="#ff7b72" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <text x="105" y="146" font-size="8.5" text-anchor="middle" fill="#bc8cff" font-style="italic">mismatched scales</text>
+          <text x="105" y="162" font-size="9" text-anchor="middle" fill="#ff7b72" font-weight="bold">Fragmented representation space</text>
+        </svg>
+      </div>
+
+      <!-- ARROW → φ -->
+      <div class="arrow-box" style="margin-top:44px;">
+        <svg width="46" height="36" viewBox="0 0 46 36">
+          <defs>
+            <marker id="ah3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="2" y1="18" x2="36" y2="18" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ah3)"/>
+        </svg>
+      </div>
+
+      <!-- DECODER BOX -->
+      <div class="pipeline-element" style="margin-top:44px;">
+        <div class="func-box">φ</div>
+        <div class="func-label">decoder<br/>ℝ→ℝ²</div>
+      </div>
+
+      <!-- ARROW → output -->
+      <div class="arrow-box" style="margin-top:44px;">
+        <svg width="46" height="36" viewBox="0 0 46 36">
+          <defs>
+            <marker id="ah4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="2" y1="18" x2="36" y2="18" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ah4)"/>
+        </svg>
+      </div>
+
+      <!-- OUTPUT MANIFOLD -->
+      <div class="pipeline-element">
+        <div class="space-label">ℝ²</div>
+        <svg width="170" height="175" viewBox="0 0 170 175">
+          <line x1="18" y1="158" x2="158" y2="158" stroke="#30363d" stroke-width="1"/>
+          <line x1="18" y1="158" x2="18" y2="10" stroke="#30363d" stroke-width="1"/>
+          <text x="160" y="161" font-size="9" fill="#6e7681">x</text>
+          <text x="12" y="8" font-size="9" fill="#6e7681">y</text>
+
+          <polyline points="
+            85,84
+            99,72 112,68 122,74 126,87 121,101 111,111 97,116 82,115 68,109
+            57,98 51,84 52,69 59,56 70,47 84,42 99,41 113,45 124,54 131,67
+            133,82 129,97 121,109 109,118 95,122 80,121 65,116 53,107 45,95
+            40,81 40,67 45,53 54,42 66,34 80,29 95,28 110,31 122,40 130,52
+            134,67 132,82 126,96
+          " fill="none" stroke="#58a6ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <circle cx="80" cy="29" r="4" fill="#58a6ff"/>
+          <text x="75" y="22" font-size="10" font-weight="bold" fill="#e6edf3">A</text>
+          <circle cx="110" cy="31" r="4" fill="#58a6ff"/>
+          <text x="113" y="28" font-size="10" font-weight="bold" fill="#e6edf3">B</text>
+          <circle cx="130" cy="52" r="4" fill="#58a6ff"/>
+          <text x="133" y="51" font-size="10" font-weight="bold" fill="#e6edf3">C</text>
+          <circle cx="134" cy="67" r="4" fill="#58a6ff"/>
+          <text x="137" y="67" font-size="10" font-weight="bold" fill="#e6edf3">D</text>
+          <circle cx="126" cy="96" r="4" fill="#58a6ff"/>
+          <text x="129" y="96" font-size="10" font-weight="bold" fill="#e6edf3">E</text>
+          <circle cx="109" cy="118" r="4" fill="#58a6ff"/>
+          <text x="112" y="120" font-size="10" font-weight="bold" fill="#e6edf3">F</text>
+          <circle cx="80" cy="121" r="4" fill="#58a6ff"/>
+          <text x="75" y="130" font-size="10" font-weight="bold" fill="#e6edf3">G</text>
+          <circle cx="53" cy="107" r="4" fill="#58a6ff"/>
+          <text x="40" y="109" font-size="10" font-weight="bold" fill="#e6edf3">H</text>
+          <circle cx="45" cy="53" r="4" fill="#58a6ff"/>
+          <text x="32" y="54" font-size="10" font-weight="bold" fill="#e6edf3">I</text>
+          <circle cx="85" cy="84" r="4" fill="#ff7b72"/>
+          <text x="88" y="82" font-size="10" font-weight="bold" fill="#ff7b72">J</text>
+
+          <text x="85" y="170" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">Reconstructed manifold</text>
+          <text x="140" y="18" font-size="11" fill="#3fb950" font-weight="bold">✓</text>
+          <text x="112" y="18" font-size="8" fill="#3fb950" font-style="italic">same!</text>
+        </svg>
+        <div class="annotation-green">Manifold recovered ✓<br/>but via a broken path</div>
+      </div>
+
+    </div><!-- end pipeline-row -->
+
+    <div class="explanation-box">
+      <strong>Key insight:</strong>
+      The encoder φ⁻¹ maps the continuous spiral to a fragmented, scrambled 1D representation. Points that were neighbors on the manifold (e.g. A–B–C) end up in <em>different disconnected clusters</em>. Some orderings are reversed (inverted mappings). Different clusters occupy very different scale regions (mismatched scales). Yet the decoder φ can still reconstruct the original manifold — because reconstruction only requires that φ∘φ⁻¹ ≈ identity <em>on the training data</em>, not that the latent space is geometrically coherent.
+    </div>
+  </div>
+
+  <!-- ── Diagram 2: Failure modes detail ── -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Failure Modes — Detail View</h2>
+      <div class="subtitle">Gaps · Inversion · Scale Mismatch</div>
+    </div>
+
+    <div class="pipeline-row" style="gap:4px; flex-wrap:wrap; justify-content:center; align-items:flex-start;">
+
+      <!-- INPUT CURVE -->
+      <div class="pipeline-element">
+        <div class="space-label">ℝ² — Input</div>
+        <svg width="180" height="190" viewBox="0 0 180 190">
+          <line x1="20" y1="165" x2="168" y2="165" stroke="#30363d" stroke-width="1"/>
+          <line x1="20" y1="165" x2="20" y2="12" stroke="#30363d" stroke-width="1"/>
+          <text x="170" y="168" font-size="9" fill="#6e7681">x</text>
+          <text x="14" y="10" font-size="9" fill="#6e7681">y</text>
+
+          <path d="M 30,130 C 50,80 70,150 90,100 C 110,50 130,120 155,70"
+                fill="none" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round"/>
+
+          <circle cx="30" cy="130" r="5" fill="#58a6ff"/>
+          <text x="22" y="128" font-size="11" font-weight="bold" fill="#e6edf3">A</text>
+
+          <circle cx="50" cy="96" r="5" fill="#58a6ff"/>
+          <text x="42" y="92" font-size="11" font-weight="bold" fill="#e6edf3">B</text>
+
+          <circle cx="70" cy="134" r="5" fill="#58a6ff"/>
+          <text x="62" y="148" font-size="11" font-weight="bold" fill="#e6edf3">C</text>
+
+          <circle cx="90" cy="100" r="5" fill="#ff7b72"/>
+          <text x="93" y="98" font-size="11" font-weight="bold" fill="#ff7b72">D</text>
+
+          <circle cx="120" cy="77" r="5" fill="#ff7b72"/>
+          <text x="123" y="75" font-size="11" font-weight="bold" fill="#ff7b72">E</text>
+
+          <circle cx="155" cy="70" r="5" fill="#ff7b72"/>
+          <text x="158" y="68" font-size="11" font-weight="bold" fill="#ff7b72">F</text>
+
+          <text x="90" y="182" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">Smooth 1D manifold in ℝ²</text>
+        </svg>
+      </div>
+
+      <!-- Arrow φ⁻¹ -->
+      <div class="arrow-box" style="margin-top:70px;">
+        <svg width="60" height="44" viewBox="0 0 60 44">
+          <defs>
+            <marker id="ah5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="4" y1="22" x2="50" y2="22" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ah5)"/>
+          <text x="27" y="14" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">φ⁻¹</text>
+        </svg>
+      </div>
+
+      <!-- LATENT SPACE FRAGMENTED -->
+      <div class="pipeline-element">
+        <div class="space-label">Representation Space ℝ</div>
+        <svg width="220" height="190" viewBox="0 0 220 190">
+
+          <text x="110" y="14" font-size="8" text-anchor="middle" fill="#8b949e" font-style="italic">Not continuous or topology-preserving</text>
+
+          <!-- Cluster 1: H, I, G (spread, inverted) -->
+          <rect x="10" y="50" width="78" height="52" rx="5"
+                fill="rgba(255,123,114,0.06)" stroke="#ff7b72" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <line x1="18" y1="76" x2="82" y2="76" stroke="#ff7b72" stroke-width="2"/>
+          <circle cx="22" cy="76" r="5" fill="#ff7b72"/>
+          <text x="18" y="65" font-size="11" font-weight="bold" fill="#ff7b72">H</text>
+          <circle cx="48" cy="76" r="5" fill="#ff7b72"/>
+          <text x="44" y="65" font-size="11" font-weight="bold" fill="#ff7b72">I</text>
+          <circle cx="78" cy="76" r="5" fill="#ff7b72"/>
+          <text x="74" y="65" font-size="11" font-weight="bold" fill="#ff7b72">G</text>
+
+          <!-- inversion arrow -->
+          <path d="M 22,88 C 22,96 78,96 78,88" fill="none" stroke="#ff7b72" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <polygon points="22,88 18,94 26,94" fill="#ff7b72"/>
+          <text x="50" y="108" font-size="8" text-anchor="middle" fill="#ff7b72" font-style="italic" font-weight="bold">inverted!</text>
+
+          <!-- GAP label -->
+          <text x="110" y="78" font-size="11" text-anchor="middle" fill="#ff7b72" font-weight="bold">···</text>
+          <text x="110" y="94" font-size="9" text-anchor="middle" fill="#ff7b72" font-style="italic" font-weight="bold">Gaps!!</text>
+
+          <!-- Cluster 2: D, E, F (compressed) -->
+          <rect x="132" y="50" width="78" height="52" rx="5"
+                fill="rgba(88,166,255,0.06)" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <line x1="140" y1="76" x2="200" y2="76" stroke="#58a6ff" stroke-width="2"/>
+          <circle cx="143" cy="76" r="5" fill="#58a6ff"/>
+          <text x="139" y="65" font-size="11" font-weight="bold" fill="#58a6ff">D</text>
+          <circle cx="163" cy="76" r="5" fill="#58a6ff"/>
+          <text x="159" y="65" font-size="11" font-weight="bold" fill="#58a6ff">E</text>
+          <circle cx="197" cy="76" r="5" fill="#58a6ff"/>
+          <text x="193" y="65" font-size="11" font-weight="bold" fill="#58a6ff">F</text>
+
+          <text x="171" y="115" font-size="8" text-anchor="middle" fill="#bc8cff" font-style="italic" font-weight="bold">mismatched scales</text>
+          <line x1="143" y1="108" x2="197" y2="108" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="143" y1="104" x2="143" y2="112" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="197" y1="104" x2="197" y2="112" stroke="#bc8cff" stroke-width="1"/>
+
+          <text x="50" y="46" font-size="8" text-anchor="middle" fill="#ff7b72" font-style="italic">spread out</text>
+          <text x="171" y="46" font-size="8" text-anchor="middle" fill="#58a6ff" font-style="italic">compressed</text>
+
+          <line x1="5" y1="140" x2="215" y2="140" stroke="#30363d" stroke-width="1" stroke-dasharray="2,4"/>
+          <text x="215" y="143" font-size="8" fill="#6e7681">ℝ</text>
+
+          <text x="50" y="130" font-size="9" text-anchor="middle" fill="#ff7b72" font-style="italic" font-weight="bold">Inverted mappings</text>
+          <text x="171" y="130" font-size="9" text-anchor="middle" fill="#bc8cff" font-style="italic">mismatched scales</text>
+          <text x="110" y="162" font-size="9" text-anchor="middle" fill="#ff7b72" font-style="italic">Fragmented representation space</text>
+        </svg>
+      </div>
+
+      <!-- Arrow φ -->
+      <div class="arrow-box" style="margin-top:70px;">
+        <svg width="60" height="44" viewBox="0 0 60 44">
+          <defs>
+            <marker id="ah6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="4" y1="22" x2="50" y2="22" stroke="#8b949e" stroke-width="1.8" marker-end="url(#ah6)"/>
+          <text x="27" y="14" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">φ</text>
+        </svg>
+      </div>
+
+      <!-- OUTPUT MANIFOLD -->
+      <div class="pipeline-element">
+        <div class="space-label">ℝ² — Output</div>
+        <svg width="180" height="190" viewBox="0 0 180 190">
+          <line x1="20" y1="165" x2="168" y2="165" stroke="#30363d" stroke-width="1"/>
+          <line x1="20" y1="165" x2="20" y2="12" stroke="#30363d" stroke-width="1"/>
+          <text x="170" y="168" font-size="9" fill="#6e7681">x</text>
+          <text x="14" y="10" font-size="9" fill="#6e7681">y</text>
+
+          <path d="M 30,130 C 50,80 70,150 90,100 C 110,50 130,120 155,70"
+                fill="none" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round"/>
+
+          <circle cx="30" cy="130" r="5" fill="#58a6ff"/>
+          <text x="22" y="128" font-size="11" font-weight="bold" fill="#e6edf3">A</text>
+          <circle cx="50" cy="96" r="5" fill="#58a6ff"/>
+          <text x="42" y="92" font-size="11" font-weight="bold" fill="#e6edf3">B</text>
+          <circle cx="70" cy="134" r="5" fill="#58a6ff"/>
+          <text x="62" y="148" font-size="11" font-weight="bold" fill="#e6edf3">C</text>
+          <circle cx="90" cy="100" r="5" fill="#ff7b72"/>
+          <text x="93" y="98" font-size="11" font-weight="bold" fill="#ff7b72">D</text>
+          <circle cx="120" cy="77" r="5" fill="#ff7b72"/>
+          <text x="123" y="75" font-size="11" font-weight="bold" fill="#ff7b72">E</text>
+          <circle cx="155" cy="70" r="5" fill="#ff7b72"/>
+          <text x="158" y="68" font-size="11" font-weight="bold" fill="#ff7b72">F</text>
+
+          <text x="90" y="18" font-size="9" text-anchor="middle" fill="#3fb950" font-weight="bold">= Input ✓</text>
+          <text x="90" y="182" font-size="9" text-anchor="middle" fill="#8b949e" font-style="italic">φ ∘ φ⁻¹ recovers manifold</text>
+          <text x="152" y="22" font-size="16" fill="#3fb950" font-weight="bold">✓</text>
+        </svg>
+      </div>
+
+    </div><!-- end pipeline-row -->
+
+    <div style="text-align:center; margin-top:0.75rem; font-size:0.78rem; color:var(--text-muted); font-style:italic;">
+      A,B,C → fragmented cluster 1 &nbsp;|&nbsp; D,E,F → compressed cluster 2 &nbsp;|&nbsp; orderings scrambled within each cluster
+    </div>
+
+    <div class="explanation-box">
+      <strong>Key insight:</strong>
+      Even for a simple wavy manifold (a 1D curve in ℝ²), the encoder φ⁻¹ fragments the representation into disconnected regions. Points A,B,C get mapped to one cluster; D,E,F to another — but within each cluster, the ordering can be inverted. The two clusters operate at different scales (mismatched scales). <strong>There are empty gaps between clusters</strong> — if you try to interpolate or navigate in latent space, you land in meaningless void. The decoder φ can still reconstruct the original manifold from these fragments, but you <em>cannot use the latent space for anything meaningful</em> — no interpolation, no smooth traversal, no generalization in latent directions.
+    </div>
+  </div>
+
+  <!-- ── Theory panel ── -->
+  <div class="panel" style="border-color: rgba(255,123,114,0.3);">
+    <div class="panel-header">
+      <h2 style="color: var(--accent-red);">Why Autoencoders Fail to be Homeomorphisms</h2>
+    </div>
+    <div class="theory-grid">
+      <div>
+        <p><strong>What a homeomorphism requires:</strong><br/>
+        A homeomorphism is a continuous bijection with a continuous inverse. For φ⁻¹ to be a homeomorphism ℝ² → ℝ, it must be continuous, injective, surjective, and have a continuous inverse φ. Topologically, this means <em>nearby points stay nearby</em>, and the map preserves the structure of open sets.</p>
+        <p><strong>Why vanilla autoencoders don't guarantee this:</strong><br/>
+        The autoencoder loss is typically ‖x − φ(φ⁻¹(x))‖² — it only measures <em>reconstruction accuracy</em>. It places no constraint on <em>how</em> the encoder arranges points in latent space. Two very different arrangements of points can yield identical reconstruction loss.</p>
+      </div>
+      <div>
+        <p><strong>Consequences:</strong></p>
+        <p>
+          <span class="failure-tag red">fragmentation</span> Latent space breaks into disconnected islands with no meaningful path between them.<br/>
+          <span class="failure-tag purple">inversion</span> Local neighborhoods can be mirrored or reordered.<br/>
+          <span class="failure-tag orange">scale mismatch</span> Different regions get mapped to differently-scaled latent regions.<br/>
+          <span class="failure-tag blue">gaps</span> Large regions of latent space correspond to nothing — decoding them produces garbage.
+        </p>
+        <p style="margin-top:0.75rem;"><strong>The fix:</strong><br/>
+        Variational Autoencoders (VAEs) and other regularized methods add constraints (e.g. KL divergence to a prior) that encourage the latent space to be <em>smooth and connected</em> — pushing toward a topologically coherent representation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Key Idea panel ── -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Representation space cannot be navigated</div>
+      <p class="idea-text">
+        Because φ⁻¹ is <span class="hi-r">not a homeomorphism</span>, the latent space is
+        <span class="hi-r">fragmented</span>, <span class="hi-p">inverted</span>, and <span class="hi-r">gapped</span>.
+        Reconstruction succeeds — <span class="hi-g">φ∘φ⁻¹ ≈ id<sub>X</sub></span> on training data —
+        but the encoder/decoder are not true topological inverses.
+        Interpolating in latent space, sampling new points, or navigating smoothly between representations
+        all require a coherent latent geometry that vanilla autoencoders do not provide.
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  BMAI 2026 · Weekend 4 &nbsp;·&nbsp; Vanilla Autoencoder Failure Modes &nbsp;·&nbsp;
+  φ∘φ⁻¹ ≈ id<sub>X</sub> &nbsp;does not imply&nbsp; φ⁻¹∘φ ≈ id<sub>ℝ</sub> &nbsp;with topological coherence
+</footer>
+
+</body>
+</html>

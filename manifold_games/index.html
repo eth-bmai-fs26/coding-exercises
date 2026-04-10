@@ -166,6 +166,10 @@ body {
 
 .game-card.disabled:hover::before { opacity: 0; }
 
+.game-card.wide {
+  grid-column: 1 / -1;
+}
+
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -596,6 +600,70 @@ footer {
         <span class="concept-tag">M ⊂ ℝ²⁰</span>
       </div>
       <span class="card-cta" style="color:#3fb950;">Play →</span>
+    </div>
+  </a>
+
+
+  <!-- Game 7 — full-width explainer -->
+  <a class="game-card wide" href="game_7.html"
+     style="--card-color-a: #ff7b72; --card-color-b: #bc8cff;">
+    <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap;">
+      <div class="card-preview" style="width:160px; flex-shrink:0; background:#0d1117;">
+        <svg viewBox="0 0 200 110" width="160" height="110" style="overflow:visible;">
+          <!-- Continuous input spiral hint -->
+          <polyline points="
+            68,54 75,47 82,45 88,48 91,55 88,62 82,67 74,68 67,65 61,58 59,51
+            62,44 68,39 76,36 85,36 93,39 99,46 101,55 99,63
+          " fill="none" stroke="#58a6ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          <circle cx="76" cy="36" r="3" fill="#58a6ff"/>
+          <circle cx="99" cy="46" r="3" fill="#58a6ff"/>
+          <circle cx="59" cy="51" r="3" fill="#58a6ff"/>
+          <circle cx="68" cy="54" r="3" fill="#ff7b72"/>
+          <text x="68" y="90" font-size="8" text-anchor="middle" fill="#8b949e" font-style="italic">Input ℝ²</text>
+
+          <!-- Arrow -->
+          <defs>
+            <marker id="ga" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+              <path d="M0,0 L0,5 L7,2.5 z" fill="#8b949e"/>
+            </marker>
+          </defs>
+          <line x1="110" y1="55" x2="132" y2="55" stroke="#8b949e" stroke-width="1.4" marker-end="url(#ga)"/>
+          <text x="121" y="50" font-size="7" text-anchor="middle" fill="#8b949e" font-style="italic">φ⁻¹</text>
+
+          <!-- Fragmented latent line -->
+          <line x1="138" y1="55" x2="198" y2="55" stroke="#30363d" stroke-width="1.5"/>
+          <line x1="140" y1="55" x2="153" y2="55" stroke="#ff7b72" stroke-width="3"/>
+          <text x="161" y="52" font-size="8" fill="#ff7b72" font-weight="bold">···</text>
+          <line x1="168" y1="55" x2="181" y2="55" stroke="#bc8cff" stroke-width="3"/>
+          <text x="188" y="52" font-size="8" fill="#ff7b72" font-weight="bold">···</text>
+          <text x="168" y="90" font-size="8" text-anchor="middle" fill="#8b949e" font-style="italic">Latent ℝ</text>
+          <text x="168" y="78" font-size="7" text-anchor="middle" fill="#ff7b72" font-style="italic">fragmented!</text>
+        </svg>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
+          <div class="card-number" style="background:rgba(255,123,114,0.12); color:#ff7b72; border-color:rgba(255,123,114,0.25);">Explainer 7</div>
+          <div>
+            <div class="card-title">The Autoencoder Problem</div>
+            <div class="card-subtitle">φ⁻¹: M → ℝ<sup>d</sup> &nbsp;·&nbsp; not a homeomorphism</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Vanilla autoencoders optimize reconstruction loss — but that says nothing about how the latent space is organized.
+          The encoder can fragment a smooth manifold into disconnected clusters, invert local neighborhoods, and create vast empty gaps.
+          Reconstruction succeeds; navigation fails.
+        </p>
+        <div class="card-footer">
+          <div class="card-concepts">
+            <span class="concept-tag">fragmentation</span>
+            <span class="concept-tag">inversion</span>
+            <span class="concept-tag">scale mismatch</span>
+            <span class="concept-tag">gaps in latent space</span>
+            <span class="concept-tag">VAE motivation</span>
+          </div>
+          <span class="card-cta" style="color:#ff7b72;">View →</span>
+        </div>
+      </div>
     </div>
   </a>
 
