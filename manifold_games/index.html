@@ -667,6 +667,58 @@ footer {
     </div>
   </a>
 
+  <!-- Game 8 — VAE explainer, full-width -->
+  <a class="game-card wide" href="game_8.html"
+     style="--card-color-a: #58a6ff; --card-color-b: #3fb950;">
+    <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap;">
+      <div class="card-preview" style="width:160px; flex-shrink:0; background:#0d1117;">
+        <svg viewBox="0 0 200 120" width="160" height="96" style="overflow:visible;">
+          <!-- 1D axis with sigma band -->
+          <line x1="20" y1="30" x2="160" y2="30" stroke="#30363d" stroke-width="1.5"/>
+          <rect x="68" y="22" width="52" height="16" rx="3"
+                fill="rgba(88,166,255,0.18)" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <circle cx="94" cy="30" r="4.5" fill="#bc8cff"/>
+          <circle cx="75" cy="30" r="2.8" fill="#3fb950" opacity="0.9"/>
+          <circle cx="86" cy="30" r="2.8" fill="#3fb950" opacity="0.9"/>
+          <circle cx="105" cy="30" r="2.8" fill="#3fb950" opacity="0.9"/>
+          <circle cx="113" cy="30" r="2.8" fill="#3fb950" opacity="0.9"/>
+          <text x="94" y="50" text-anchor="middle" font-size="8" fill="#8b949e" font-style="italic">1D: x → [z-σ, z+σ]</text>
+          <!-- 2D sigma ball -->
+          <circle cx="94" cy="90" r="20" fill="rgba(88,166,255,0.1)" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="4,3"/>
+          <circle cx="94" cy="90" r="4.5" fill="#bc8cff"/>
+          <circle cx="81" cy="83" r="2.5" fill="#3fb950" opacity="0.85"/>
+          <circle cx="104" cy="85" r="2.5" fill="#3fb950" opacity="0.85"/>
+          <circle cx="85" cy="100" r="2.5" fill="#3fb950" opacity="0.85"/>
+          <circle cx="107" cy="97" r="2.5" fill="#3fb950" opacity="0.85"/>
+          <text x="94" y="118" text-anchor="middle" font-size="8" fill="#8b949e" font-style="italic">2D: x → σ-ball</text>
+        </svg>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem;">
+          <div class="card-number" style="background:rgba(88,166,255,0.12); color:#58a6ff; border-color:rgba(88,166,255,0.25);">Explainer 8</div>
+          <div>
+            <div class="card-title">The Idea of a VAE</div>
+            <div class="card-subtitle">φ⁻¹: x → 𝒩(μ, σ²) &nbsp;·&nbsp; encode to a region, not a point</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Vanilla autoencoders fragment the latent space. VAEs fix this by mapping each input
+          to a Gaussian distribution — a 1D interval or 2D σ-ball — so neighboring inputs
+          overlap in latent space, enabling smooth interpolation and generative sampling.
+        </p>
+        <div class="card-footer">
+          <div class="card-concepts">
+            <span class="concept-tag">σ-ball encoding</span>
+            <span class="concept-tag">KL regularization</span>
+            <span class="concept-tag">smooth latent space</span>
+            <span class="concept-tag">VAE objective</span>
+          </div>
+          <span class="card-cta" style="color:#58a6ff;">View →</span>
+        </div>
+      </div>
+    </div>
+  </a>
+
 </div>
 
 <footer>

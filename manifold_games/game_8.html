@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Idea of a VAE · Manifold Games</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #21262d;
+  --border:        #30363d;
+  --accent-blue:   #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green:  #3fb950;
+  --accent-orange: #e3b341;
+  --accent-red:    #ff7b72;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --radius:        10px;
+  --radius-sm:     6px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--accent-blue); }
+
+.header-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+.header-meta { display: flex; flex-direction: column; }
+.header-meta .game-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-blue);
+  font-weight: 700;
+}
+.header-meta h1 {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ─── Main ────────────────────────────────────────────────────────── */
+main {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ─── Panels ──────────────────────────────────────────────────────── */
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.panel:nth-child(1) { animation-delay: 0.00s; }
+.panel:nth-child(2) { animation-delay: 0.07s; }
+.panel:nth-child(3) { animation-delay: 0.14s; }
+.panel:nth-child(4) { animation-delay: 0.21s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { margin-bottom: 1.25rem; }
+.panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.panel-header .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* ─── Core statement banner ──────────────────────────────────────── */
+.core-statement {
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.3);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-style: italic;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Two-col layout ─────────────────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: center;
+}
+.arrow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px;
+}
+.arrow-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  font-family: 'Courier New', monospace;
+}
+.arrow-svg { flex-shrink: 0; }
+
+/* ─── SVG containers ─────────────────────────────────────────────── */
+.viz-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.viz-label {
+  font-size: 0.72rem;
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+svg { display: block; width: 100%; }
+
+/* ─── Controls ───────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+.ctrl-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+.ctrl-label span { color: var(--text-secondary); font-weight: 600; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 180px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  display: block;
+  margin-top: 4px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  border: 2px solid var(--bg-primary);
+}
+
+button {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 18px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+button:hover {
+  background: var(--bg-secondary);
+  color: var(--accent-blue);
+  border-color: rgba(88,166,255,0.4);
+}
+
+/* ─── Legend ─────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Explanation box ────────────────────────────────────────────── */
+.explanation-box {
+  background: rgba(88,166,255,0.05);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1rem;
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.explanation-box strong { color: var(--accent-blue); }
+
+/* ─── Theory grid ────────────────────────────────────────────────── */
+.theory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.theory-grid p { margin-bottom: 0.75rem; }
+.theory-grid p:last-child { margin-bottom: 0; }
+.theory-grid strong { color: var(--text-primary); }
+
+/* ─── Concept tags ───────────────────────────────────────────────── */
+.concept-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  font-family: 'Courier New', monospace;
+  margin: 0.15rem 0.1rem;
+  color: var(--text-muted);
+}
+.concept-tag.blue   { color: var(--accent-blue);   border-color: rgba(88,166,255,0.4);  background: rgba(88,166,255,0.08); }
+.concept-tag.green  { color: var(--accent-green);  border-color: rgba(63,185,80,0.4);   background: rgba(63,185,80,0.08); }
+.concept-tag.purple { color: var(--accent-purple); border-color: rgba(188,140,255,0.4); background: rgba(188,140,255,0.08); }
+
+/* ─── Idea panel ─────────────────────────────────────────────────── */
+.idea-panel {
+  background: linear-gradient(135deg, rgba(88,166,255,0.07) 0%, var(--bg-secondary) 60%);
+  border: 1px solid rgba(88,166,255,0.38);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  animation: fadeIn 0.35s ease-out both;
+}
+.idea-icon { flex-shrink: 0; margin-top: 2px; }
+.idea-body { flex: 1; }
+.idea-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-blue);
+  margin-bottom: 0.35rem;
+}
+.idea-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+.idea-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.idea-text .hi-b { color: var(--accent-blue);   font-weight: 600; }
+.idea-text .hi-g { color: var(--accent-green);  font-weight: 600; }
+.idea-text .hi-p { color: var(--accent-purple); font-weight: 600; }
+.idea-text .hi-r { color: var(--accent-red);    font-weight: 600; }
+
+/* ─── Footer ──────────────────────────────────────────────────────── */
+footer {
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 700px) {
+  .two-col { grid-template-columns: 1fr; }
+  .arrow-col { flex-direction: row; padding: 12px 0; justify-content: center; }
+  .theory-grid { grid-template-columns: 1fr; }
+  main { padding: 1.25rem 1rem; }
+  header { padding: 0.9rem 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Reusable lightbulb icon (same as other games) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-bulb" viewBox="0 0 100 115">
+    <line x1="50" y1="3"  x2="50" y2="13" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="74" y1="9"  x2="67" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="89" y1="33" x2="78" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="26" y1="9"  x2="33" y2="18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="11" y1="33" x2="22" y2="37" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="17" y1="59" x2="27" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="83" y1="59" x2="73" y2="53" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="50" cy="46" r="29" fill="#f5c042" stroke="white" stroke-width="4.5"/>
+    <path d="M 38 73 L 62 73 L 63 75 L 37 75 Z" fill="#f5c042" stroke="none"/>
+    <path d="M 37 32 Q 31 41 34 50" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <rect x="36" y="74" width="28" height="7"  rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="37" y="81" width="26" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="38" y="87" width="24" height="6.5" rx="2.5" fill="#57606a" stroke="white" stroke-width="2.5"/>
+    <rect x="40" y="93" width="20" height="10" rx="5" fill="#f0d060" stroke="white" stroke-width="2.5"/>
+  </symbol>
+</svg>
+
+<header>
+  <a class="back-link" href="index.html">← All games</a>
+  <div class="header-sep"></div>
+  <div class="header-meta">
+    <span class="game-label">Explainer · 8</span>
+    <h1>The Idea of a VAE</h1>
+  </div>
+</header>
+
+<main>
+
+  <!-- Core statement -->
+  <div class="core-statement">
+    VAEs map each input to a <em>region</em> in latent space — not a single point —
+    ensuring a smooth, connected, navigable latent geometry.
+  </div>
+
+  <!-- ── Panel 1: 1D Latent Space ── -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>1D Latent Space</h2>
+      <div class="subtitle">Encoder φ⁻¹ maps each input x to an interval of width 2σ around z. Decoder φ maps that interval back to x-space.</div>
+    </div>
+
+    <div class="two-col">
+      <!-- Input manifold -->
+      <div>
+        <div class="viz-label">Input space &nbsp;<em style="color:var(--text-muted); font-family:serif;">x</em></div>
+        <div class="viz-wrap">
+          <svg id="svg1d-input" viewBox="0 0 300 260"></svg>
+        </div>
+      </div>
+
+      <!-- Arrow column -->
+      <div class="arrow-col">
+        <div class="arrow-label">φ⁻¹</div>
+        <svg class="arrow-svg" width="56" height="26" viewBox="0 0 56 26">
+          <defs>
+            <marker id="arr1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 Z" fill="#58a6ff" opacity="0.7"/>
+            </marker>
+          </defs>
+          <line x1="4" y1="13" x2="50" y2="13" stroke="#58a6ff" stroke-width="1.5" opacity="0.7" marker-end="url(#arr1)"/>
+        </svg>
+        <div style="height:40px;"></div>
+        <svg class="arrow-svg" width="56" height="26" viewBox="0 0 56 26">
+          <defs>
+            <marker id="arr2" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto">
+              <path d="M7,0 L7,7 L0,3.5 Z" fill="#e3b341" opacity="0.7"/>
+            </marker>
+          </defs>
+          <line x1="50" y1="13" x2="4" y2="13" stroke="#e3b341" stroke-width="1.5" opacity="0.7" marker-end="url(#arr2)"/>
+        </svg>
+        <div class="arrow-label">φ</div>
+      </div>
+
+      <!-- Latent space 1D -->
+      <div>
+        <div class="viz-label">Latent space &nbsp;<em style="color:var(--text-muted); font-family:serif;">z</em></div>
+        <div class="viz-wrap">
+          <svg id="svg1d-latent" viewBox="0 0 300 260"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="ctrl-label">
+        σ = <span id="sigma1d-val">0.55</span>
+        <input type="range" id="sigma1d" min="0.05" max="1.2" step="0.01" value="0.55"/>
+      </label>
+      <button id="resample1d">↺&nbsp; Resample</button>
+    </div>
+
+    <div class="legend">
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#58a6ff;"></div> Encoder path φ⁻¹
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#e3b341;"></div> Decoder path φ
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#3fb950;"></div> Sampled z points
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#21262d; border:1px solid #58a6ff;"></div> Interval 2σ
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insight 1 -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Insight · 1D</div>
+      <div class="idea-title">Encode to an interval, not a point</div>
+      <p class="idea-text">
+        Instead of mapping x to a single z, the VAE spreads it over an
+        <span class="hi-b">interval of width 2σ</span>.
+        Neighboring inputs overlap in latent space,
+        <span class="hi-g">preventing isolated gaps</span> (fragmentation from Explainer 7).
+        Any z sampled inside the interval decodes to a plausible output near x.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Panel 2: 2D Latent Space ── -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>2D Latent Space</h2>
+      <div class="subtitle">In higher dimensions the interval becomes a σ-ball. Points sampled anywhere inside decode to plausible outputs.</div>
+    </div>
+
+    <div class="two-col">
+      <!-- Latent 2D -->
+      <div>
+        <div class="viz-label">Latent space &nbsp;<em style="color:var(--text-muted); font-family:serif;">z</em></div>
+        <div class="viz-wrap">
+          <svg id="svg2d-latent" viewBox="0 0 300 300"></svg>
+        </div>
+      </div>
+
+      <!-- Arrow column -->
+      <div class="arrow-col">
+        <div class="arrow-label">φ</div>
+        <svg class="arrow-svg" width="56" height="26" viewBox="0 0 56 26">
+          <defs>
+            <marker id="arr3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 Z" fill="#e3b341" opacity="0.7"/>
+            </marker>
+          </defs>
+          <line x1="4" y1="13" x2="50" y2="13" stroke="#e3b341" stroke-width="1.5" opacity="0.7" marker-end="url(#arr3)"/>
+        </svg>
+      </div>
+
+      <!-- Decoded output -->
+      <div>
+        <div class="viz-label">Decoded output &nbsp;<em style="color:var(--text-muted); font-family:serif;">x̂</em></div>
+        <div class="viz-wrap">
+          <svg id="svg2d-output" viewBox="0 0 300 300"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="ctrl-label">
+        σ = <span id="sigma2d-val">0.55</span>
+        <input type="range" id="sigma2d" min="0.05" max="1.2" step="0.01" value="0.55"/>
+      </label>
+      <button id="resample2d">↺&nbsp; Resample</button>
+    </div>
+
+    <div class="legend">
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#bc8cff;"></div> Encoded z centre
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#3fb950;"></div> Sampled z points
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#21262d; border:1px solid #58a6ff;"></div> σ-ball boundary
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#e3b341;"></div> Decoded outputs
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insight 2 -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Insight · 2D</div>
+      <div class="idea-title">Encode to a σ-ball — the whole region decodes coherently</div>
+      <p class="idea-text">
+        The ball of radius σ ensures the entire region around z decodes coherently.
+        <span class="hi-b">Increasing σ</span> widens the spread — more overlap, more generalization —
+        but risks <span class="hi-r">blurrier reconstructions</span>.
+        This trade-off is the VAE objective: reconstruction quality vs. latent regularity (KL term).
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Theory panel ── -->
+  <div class="panel" style="border-color: rgba(88,166,255,0.3);">
+    <div class="panel-header">
+      <h2 style="color: var(--accent-blue);">Why the VAE Fixes the Autoencoder Problem</h2>
+    </div>
+    <div class="theory-grid">
+      <div>
+        <p><strong>The problem (Explainer 7):</strong><br/>
+        A vanilla autoencoder minimizes ‖x − φ(φ⁻¹(x))‖² — reconstruction loss only.
+        The encoder φ⁻¹ can fragment the manifold into disconnected latent clusters
+        with gaps, inverted orderings, and mismatched scales.
+        The decoder still works on training points, but the latent space
+        <em>cannot be navigated</em>.</p>
+        <p><strong>The VAE fix:</strong><br/>
+        Instead of encoding x → z (a point), the VAE encodes x → (μ, σ²) (a Gaussian).
+        The decoder reconstructs from a <em>sample</em> z ~ 𝒩(μ, σ²I).
+        A KL divergence term pushes each posterior toward 𝒩(0, I),
+        regularizing the latent space to be <em>smooth and connected</em>.</p>
+      </div>
+      <div>
+        <p><strong>What regularization buys:</strong></p>
+        <p>
+          <span class="concept-tag blue">overlap</span> Nearby inputs share latent support — no gaps.<br/>
+          <span class="concept-tag green">smooth interpolation</span> Moving through latent space gives smooth output transitions.<br/>
+          <span class="concept-tag purple">generativity</span> Sampling z ~ 𝒩(0,I) decodes to plausible outputs.<br/>
+          <span class="concept-tag blue">topology</span> The encoder becomes approximately continuous — closer to a homeomorphism.
+        </p>
+        <p style="margin-top:0.75rem;"><strong>The cost:</strong><br/>
+        Reconstruction is slightly blurrier — the decoder must handle an entire region, not a single point.
+        This is the well-known VAE trade-off. More expressive decoders (flow-based, diffusion)
+        reduce blurriness without sacrificing latent structure.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Capstone Key Idea ── -->
+  <div class="idea-panel">
+    <div class="idea-icon">
+      <svg width="54" height="62" aria-hidden="true"><use href="#icon-bulb"/></svg>
+    </div>
+    <div class="idea-body">
+      <div class="idea-label">Key Idea</div>
+      <div class="idea-title">Encode to a region → latent space becomes navigable</div>
+      <p class="idea-text">
+        By mapping each input to a <span class="hi-b">distribution 𝒩(μ, σ²I)</span> rather than a point,
+        the VAE forces the encoder to be <span class="hi-g">approximately continuous</span>
+        and the latent space to be <span class="hi-g">connected and smooth</span>.
+        Interpolation works. Sampling works. The latent space becomes a genuine
+        low-dimensional coordinate system for the data manifold —
+        something a vanilla autoencoder's <span class="hi-r">fragmented representation space</span>
+        cannot provide.
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  BMAI 2026 · Weekend 4 &nbsp;·&nbsp; The Idea of a VAE &nbsp;·&nbsp;
+  φ⁻¹: x → 𝒩(μ, σ²) &nbsp;·&nbsp; KL[ 𝒩(μ,σ²) ‖ 𝒩(0,I) ] regularizes latent geometry
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Data (generated from parametric curve t ∈ [0,1])
+// ─────────────────────────────────────────────────────────────────────────────
+const CURVE_DATA = [{"t": 0.0, "x": -4.0, "y": 0.0}, {"t": 0.0084, "x": -3.9328, "y": 0.1221}, {"t": 0.0168, "x": -3.8655, "y": 0.2436}, {"t": 0.0252, "x": -3.7983, "y": 0.3642}, {"t": 0.0336, "x": -3.7311, "y": 0.4831}, {"t": 0.042, "x": -3.6639, "y": 0.6001}, {"t": 0.0504, "x": -3.5966, "y": 0.7145}, {"t": 0.0588, "x": -3.5294, "y": 0.8259}, {"t": 0.0672, "x": -3.4622, "y": 0.9337}, {"t": 0.0756, "x": -3.395, "y": 1.0377}, {"t": 0.084, "x": -3.3277, "y": 1.1372}, {"t": 0.0924, "x": -3.2605, "y": 1.232}, {"t": 0.1008, "x": -3.1933, "y": 1.3215}, {"t": 0.1092, "x": -3.1261, "y": 1.4055}, {"t": 0.1176, "x": -3.0588, "y": 1.4835}, {"t": 0.1261, "x": -2.9916, "y": 1.5553}, {"t": 0.1345, "x": -2.9244, "y": 1.6205}, {"t": 0.1429, "x": -2.8571, "y": 1.6789}, {"t": 0.1513, "x": -2.7899, "y": 1.7302}, {"t": 0.1597, "x": -2.7227, "y": 1.7743}, {"t": 0.1681, "x": -2.6555, "y": 1.8109}, {"t": 0.1765, "x": -2.5882, "y": 1.8399}, {"t": 0.1849, "x": -2.521, "y": 1.8613}, {"t": 0.1933, "x": -2.4538, "y": 1.8748}, {"t": 0.2017, "x": -2.3866, "y": 1.8805}, {"t": 0.2101, "x": -2.3193, "y": 1.8784}, {"t": 0.2185, "x": -2.2521, "y": 1.8685}, {"t": 0.2269, "x": -2.1849, "y": 1.8508}, {"t": 0.2353, "x": -2.1176, "y": 1.8254}, {"t": 0.2437, "x": -2.0504, "y": 1.7925}, {"t": 0.2521, "x": -1.9832, "y": 1.7522}, {"t": 0.2605, "x": -1.916, "y": 1.7048}, {"t": 0.2689, "x": -1.8487, "y": 1.6503}, {"t": 0.2773, "x": -1.7815, "y": 1.5892}, {"t": 0.2857, "x": -1.7143, "y": 1.5216}, {"t": 0.2941, "x": -1.6471, "y": 1.4479}, {"t": 0.3025, "x": -1.5798, "y": 1.3684}, {"t": 0.3109, "x": -1.5126, "y": 1.2834}, {"t": 0.3193, "x": -1.4454, "y": 1.1934}, {"t": 0.3277, "x": -1.3782, "y": 1.0988}, {"t": 0.3361, "x": -1.3109, "y": 0.9999}, {"t": 0.3445, "x": -1.2437, "y": 0.8973}, {"t": 0.3529, "x": -1.1765, "y": 0.7914}, {"t": 0.3613, "x": -1.1092, "y": 0.6827}, {"t": 0.3697, "x": -1.042, "y": 0.5716}, {"t": 0.3782, "x": -0.9748, "y": 0.4586}, {"t": 0.3866, "x": -0.9076, "y": 0.3443}, {"t": 0.395, "x": -0.8403, "y": 0.2292}, {"t": 0.4034, "x": -0.7731, "y": 0.1138}, {"t": 0.4118, "x": -0.7059, "y": -0.0014}, {"t": 0.4202, "x": -0.6387, "y": -0.1159}, {"t": 0.4286, "x": -0.5714, "y": -0.2291}, {"t": 0.437, "x": -0.5042, "y": -0.3406}, {"t": 0.4454, "x": -0.437, "y": -0.4499}, {"t": 0.4538, "x": -0.3697, "y": -0.5564}, {"t": 0.4622, "x": -0.3025, "y": -0.6597}, {"t": 0.4706, "x": -0.2353, "y": -0.7593}, {"t": 0.479, "x": -0.1681, "y": -0.8549}, {"t": 0.4874, "x": -0.1008, "y": -0.9458}, {"t": 0.4958, "x": -0.0336, "y": -1.0318}, {"t": 0.5042, "x": 0.0336, "y": -1.1124}, {"t": 0.5126, "x": 0.1008, "y": -1.1873}, {"t": 0.521, "x": 0.1681, "y": -1.2562}, {"t": 0.5294, "x": 0.2353, "y": -1.3186}, {"t": 0.5378, "x": 0.3025, "y": -1.3744}, {"t": 0.5462, "x": 0.3697, "y": -1.4233}, {"t": 0.5546, "x": 0.437, "y": -1.465}, {"t": 0.563, "x": 0.5042, "y": -1.4994}, {"t": 0.5714, "x": 0.5714, "y": -1.5263}, {"t": 0.5798, "x": 0.6387, "y": -1.5455}, {"t": 0.5882, "x": 0.7059, "y": -1.557}, {"t": 0.5966, "x": 0.7731, "y": -1.5607}, {"t": 0.605, "x": 0.8403, "y": -1.5566}, {"t": 0.6134, "x": 0.9076, "y": -1.5446}, {"t": 0.6218, "x": 0.9748, "y": -1.5248}, {"t": 0.6303, "x": 1.042, "y": -1.4973}, {"t": 0.6387, "x": 1.1092, "y": -1.4622}, {"t": 0.6471, "x": 1.1765, "y": -1.4196}, {"t": 0.6555, "x": 1.2437, "y": -1.3697}, {"t": 0.6639, "x": 1.3109, "y": -1.3127}, {"t": 0.6723, "x": 1.3782, "y": -1.2488}, {"t": 0.6807, "x": 1.4454, "y": -1.1784}, {"t": 0.6891, "x": 1.5126, "y": -1.1016}, {"t": 0.6975, "x": 1.5798, "y": -1.0188}, {"t": 0.7059, "x": 1.6471, "y": -0.9303}, {"t": 0.7143, "x": 1.7143, "y": -0.8366}, {"t": 0.7227, "x": 1.7815, "y": -0.7379}, {"t": 0.7311, "x": 1.8487, "y": -0.6349}, {"t": 0.7395, "x": 1.916, "y": -0.5277}, {"t": 0.7479, "x": 1.9832, "y": -0.417}, {"t": 0.7563, "x": 2.0504, "y": -0.3032}, {"t": 0.7647, "x": 2.1176, "y": -0.1867}, {"t": 0.7731, "x": 2.1849, "y": -0.0681}, {"t": 0.7815, "x": 2.2521, "y": 0.0522}, {"t": 0.7899, "x": 2.3193, "y": 0.1736}, {"t": 0.7983, "x": 2.3866, "y": 0.2956}, {"t": 0.8067, "x": 2.4538, "y": 0.4177}, {"t": 0.8151, "x": 2.521, "y": 0.5394}, {"t": 0.8235, "x": 2.5882, "y": 0.6602}, {"t": 0.8319, "x": 2.6555, "y": 0.7795}, {"t": 0.8403, "x": 2.7227, "y": 0.8969}, {"t": 0.8487, "x": 2.7899, "y": 1.0118}, {"t": 0.8571, "x": 2.8571, "y": 1.1238}, {"t": 0.8655, "x": 2.9244, "y": 1.2325}, {"t": 0.8739, "x": 2.9916, "y": 1.3372}, {"t": 0.8824, "x": 3.0588, "y": 1.4377}, {"t": 0.8908, "x": 3.1261, "y": 1.5334}, {"t": 0.8992, "x": 3.1933, "y": 1.624}, {"t": 0.9076, "x": 3.2605, "y": 1.7091}, {"t": 0.916, "x": 3.3277, "y": 1.7884}, {"t": 0.9244, "x": 3.395, "y": 1.8614}, {"t": 0.9328, "x": 3.4622, "y": 1.928}, {"t": 0.9412, "x": 3.5294, "y": 1.9878}, {"t": 0.9496, "x": 3.5966, "y": 2.0405}, {"t": 0.958, "x": 3.6639, "y": 2.0861}, {"t": 0.9664, "x": 3.7311, "y": 2.1242}, {"t": 0.9748, "x": 3.7983, "y": 2.1547}, {"t": 0.9832, "x": 3.8655, "y": 2.1776}, {"t": 0.9916, "x": 3.9328, "y": 2.1927}, {"t": 1.0, "x": 4.0, "y": 2.2}];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Colour palette — aligned with repo CSS variables
+// ─────────────────────────────────────────────────────────────────────────────
+const C = {
+  curve   : "#58a6ff",   // --accent-blue
+  decoded : "#e3b341",   // --accent-orange
+  latent  : "#3fb950",   // --accent-green
+  centre  : "#bc8cff",   // --accent-purple
+  band    : "#21262d",   // --bg-tertiary
+  bandStr : "#58a6ff",   // --accent-blue
+  axis    : "#30363d",   // --border
+  axisLbl : "#6e7681",   // --text-muted
+  grid    : "#1a1f28",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utility: seeded PRNG (mulberry32)
+// ─────────────────────────────────────────────────────────────────────────────
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function sampleDisk(n, sigma) {
+  const pts = [];
+  let attempt = 0;
+  const rng = mulberry32(0xdeadbeef + Date.now());
+  while (pts.length < n && attempt < n * 20) {
+    attempt++;
+    const u = rng() * 2 - 1, v = rng() * 2 - 1;
+    if (u*u + v*v <= 1) pts.push({ x: u * sigma, y: v * sigma });
+  }
+  return pts;
+}
+
+function sampleInterval(n, sigma) {
+  const rng = mulberry32(0xcafebabe + Date.now());
+  return Array.from({ length: n }, () => ({ z: (rng() * 2 - 1) * sigma }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1D Visualization
+// ─────────────────────────────────────────────────────────────────────────────
+(function build1D() {
+  let sigma = 0.55;
+  const N_SAMPLES = 14;
+  const pivot = CURVE_DATA[Math.floor(CURVE_DATA.length * 0.55)];
+
+  // ── LEFT: Input manifold ────────────────────────────────────────────────
+  const svgIn = d3.select("#svg1d-input");
+  const W = 300, H = 260;
+  const mx = 38, my = 20;
+
+  const xSc = d3.scaleLinear().domain([-4.2, 4.2]).range([mx, W - mx]);
+  const ySc = d3.scaleLinear().domain([-2.4, 2.8]).range([H - my, my]);
+
+  svgIn.append("rect").attr("width", W).attr("height", H).attr("fill", "#12151e");
+
+  svgIn.append("line")
+    .attr("x1", mx).attr("y1", H/2).attr("x2", W - mx).attr("y2", H/2)
+    .attr("stroke", C.axis).attr("stroke-width", 1);
+  svgIn.append("text")
+    .attr("x", W - mx + 4).attr("y", H/2 + 4)
+    .attr("fill", C.axisLbl).attr("font-size", 10).text("x₁");
+
+  const line = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y)).curve(d3.curveCatmullRom);
+  svgIn.append("path")
+    .datum(CURVE_DATA)
+    .attr("fill", "none")
+    .attr("stroke", C.curve)
+    .attr("stroke-width", 2.2)
+    .attr("opacity", 0.85)
+    .attr("d", line);
+
+  svgIn.append("circle")
+    .attr("cx", xSc(pivot.x)).attr("cy", ySc(pivot.y))
+    .attr("r", 5).attr("fill", C.centre).attr("stroke", "#0f1117").attr("stroke-width", 1.5);
+  svgIn.append("text")
+    .attr("x", xSc(pivot.x) + 8).attr("y", ySc(pivot.y) - 8)
+    .attr("fill", C.centre).attr("font-size", 10).text("x");
+
+  // ── RIGHT: Latent space 1D ───────────────────────────────────────────────
+  const svgLat = d3.select("#svg1d-latent");
+  svgLat.append("rect").attr("width", W).attr("height", H).attr("fill", "#12151e");
+
+  const zSc = d3.scaleLinear().domain([-1.4, 1.4]).range([mx, W - mx]);
+  const midY = H / 2;
+
+  svgLat.append("line")
+    .attr("x1", mx).attr("y1", midY).attr("x2", W - mx).attr("y2", midY)
+    .attr("stroke", C.axis).attr("stroke-width", 1);
+  svgLat.append("text")
+    .attr("x", W - mx + 4).attr("y", midY + 4)
+    .attr("fill", C.axisLbl).attr("font-size", 10).text("z");
+
+  const bandG = svgLat.append("g");
+
+  const bandRect = bandG.append("rect")
+    .attr("y", midY - 12).attr("height", 24).attr("rx", 4)
+    .attr("fill", C.band).attr("opacity", 0.5)
+    .attr("stroke", C.bandStr).attr("stroke-width", 1);
+
+  const brkL = bandG.append("line").attr("y1", midY - 18).attr("y2", midY + 18)
+    .attr("stroke", C.bandStr).attr("stroke-width", 1).attr("opacity", 0.6);
+  const brkR = bandG.append("line").attr("y1", midY - 18).attr("y2", midY + 18)
+    .attr("stroke", C.bandStr).attr("stroke-width", 1).attr("opacity", 0.6);
+
+  const sigLbl = bandG.append("text")
+    .attr("y", midY - 24).attr("text-anchor", "middle")
+    .attr("fill", C.axisLbl).attr("font-size", 9);
+
+  const zCentre = 0.3;
+  svgLat.append("circle")
+    .attr("cx", zSc(zCentre)).attr("cy", midY)
+    .attr("r", 5).attr("fill", C.centre).attr("stroke", "#0f1117").attr("stroke-width", 1.5);
+  svgLat.append("text")
+    .attr("x", zSc(zCentre)).attr("y", midY + 22)
+    .attr("text-anchor", "middle")
+    .attr("fill", C.centre).attr("font-size", 10).text("z");
+
+  const samplesG = svgLat.append("g");
+
+  function drawBand(s) {
+    const x1 = zSc(zCentre - s), x2 = zSc(zCentre + s);
+    bandRect.attr("x", x1).attr("width", x2 - x1);
+    brkL.attr("x1", x1).attr("x2", x1);
+    brkR.attr("x1", x2).attr("x2", x2);
+    sigLbl.attr("x", (x1 + x2) / 2).text(`2σ = ${(2*s).toFixed(2)}`);
+  }
+
+  function drawSamples1D(s) {
+    const pts = sampleInterval(N_SAMPLES, s).map(d => zCentre + d.z);
+    samplesG.selectAll("circle").remove();
+    samplesG.selectAll("circle")
+      .data(pts).join("circle")
+        .attr("cx", d => zSc(d)).attr("cy", midY)
+        .attr("r", 3.5).attr("fill", C.latent)
+        .attr("opacity", 0.8).attr("stroke", "#0f1117").attr("stroke-width", 0.8);
+  }
+
+  function update1D(s) { drawBand(s); drawSamples1D(s); }
+  update1D(sigma);
+
+  const sl1 = document.getElementById("sigma1d");
+  const vl1 = document.getElementById("sigma1d-val");
+  sl1.addEventListener("input", () => {
+    sigma = +sl1.value;
+    vl1.textContent = sigma.toFixed(2);
+    update1D(sigma);
+  });
+  document.getElementById("resample1d").addEventListener("click", () => drawSamples1D(sigma));
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2D Visualization
+// ─────────────────────────────────────────────────────────────────────────────
+(function build2D() {
+  let sigma = 0.55;
+  const N_SAMPLES = 22;
+  const W = 300, H = 300;
+  const mx = 30;
+
+  const CENTRES = [
+    { z1: -0.6, z2:  0.4, t: 0.15, color: "#58a6ff" },
+    { z1:  0.2, z2:  0.6, t: 0.40, color: "#bc8cff" },
+    { z1:  0.7, z2: -0.3, t: 0.65, color: "#e3b341" },
+    { z1: -0.3, z2: -0.6, t: 0.85, color: "#3fb950" },
+  ];
+
+  // ── LATENT SVG ─────────────────────────────────────────────────────────
+  const svgLat = d3.select("#svg2d-latent");
+  svgLat.append("rect").attr("width", W).attr("height", H).attr("fill", "#12151e");
+
+  const z1Sc = d3.scaleLinear().domain([-1.3, 1.3]).range([mx, W - mx]);
+  const z2Sc = d3.scaleLinear().domain([-1.3, 1.3]).range([H - mx, mx]);
+
+  [-1, -0.5, 0, 0.5, 1].forEach(v => {
+    svgLat.append("line")
+      .attr("x1", z1Sc(v)).attr("y1", mx).attr("x2", z1Sc(v)).attr("y2", H - mx)
+      .attr("stroke", C.grid).attr("stroke-width", 1);
+    svgLat.append("line")
+      .attr("x1", mx).attr("y1", z2Sc(v)).attr("x2", W - mx).attr("y2", z2Sc(v))
+      .attr("stroke", C.grid).attr("stroke-width", 1);
+  });
+
+  svgLat.append("line")
+    .attr("x1", mx).attr("y1", z2Sc(0)).attr("x2", W - mx).attr("y2", z2Sc(0))
+    .attr("stroke", C.axis).attr("stroke-width", 1.2);
+  svgLat.append("line")
+    .attr("x1", z1Sc(0)).attr("y1", mx).attr("x2", z1Sc(0)).attr("y2", H - mx)
+    .attr("stroke", C.axis).attr("stroke-width", 1.2);
+
+  svgLat.append("text").attr("x", W - mx + 4).attr("y", z2Sc(0) + 4)
+    .attr("fill", C.axisLbl).attr("font-size", 10).text("z₁");
+  svgLat.append("text").attr("x", z1Sc(0) + 4).attr("y", mx - 6)
+    .attr("fill", C.axisLbl).attr("font-size", 10).text("z₂");
+
+  const ballGs = CENTRES.map((c) => {
+    const g = svgLat.append("g");
+    g.append("circle").attr("class", "ball")
+      .attr("cx", z1Sc(c.z1)).attr("cy", z2Sc(c.z2))
+      .attr("fill", C.band).attr("opacity", 0.3)
+      .attr("stroke", c.color).attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
+    g.append("g").attr("class", "ball-samples");
+    g.append("circle")
+      .attr("cx", z1Sc(c.z1)).attr("cy", z2Sc(c.z2))
+      .attr("r", 5).attr("fill", c.color).attr("stroke", "#0f1117").attr("stroke-width", 1.5);
+    return g;
+  });
+
+  function drawBalls(s) {
+    CENTRES.forEach((c, i) => {
+      const g  = ballGs[i];
+      const rx = Math.abs(z1Sc(s) - z1Sc(0));
+      g.select(".ball").attr("r", rx);
+      const pts = sampleDisk(N_SAMPLES, s);
+      const sg = g.select(".ball-samples");
+      sg.selectAll("circle").remove();
+      sg.selectAll("circle").data(pts).join("circle")
+        .attr("cx", d => z1Sc(c.z1 + d.x)).attr("cy", d => z2Sc(c.z2 + d.y))
+        .attr("r", 2.8).attr("fill", C.latent)
+        .attr("opacity", 0.75).attr("stroke", "#0f1117").attr("stroke-width", 0.6);
+    });
+  }
+
+  // ── OUTPUT SVG ─────────────────────────────────────────────────────────
+  const svgOut = d3.select("#svg2d-output");
+  svgOut.append("rect").attr("width", W).attr("height", H).attr("fill", "#12151e");
+
+  const xSc2 = d3.scaleLinear().domain([-4.2, 4.2]).range([mx, W - mx]);
+  const ySc2 = d3.scaleLinear().domain([-2.4, 2.8]).range([H - mx, mx]);
+
+  svgOut.append("line")
+    .attr("x1", mx).attr("y1", H/2).attr("x2", W - mx).attr("y2", H/2)
+    .attr("stroke", C.axis).attr("stroke-width", 1);
+  svgOut.append("text")
+    .attr("x", W - mx + 4).attr("y", H/2 + 4)
+    .attr("fill", C.axisLbl).attr("font-size", 10).text("x₁");
+
+  const line2 = d3.line().x(d => xSc2(d.x)).y(d => ySc2(d.y)).curve(d3.curveCatmullRom);
+  svgOut.append("path")
+    .datum(CURVE_DATA)
+    .attr("fill", "none").attr("stroke", C.decoded)
+    .attr("stroke-width", 2).attr("opacity", 0.7).attr("d", line2);
+
+  const decodedGs = CENTRES.map(() => svgOut.append("g"));
+
+  function latentToCurve(cIdx, dx, dy) {
+    const c  = CENTRES[cIdx];
+    const dt = (dx * 0.15 + dy * 0.1);
+    const t  = Math.max(0, Math.min(1, c.t + dt));
+    const n  = CURVE_DATA.length;
+    const idx = Math.min(n - 1, Math.round(t * (n - 1)));
+    const pt  = CURVE_DATA[idx];
+    return { x: pt.x + dy * 0.18, y: pt.y + dx * 0.12 };
+  }
+
+  function drawDecoded(s) {
+    CENTRES.forEach((c, i) => {
+      const pts = sampleDisk(N_SAMPLES, s);
+      const g   = decodedGs[i];
+      g.selectAll("circle").remove();
+      g.selectAll("circle").data(pts).join("circle")
+        .attr("cx", d => xSc2(latentToCurve(i, d.x, d.y).x))
+        .attr("cy", d => ySc2(latentToCurve(i, d.x, d.y).y))
+        .attr("r", 2.8).attr("fill", c.color)
+        .attr("opacity", 0.72).attr("stroke", "#0f1117").attr("stroke-width", 0.6);
+    });
+  }
+
+  function update2D(s) { drawBalls(s); drawDecoded(s); }
+  update2D(sigma);
+
+  const sl2 = document.getElementById("sigma2d");
+  const vl2 = document.getElementById("sigma2d-val");
+  sl2.addEventListener("input", () => {
+    sigma = +sl2.value;
+    vl2.textContent = sigma.toFixed(2);
+    update2D(sigma);
+  });
+  document.getElementById("resample2d").addEventListener("click", () => update2D(sigma));
+})();
+</script>
+</body>
+</html>
